@@ -1,0 +1,12 @@
+# .trivyignore — accepted / false-positive Trivy findings
+#
+# Format:  <CVE-ID>  [optional comment]
+# Trivy picks this file up automatically when run from the repo root.
+#
+# To identify findings: open the PR → GitHub Security tab → Code scanning alerts
+# Add the CVE-ID here with a justification, then re-run the scan.
+#
+# Example:
+#   CVE-2024-XXXXX  # requests < 2.32: not exploitable via this app's usage pattern
+
+# ── Add accepted findings below this line ────────────────────────────────────

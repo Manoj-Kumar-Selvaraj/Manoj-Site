@@ -187,6 +187,9 @@ resource "aws_iam_role" "budget_check" {
   })
 }
 
+# trivy:ignore:AVD-AWS-0057  -- ce:GetCostAndUsage has no resource-level ARN
+#                               support in IAM. AWS requires Resource="*" for all
+#                               Cost Explorer API calls. This is read-only access.
 resource "aws_iam_role_policy" "budget_check" {
   name = "${var.project}-budget-check-policy"
   role = aws_iam_role.budget_check.id

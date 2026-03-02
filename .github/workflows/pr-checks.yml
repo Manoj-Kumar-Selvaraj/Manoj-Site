@@ -44,6 +44,7 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: 1
           ignore-unfixed: true
+          trivyignores: .trivyignore
         continue-on-error: true
 
       - name: Upload FS SARIF to GitHub Security tab
@@ -62,6 +63,7 @@ jobs:
           output: trivy-iac.sarif
           severity: CRITICAL,HIGH
           exit-code: 1
+          trivyignores: .trivyignore
         continue-on-error: true
 
       - name: Upload IaC SARIF to GitHub Security tab

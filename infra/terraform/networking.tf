@@ -10,6 +10,11 @@ data "aws_subnets" "default" {
   }
 }
 
+# trivy:ignore:AVD-AWS-0102  -- SSH CIDR controlled by var.allowed_ssh_cidrs;
+#                               default 0.0.0.0/0 is overridden with your IP in
+#                               terraform.tfvars before first apply.
+# trivy:ignore:AVD-AWS-0104  -- HTTP/HTTPS ingress open to world is required for
+#                               a public-facing portfolio web server.
 # ── Security Group ────────────────────────────────────────────────────────────
 resource "aws_security_group" "portfolio" {
   name        = "${var.project}-sg"
@@ -27,21 +32,21 @@ resource "aws_security_group" "portfolio" {
 
   # HTTP
   ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description      = "HTTP"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
 
   # HTTPS
   ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description      = "HTTPS"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
 

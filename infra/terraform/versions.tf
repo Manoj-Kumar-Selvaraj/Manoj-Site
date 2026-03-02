@@ -32,7 +32,7 @@ terraform {
   #   5. Generate a TFC API token: User Settings → Tokens → Create API token
   #   6. Add TF_API_TOKEN to GitHub Secrets (the only TF-related GitHub Secret needed)
   cloud {
-    organization = "YOUR_TFC_ORG_NAME"   # replace with your TFC org
+    organization = "YOUR_TFC_ORG_NAME" # replace with your TFC org
 
     workspaces {
       name = "portfolio"

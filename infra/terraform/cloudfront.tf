@@ -7,6 +7,13 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_protocol                  = "sigv4"
 }
 
+# trivy:ignore:AVD-AWS-0006  -- WAF omitted: AWS WAF costs ~$5/mo minimum which
+#                               exceeds the entire budget for this portfolio. The
+#                               default CloudFront rate-limiting provides baseline
+#                               protection for a low-traffic personal site.
+# trivy:ignore:AVD-AWS-0012  -- CloudFront access logging omitted: log delivery
+#                               to S3 adds storage cost with no operational value
+#                               at personal-portfolio scale.
 # ── CloudFront Distribution ───────────────────────────────────────────────────
 resource "aws_cloudfront_distribution" "frontend" {
   comment             = "${var.project} frontend distribution"

@@ -55,7 +55,7 @@ output "api_base_url" {
 
 output "github_secrets_summary" {
   description = "All values you need to add as GitHub Secrets"
-  value = <<-EOT
+  value       = <<-EOT
     ┌─────────────────────────────────────────────────────────────────────┐
     │  GitHub Secrets to configure                                        │
     ├──────────────────────────────────────┬──────────────────────────────┤

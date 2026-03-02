@@ -36,6 +36,14 @@ resource "aws_instance" "portfolio" {
     encrypted             = true
   }
 
+  # Enforce IMDSv2 — prevents SSRF-based metadata credential theft.
+  # hop_limit=1 blocks requests from containers/nested VMs on the same host.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh.tpl", {
     github_repo_url      = var.github_repo_url
     django_secret_key    = var.django_secret_key

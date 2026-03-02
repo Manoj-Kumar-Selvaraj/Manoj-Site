@@ -13,7 +13,7 @@ resource "github_branch_protection" "main" {
   lock_branch                     = false
 
   required_status_checks {
-    strict = true   # Branch must be up to date before merging
+    strict = true # Branch must be up to date before merging
     contexts = [
       # These must exactly match the `name:` field of each job in pr-checks.yml
       "PR Checks / Secret Scan (Gitleaks)",
@@ -33,7 +33,7 @@ resource "github_branch_protection" "main" {
   }
 
   restrict_pushes {
-    push_allowances = []  # No direct pushers — all via PR only
+    push_allowances = [] # No direct pushers — all via PR only
   }
 }
 
