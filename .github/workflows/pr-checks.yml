@@ -245,3 +245,60 @@ jobs:
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
+
+  # ── 5. INFRACOST — projected monthly cost + cost change ───────────────────
+  # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
+  # Parses Terraform HCL directly — no AWS credentials or TFC needed.
+  infracost:
+    name: Infracost Cost Estimate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost CLI
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      # Generate cost breakdown for the base (target) branch first so we can diff
+      - name: Generate base branch cost estimate
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          git checkout origin/${{ github.event.pull_request.base.ref }} -- infra/terraform
+          infracost breakdown \
+            --path infra/terraform \
+            --terraform-init-flags="-backend=false" \
+            --format json \
+            --out-file /tmp/infracost-base.json
+          # Restore PR branch state
+          git checkout HEAD -- infra/terraform
+
+      # Generate cost breakdown for the PR branch
+      - name: Generate PR branch cost estimate
+        run: |
+          infracost breakdown \
+            --path infra/terraform \
+            --terraform-init-flags="-backend=false" \
+            --format json \
+            --out-file /tmp/infracost-pr.json
+
+      # Diff base vs PR and post as a single upserted PR comment
+      - name: Post cost diff as PR comment
+        run: |
+          infracost diff \
+            --path /tmp/infracost-pr.json \
+            --compare-to /tmp/infracost-base.json \
+            --format json \
+            --out-file /tmp/infracost-diff.json
+
+          infracost comment github \
+            --path /tmp/infracost-diff.json \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --repo ${{ github.repository }} \
+            --pull-request ${{ github.event.pull_request.number }} \
+            --behavior update

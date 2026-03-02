@@ -20,6 +20,9 @@ resource "github_branch_protection" "main" {
       "PR Checks / Trivy Security Scan",
       "PR Checks / Terraform Checks",
       "PR Checks / App Build Check",
+      "PR Checks / Infracost Cost Estimate",
+      # budget-check.yml
+      "Budget Gate / Monthly AWS Cost Check",
     ]
   }
 
