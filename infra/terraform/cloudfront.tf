@@ -65,16 +65,16 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
-  # Custom domain aliases — empty list means CloudFront's own domain is used
-  aliases = var.domain_name != "" ? [var.domain_name] : []
+  # Custom domain aliases — covers apex + www when a domain is configured
+  aliases = local.dns_enabled ? [var.domain_name, "www.${var.domain_name}"] : []
 
   viewer_certificate {
-    # When a custom ACM cert is provided use it; otherwise fall back to the
-    # default *.cloudfront.net certificate (null fields are ignored by AWS).
-    acm_certificate_arn            = var.acm_certificate_arn != "" ? var.acm_certificate_arn : null
-    ssl_support_method             = var.acm_certificate_arn != "" ? "sni-only" : null
-    minimum_protocol_version       = var.acm_certificate_arn != "" ? "TLSv1.2_2021" : "TLSv1"
-    cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
+    # Use the Terraform-managed, DNS-validated ACM cert when a domain is set;
+    # fall back to the default *.cloudfront.net cert otherwise.
+    acm_certificate_arn            = local.dns_enabled ? aws_acm_certificate_validation.frontend[0].certificate_arn : null
+    ssl_support_method             = local.dns_enabled ? "sni-only" : null
+    minimum_protocol_version       = local.dns_enabled ? "TLSv1.2_2021" : null
+    cloudfront_default_certificate = local.dns_enabled ? false : true
   }
 
   tags = {

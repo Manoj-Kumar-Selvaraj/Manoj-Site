@@ -1,0 +1,111 @@
+name: Budget Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+# Read-only OIDC role — no deploy permissions, only Cost Explorer reads.
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  budget-check:
+    name: Monthly AWS Cost Check
+    runs-on: ubuntu-latest
+    steps:
+      # ── 1. AWS credentials (read-only OIDC role, no environment gate needed) ──
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BUDGET_ROLE_ARN }}
+          role-session-name: budget-check-pr-${{ github.event.number }}
+          aws-region: us-east-1   # Cost Explorer endpoint is always us-east-1
+
+      # ── 2. Pull AmortizedCost for the current billing month ──────────────────
+      - name: Fetch current month AWS spend
+        id: cost
+        run: |
+          # First day of the current month
+          START=$(date +%Y-%m-01)
+          # End must be AFTER start — use tomorrow so the range is always valid
+          # (CE end date is exclusive, so this safely covers "today")
+          END=$(date -d "+1 day" +%Y-%m-%d)
+          echo "Period: $START → $END"
+
+          RESULT=$(aws ce get-cost-and-usage \
+            --time-period "Start=${START},End=${END}" \
+            --granularity MONTHLY \
+            --metrics AmortizedCost \
+            --output json)
+
+          # One-liner Python — multi-line -c strings break YAML literal block indentation
+          COST=$(echo "$RESULT" | python3 -c 'import json,sys;d=json.load(sys.stdin);r=d.get("ResultsByTime",[]);print("{:.2f}".format(float(r[-1]["Total"]["AmortizedCost"]["Amount"])) if r else "0.00")')
+
+          echo "current_cost=${COST}" >> "$GITHUB_OUTPUT"
+          echo "Monthly AWS spend so far (AmortizedCost): \$${COST}"
+
+      # ── 3. Post cost summary as a PR comment (upsert — one comment per PR) ───
+      - name: Post cost summary on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const rawCost      = "${{ steps.cost.outputs.current_cost }}"
+            const rawThreshold = "${{ vars.BUDGET_THRESHOLD_USD }}"
+
+            const cost      = parseFloat(rawCost)      || 0
+            const threshold = parseFloat(rawThreshold) || 5   // default $5
+
+            const over   = cost > threshold
+            const icon   = over ? "🔴" : "🟢"
+            const status = over
+              ? `**OVER BUDGET** — merge is blocked until spend drops below $${threshold.toFixed(2)}`
+              : "Within budget ✅"
+
+            const body = [
+              "## AWS Budget Check",
+              "",
+              "| | Value |",
+              "|---|---|",
+              `| Current month spend _(AmortizedCost)_ | **$${cost.toFixed(2)}** |`,
+              `| Budget threshold | $${threshold.toFixed(2)} |`,
+              `| Status | ${icon} ${status} |`,
+              "",
+              "> _AmortizedCost reflects actual charges **after** AWS applies free tier credits._",
+              "> _Threshold is set via the `BUDGET_THRESHOLD_USD` Actions repository variable (default: $5)._",
+            ].join("\n")
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const existing = comments.find(
+              c => c.user.type === "Bot" && c.body.includes("## AWS Budget Check")
+            )
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner:        context.repo.owner,
+                repo:         context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              })
+            }
+
+      # ── 4. Hard gate — fail the status check if over budget ──────────────────
+      - name: Fail if over budget
+        run: |
+          COST="${{ steps.cost.outputs.current_cost }}"
+          THRESHOLD="${{ vars.BUDGET_THRESHOLD_USD }}"
+          THRESHOLD="${THRESHOLD:-5}"   # default $5 if repository variable is not set
+
+          python3 -c "import sys;cost=float('${COST}' or '0');threshold=float('${THRESHOLD}' or '5');sys.exit(print('::error::Monthly AWS spend USD %.2f exceeds budget USD %.2f. Raise BUDGET_THRESHOLD_USD before merging.'%(cost,threshold)) or 1) if cost>threshold else print('Monthly spend USD %.2f within budget USD %.2f -- OK'%(cost,threshold))"

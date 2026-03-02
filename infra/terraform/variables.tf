@@ -88,6 +88,12 @@ variable "acm_certificate_arn" {
   default     = ""
 }
 
+variable "hosted_zone_id" {
+  description = "Route 53 hosted zone ID for your domain (e.g. Z1PA6795UKMFR9). Set together with domain_name to enable automatic ACM cert + DNS records."
+  type        = string
+  default     = ""
+}
+
 # ── GitHub ───────────────────────────────────────────────────────────────────
 variable "github_token" {
   description = "GitHub personal access token with repo + admin:repo_hook scopes for branch protection"
