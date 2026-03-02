@@ -23,6 +23,7 @@ resource "aws_key_pair" "portfolio" {
 resource "aws_instance" "portfolio" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.ec2_instance_type
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance.name
   key_name               = aws_key_pair.portfolio.key_name
   subnet_id              = tolist(data.aws_subnets.default.ids)[0]
   vpc_security_group_ids = [aws_security_group.portfolio.id]
@@ -41,8 +42,8 @@ resource "aws_instance" "portfolio" {
     django_allowed_hosts = var.django_allowed_hosts
     s3_bucket_media      = aws_s3_bucket.media.bucket
     aws_region           = var.aws_region
-    aws_access_key_id    = aws_iam_access_key.cicd.id
-    aws_secret_key       = aws_iam_access_key.cicd.secret
+    # AWS credentials are supplied automatically via the EC2 instance profile —
+    # no long-lived keys needed here.
   }))
 
   # Replace instance when user_data changes (new bootstrap)

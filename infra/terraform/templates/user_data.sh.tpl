@@ -37,8 +37,8 @@ DEBUG=False
 ALLOWED_HOSTS=${django_allowed_hosts}
 AWS_STORAGE_BUCKET_NAME=${s3_bucket_media}
 AWS_S3_REGION_NAME=${aws_region}
-AWS_ACCESS_KEY_ID=${aws_access_key_id}
-AWS_SECRET_ACCESS_KEY=${aws_secret_key}
+# AWS credentials are provided automatically via the EC2 instance profile.
+# boto3 / django-storages will pick them up from the instance metadata service.
 ENVEOF
 chmod 600 "$REPO_DIR/backend/.env"
 chown ubuntu:ubuntu "$REPO_DIR/backend/.env"

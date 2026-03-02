@@ -65,25 +65,15 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
-  # Custom domain + ACM cert (only if domain_name is provided)
-  dynamic "aliases" {
-    for_each = var.domain_name != "" ? [var.domain_name] : []
-    content {
-      # CloudFront supports a list but the dynamic block iterates per alias
-    }
-  }
+  # Custom domain aliases — empty list means CloudFront's own domain is used
+  aliases = var.domain_name != "" ? [var.domain_name] : []
 
   viewer_certificate {
-    dynamic "acm_certificate" {
-      for_each = var.acm_certificate_arn != "" ? [1] : []
-      content {
-        acm_certificate_arn      = var.acm_certificate_arn
-        ssl_support_method       = "sni-only"
-        minimum_protocol_version = "TLSv1.2_2021"
-      }
-    }
-
-    # Use default CloudFront cert when no custom domain
+    # When a custom ACM cert is provided use it; otherwise fall back to the
+    # default *.cloudfront.net certificate (null fields are ignored by AWS).
+    acm_certificate_arn            = var.acm_certificate_arn != "" ? var.acm_certificate_arn : null
+    ssl_support_method             = var.acm_certificate_arn != "" ? "sni-only" : null
+    minimum_protocol_version       = var.acm_certificate_arn != "" ? "TLSv1.2_2021" : "TLSv1"
     cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
   }
 
