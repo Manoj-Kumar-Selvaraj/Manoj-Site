@@ -1,0 +1,68 @@
+# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# ── SSH Key Pair ──────────────────────────────────────────────────────────────
+resource "aws_key_pair" "portfolio" {
+  key_name   = "${var.project}-key"
+  public_key = var.ec2_public_key
+}
+
+# ── EC2 Instance ──────────────────────────────────────────────────────────────
+resource "aws_instance" "portfolio" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.ec2_instance_type
+  key_name               = aws_key_pair.portfolio.key_name
+  subnet_id              = tolist(data.aws_subnets.default.ids)[0]
+  vpc_security_group_ids = [aws_security_group.portfolio.id]
+
+  # Ensure Django has enough disk space for media / SQLite
+  root_block_device {
+    volume_type           = "gp3"
+    volume_size           = 20
+    delete_on_termination = true
+    encrypted             = true
+  }
+
+  user_data = base64encode(templatefile("${path.module}/templates/user_data.sh.tpl", {
+    github_repo_url      = var.github_repo_url
+    django_secret_key    = var.django_secret_key
+    django_allowed_hosts = var.django_allowed_hosts
+    s3_bucket_media      = aws_s3_bucket.media.bucket
+    aws_region           = var.aws_region
+    aws_access_key_id    = aws_iam_access_key.cicd.id
+    aws_secret_key       = aws_iam_access_key.cicd.secret
+  }))
+
+  # Replace instance when user_data changes (new bootstrap)
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "${var.project}-server"
+  }
+}
+
+# ── Elastic IP — stable address that survives stop/start ─────────────────────
+resource "aws_eip" "portfolio" {
+  instance = aws_instance.portfolio.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "${var.project}-eip"
+  }
+
+  depends_on = [aws_instance.portfolio]
+}

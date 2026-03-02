@@ -1,0 +1,157 @@
+name: Deploy Application
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-app
+  cancel-in-progress: false  # never cancel a running deploy
+
+# Required for OIDC token exchange (no stored AWS keys)
+permissions:
+  id-token: write   # request OIDC JWT from GitHub
+  contents: read    # checkout
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Build & deploy React to S3 → invalidate CloudFront
+  # ──────────────────────────────────────────────────────────────────────────
+  deploy-frontend:
+    name: Frontend → S3 + CloudFront
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Build React app
+        run: cd frontend && npm run build
+        env:
+          VITE_API_URL: ${{ secrets.API_BASE_URL }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-deploy
+          aws-region:       ${{ secrets.AWS_REGION }}
+
+      # Upload assets with long-lived cache (hashed filenames by Vite)
+      - name: Sync assets to S3
+        run: |
+          aws s3 sync frontend/dist/ s3://${{ secrets.S3_BUCKET_FRONTEND }}/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html" \
+            --exclude "*.map"
+
+      # Upload index.html with no-cache so users always get fresh SPA shell
+      - name: Upload index.html (no-cache)
+        run: |
+          aws s3 cp frontend/dist/index.html \
+            s3://${{ secrets.S3_BUCKET_FRONTEND }}/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "Invalidation ID: $INVALIDATION_ID"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Deploy Django backend to EC2 via SSH
+  # ──────────────────────────────────────────────────────────────────────────
+  deploy-backend:
+    name: Backend → EC2
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key:      ${{ secrets.EC2_SSH_KEY }}
+          timeout:  180s
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/portfolio
+
+            echo "→ Pulling latest code from main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "→ Installing Python dependencies..."
+            source backend/venv/bin/activate
+            pip install -r backend/requirements.txt -q
+
+            echo "→ Running database migrations..."
+            cd backend
+            python manage.py migrate --noinput
+
+            echo "→ Collecting static files..."
+            python manage.py collectstatic --noinput -v 0
+            cd ..
+
+            echo "→ Restarting Gunicorn (zero-downtime via systemd reload)..."
+            sudo systemctl reload-or-restart portfolio-gunicorn
+
+            echo "→ Verifying service health..."
+            sleep 3
+            sudo systemctl is-active portfolio-gunicorn || { sudo journalctl -u portfolio-gunicorn -n 30; exit 1; }
+            echo "✓ Deployment complete"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Post-deploy health check
+  # ──────────────────────────────────────────────────────────────────────────
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend]
+    steps:
+      - name: Wait for services to stabilize
+        run: sleep 20
+
+      - name: Check API health
+        run: |
+          for i in 1 2 3; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+              "http://${{ secrets.EC2_HOST }}/api/" 2>/dev/null || echo "000")
+            if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+              echo "✓ API healthy (HTTP $STATUS) on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed (HTTP $STATUS) — retrying in 10s..."
+            sleep 10
+          done
+          echo "✗ API health check failed after 3 attempts"
+          exit 1
+
+      - name: Check CloudFront distribution
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            "https://${{ secrets.CLOUDFRONT_DOMAIN }}" 2>/dev/null || echo "000")
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "✓ Frontend healthy (HTTP $STATUS)"
+          else
+            echo "⚠ CloudFront returned HTTP $STATUS (may still be propagating)"
+          fi

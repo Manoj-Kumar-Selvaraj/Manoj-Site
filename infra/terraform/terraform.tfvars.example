@@ -1,0 +1,48 @@
+# With Terraform Cloud, sensitive variables are NOT stored in this file.
+# They are set directly in the TFC workspace UI or via the TFC CLI.
+#
+# Go to: app.terraform.io → your org → portfolio workspace → Settings → Variables
+#
+# ── Terraform Variables (set in TFC workspace, mark sensitive ones as "Sensitive") ──
+#
+#   KEY                     SENSITIVE   VALUE
+#   ─────────────────────────────────────────────────────
+#   aws_region              no          us-east-1
+#   environment             no          production
+#   project                 no          portfolio
+#   ec2_instance_type       no          t3.micro
+#   ec2_public_key          YES         <contents of your ~/.ssh/id_rsa.pub>
+#   allowed_ssh_cidrs       no          ["YOUR.IP.HERE/32"]
+#   django_secret_key       YES         <python -c "import secrets; print(secrets.token_hex(32))">
+#   django_allowed_hosts    no          <EC2-IP>,<your-domain.com>
+#   github_repo_url         no          https://github.com/<owner>/portfolio.git
+#   frontend_bucket_name    no          portfolio-frontend
+#   media_bucket_name       no          portfolio-media
+#   cloudfront_price_class  no          PriceClass_100
+#   domain_name             no          (leave empty until you have a domain)
+#   acm_certificate_arn     no          (leave empty until you have a cert)
+#   github_token            YES         <GitHub PAT: repo + admin:repo_hook scopes>
+#   github_owner            no          <your GitHub username>
+#   github_repo_name        no          portfolio
+#
+# ── Environment Variables (set in TFC workspace — these auth the AWS provider) ──
+#
+#   KEY                       SENSITIVE   VALUE
+#   ────────────────────────────────────────────────────
+#   AWS_ACCESS_KEY_ID         YES         <IAM key for Terraform provisioning user>
+#   AWS_SECRET_ACCESS_KEY     YES         <IAM secret>
+#   AWS_DEFAULT_REGION        no          us-east-1
+#
+# ── GitHub Actions Secrets (the ONLY secrets needed in GitHub) ──────────────────
+#
+#   TF_API_TOKEN        — TFC User or Team API token
+#                         Generate at: app.terraform.io → User Settings → Tokens
+#
+#   (All app deployment secrets are still needed in GitHub for deploy-app.yml:
+#    AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_FRONTEND,
+#    S3_BUCKET_MEDIA, CLOUDFRONT_DISTRIBUTION_ID, CLOUDFRONT_DOMAIN,
+#    EC2_HOST, EC2_SSH_KEY, API_BASE_URL, DJANGO_SECRET_KEY)
+#
+# ── This file is intentionally NOT a working tfvars file ────────────────────────
+# There is nothing to copy here. All variables are managed in TFC.
+# This file serves as documentation only.

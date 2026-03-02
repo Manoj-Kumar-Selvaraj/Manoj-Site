@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global background (viewport-fixed layer so positioning isn't affected by page height) */
+html, body {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #0a0e1a;
+  background-image: url('/bg_hero.png');
+  background-size: cover;
+  background-position: center 85%;
+  background-repeat: no-repeat;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    min-height: 100%;
+    font-size: 90%;
+  }
+
+  body {
+    @apply text-ink-900 font-sans antialiased;
+    background: transparent;
+  }
+
+  ::selection {
+    @apply bg-cobalt-700 text-white;
+  }
+
+  ::-webkit-scrollbar       { width: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-ink-50; }
+  ::-webkit-scrollbar-thumb { @apply bg-ink-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-cobalt-400; }
+
+  h1, h2, h3, h4 { @apply font-bold tracking-tight; }
+}
+
+@layer components {
+
+  /* ── Cards ─────────────────────────────────────────────── */
+  .card {
+    @apply bg-surface rounded-2xl border border-ink-200 shadow-card;
+  }
+  .card-hover {
+    @apply card transition-all duration-300
+           hover:shadow-card-md hover:border-cobalt-600 hover:-translate-y-0.5;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+           bg-cobalt-600 text-white shadow-sm
+           transition-all duration-200 hover:bg-cobalt-500 hover:shadow-cobalt active:scale-95;
+  }
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+           border-2 border-cobalt-200 text-cobalt-700
+           bg-white/80 backdrop-blur-sm shadow-sm
+           transition-all duration-200 hover:bg-white hover:border-cobalt-400 hover:shadow-md
+           active:scale-95;
+  }
+  .btn-amber {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+           bg-amber-500 text-white shadow-sm
+           transition-all duration-200 hover:bg-amber-600 active:scale-95;
+  }
+
+  /* ── Badges & tags ──────────────────────────────────────── */
+  .section-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+           text-xs font-semibold uppercase tracking-wider
+           bg-cobalt-50 text-cobalt-700 border border-cobalt-200;
+  }
+  .tag {
+    @apply px-2.5 py-1 rounded-md text-xs font-mono font-medium
+           bg-ink-100 border border-ink-200 text-ink-700;
+  }
+  .tag-cobalt {
+    @apply px-2.5 py-1 rounded-md text-xs font-medium
+           bg-cobalt-50 border border-cobalt-200 text-cobalt-700;
+  }
+  .tag-amber {
+    @apply px-2.5 py-1 rounded-md text-xs font-medium
+           bg-amber-50 border border-amber-200 text-amber-700;
+  }
+
+  /* ── Section layout ─────────────────────────────────────── */
+  .section-num {
+    @apply text-[108px] font-black text-ink-300 leading-none select-none absolute
+           -top-4 -left-4 pointer-events-none opacity-30;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-black text-ink-900;
+  }
+
+  /* ── Input fields ───────────────────────────────────────── */
+  .field {
+    @apply w-full px-4 py-3 rounded-xl bg-ink-100 border border-ink-200 text-ink-900
+           placeholder-ink-500 text-sm
+           focus:outline-none focus:border-cobalt-500 focus:ring-2 focus:ring-cobalt-100
+           transition-all;
+  }
+
+  /* ── Hero section bg ────────────────────────────────────── */
+  .hero-section {
+    /* Body carries the fixed photo — hero just adds a mild top tint */
+    background: linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.18) 0%,
+      rgba(255,255,255,0.05) 60%,
+      transparent 100%
+    );
+  }
+
+  /* Text glow — keeps dark text readable over colourful photo bg */
+  .hero-text-glow {
+    text-shadow:
+      0 0 18px rgba(255,255,255,0.95),
+      0 1px 4px  rgba(255,255,255,0.85);
+  }
+
+  /* ── Skill pill styles per category ────────────────────── */
+  .skill-pill-ai         { @apply bg-violet-50   border border-violet-200   text-violet-800; }
+  .skill-pill-devops     { @apply bg-orange-50   border border-orange-200   text-orange-800; }
+  .skill-pill-cloud      { @apply bg-cobalt-50   border border-cobalt-200   text-cobalt-800; }
+  .skill-pill-python     { @apply bg-emerald-50  border border-emerald-200  text-emerald-800; }
+  .skill-pill-tools      { @apply bg-slate-100   border border-slate-200    text-slate-700; }
+  .skill-pill-iac        { @apply bg-violet-50   border border-violet-200   text-violet-800; }
+  .skill-pill-containers { @apply bg-teal-50     border border-teal-200     text-teal-800; }
+  .skill-pill-monitoring { @apply bg-amber-50    border border-amber-200    text-amber-700; }
+  .skill-pill-os         { @apply bg-slate-100   border border-slate-200    text-slate-700; }
+  .skill-pill-vcs        { @apply bg-sky-50      border border-sky-200      text-sky-800; }
+  .skill-pill-networking { @apply bg-rose-50     border border-rose-200     text-rose-800; }
+  .skill-pill-databases  { @apply bg-yellow-50   border border-yellow-200   text-yellow-800; }
+  .skill-pill-mainframe  { @apply bg-stone-100   border border-stone-200    text-stone-700; }
+
+  /* ── Timeline ───────────────────────────────────────────── */
+  .timeline-dot {
+    @apply w-4 h-4 rounded-full bg-cobalt-600 border-4 border-surface ring-2 ring-cobalt-700;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Topographic contour lines overlay (decorative) */
+  .topo-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cg fill='none' stroke='%232563eb' stroke-width='0.7' opacity='0.10'%3E%3Cellipse cx='300' cy='300' rx='280' ry='160'/%3E%3Cellipse cx='300' cy='300' rx='240' ry='130'/%3E%3Cellipse cx='300' cy='300' rx='200' ry='100'/%3E%3Cellipse cx='300' cy='300' rx='160' ry='75'/%3E%3Cellipse cx='300' cy='300' rx='120' ry='55'/%3E%3Cellipse cx='300' cy='300' rx='80' ry='35'/%3E%3Cellipse cx='300' cy='300' rx='40' ry='18'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+  }
+}
