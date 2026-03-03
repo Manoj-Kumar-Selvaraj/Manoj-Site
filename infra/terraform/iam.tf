@@ -20,7 +20,7 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
 # assume this role (enforced in the StringLike condition below).
 resource "aws_iam_role" "github_actions" {
   name        = "${var.project}-github-actions-role"
-  description = "Assumed by GitHub Actions via OIDC — no long-lived credentials stored"
+  description = "Assumed by GitHub Actions via OIDC - no long-lived credentials stored"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

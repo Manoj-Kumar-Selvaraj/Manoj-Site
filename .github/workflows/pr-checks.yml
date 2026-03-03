@@ -124,10 +124,12 @@ jobs:
         run: tflint --format=compact
         continue-on-error: true
 
-      # ── init: connects to TFC, downloads providers ─────────────────────────
-      - name: "terraform init"
+      # ── init (no backend) — downloads providers for fmt/validate/tflint ──
+      # Deliberately skips TFC backend so validate works even if TFC is
+      # unreachable or the workspace hasn't been created yet.
+      - name: "terraform init (providers only)"
         id: init
-        run: terraform init -input=false
+        run: terraform init -backend=false -input=false
         continue-on-error: true
 
       - name: "terraform validate"
@@ -135,9 +137,12 @@ jobs:
         run: terraform validate -no-color
         continue-on-error: true
 
-      # ── Speculative plan — runs in TFC using workspace variables ───────────
-      # Output includes the TFC run URL so reviewers can inspect in the UI.
+      # ── Speculative plan — requires live TFC connection ────────────────────
+      # Re-init with the full TFC backend to run the speculative plan.
       # Zero TF_VAR_* or AWS credentials needed in GitHub Actions.
+      - name: "terraform init (TFC backend for plan)"
+        run: terraform init -input=false
+        continue-on-error: true
       - name: "terraform plan (TFC speculative run)"
         id: plan
         run: terraform plan -no-color -input=false 2>&1 | tee plan.txt
