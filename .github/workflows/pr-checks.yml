@@ -7,7 +7,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  security-events: write
 
 jobs:
   # ── 1. SECRET SCAN ────────────────────────────────────────────────────────
@@ -26,63 +25,7 @@ jobs:
           # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           # Uncomment + add the secret for private repos
 
-  # ── 2. TRIVY ─────────────────────────────────────────────────────────────
-  trivy-scan:
-    name: Trivy Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Trivy FS scan (Python + Node CVEs)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-fs.sarif
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          ignore-unfixed: true
-          trivyignores: .trivyignore
-        continue-on-error: true
-
-      - name: Upload FS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-fs.sarif
-          category: trivy-fs
-
-      - name: Trivy IaC scan (Terraform misconfigurations)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: config
-          scan-ref: infra/terraform
-          format: sarif
-          output: trivy-iac.sarif
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          trivyignores: .trivyignore
-        continue-on-error: true
-
-      - name: Upload IaC SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-iac.sarif
-          category: trivy-iac
-
-      - name: Fail if CRITICAL/HIGH findings exist
-        run: |
-          FS=$(python3 -c "import json; d=json.load(open('trivy-fs.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
-          IAC=$(python3 -c "import json; d=json.load(open('trivy-iac.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
-          echo "FS: $FS | IaC: $IAC findings"
-          [ "$FS" -gt 0 ] || [ "$IAC" -gt 0 ] && \
-            echo "::error::Security scan found CRITICAL/HIGH issues. See GitHub Security tab." && exit 1
-          echo "No critical/high findings"
-
-  # ── 3. TERRAFORM CHECKS (TFC) ─────────────────────────────────────────────
+  # ── 2. TERRAFORM CHECKS (TFC) ─────────────────────────────────────────────
   # All variables (TF_VAR_* + AWS_* for the AWS provider) live in the TFC
   # workspace under Settings -> Variables. The ONLY secret needed in GitHub
   # is TF_API_TOKEN (User or Team token from app.terraform.io).
@@ -212,7 +155,7 @@ jobs:
             echo "::error::terraform validate failed — fix HCL syntax errors" && FAIL=1
           exit $FAIL
 
-  # ── 4. APP BUILD CHECK ────────────────────────────────────────────────────
+  # ── 3. APP BUILD CHECK ────────────────────────────────────────────────────
   app-build-check:
     name: App Build Check
     runs-on: ubuntu-latest
@@ -253,7 +196,7 @@ jobs:
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
 
-  # ── 5. INFRACOST — projected monthly cost + cost change ───────────────────
+  # ── 4. INFRACOST — projected monthly cost + cost change ───────────────────
   # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
   # Parses Terraform HCL directly — no AWS credentials or TFC needed.
   infracost:

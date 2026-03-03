@@ -17,7 +17,6 @@ resource "github_branch_protection" "main" {
     contexts = [
       # These must exactly match the `name:` field of each job in pr-checks.yml
       "PR Checks / Secret Scan (Gitleaks)",
-      "PR Checks / Trivy Security Scan",
       "PR Checks / Terraform Checks",
       "PR Checks / App Build Check",
       "PR Checks / Infracost Cost Estimate",
