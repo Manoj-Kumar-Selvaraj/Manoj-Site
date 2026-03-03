@@ -1,53 +1,83 @@
-# ── Branch Protection — main branch ──────────────────────────────────────────
-# enforce_admins = true ensures even repository admins cannot bypass protections
-resource "github_branch_protection" "main" {
-  repository_id = data.github_repository.portfolio.node_id
-  pattern       = "main"
+# ── Repository Rulesets ────────────────────────────────────────────────────────
+# Using github_repository_ruleset (REST API) instead of github_branch_protection
+# (GraphQL) — avoids the read:org scope requirement on personal repositories.
 
-  # No one can push directly to main — all changes must go through PRs
-  enforce_admins                  = true
-  require_signed_commits          = true
-  require_conversation_resolution = true
-  allows_deletions                = false
-  allows_force_pushes             = false
-  lock_branch                     = false
+# ── Ruleset — main branch ─────────────────────────────────────────────────────
+resource "github_repository_ruleset" "main" {
+  name        = "main-protection"
+  repository  = data.github_repository.portfolio.name
+  target      = "branch"
+  enforcement = "active" # No bypass actors = enforced for everyone, including admins
 
-  required_status_checks {
-    strict = true # Branch must be up to date before merging
-    contexts = [
-      # These must exactly match the `name:` field of each job in pr-checks.yml
-      "PR Checks / Secret Scan (Gitleaks)",
-      "PR Checks / Terraform Checks",
-      "PR Checks / App Build Check",
-      "PR Checks / Infracost Cost Estimate",
-      # budget-check.yml
-      "Budget Gate / Monthly AWS Cost Check",
-    ]
+  conditions {
+    ref_name {
+      include = ["refs/heads/main"]
+      exclude = []
+    }
   }
 
-  required_pull_request_reviews {
-    required_approving_review_count = 1
-    dismiss_stale_reviews           = true
-    require_last_push_approval      = true
-  }
+  rules {
+    deletion         = true # Prevent branch deletion
+    non_fast_forward = true # Prevent force pushes
 
-  restrict_pushes {
-    push_allowances = [] # No direct pushers — all via PR only
+    required_signatures {}
+
+    pull_request {
+      required_approving_review_count   = 1
+      dismiss_stale_reviews_on_push     = true
+      require_last_push_approval        = true
+      required_review_thread_resolution = true
+    }
+
+    required_status_checks {
+      strict_required_status_checks_policy = true # Branch must be up to date
+
+      required_check {
+        context        = "PR Checks / Secret Scan (Gitleaks)"
+        integration_id = 15368 # GitHub Actions app ID
+      }
+      required_check {
+        context        = "PR Checks / Terraform Checks"
+        integration_id = 15368
+      }
+      required_check {
+        context        = "PR Checks / App Build Check"
+        integration_id = 15368
+      }
+      required_check {
+        context        = "PR Checks / Infracost Cost Estimate"
+        integration_id = 15368
+      }
+      required_check {
+        context        = "Budget Gate / Monthly AWS Cost Check"
+        integration_id = 15368
+      }
+    }
   }
 }
 
-# ── Branch Protection — release branches ─────────────────────────────────────
-resource "github_branch_protection" "release" {
-  repository_id = data.github_repository.portfolio.node_id
-  pattern       = "release/*"
+# ── Ruleset — release branches ────────────────────────────────────────────────
+resource "github_repository_ruleset" "release" {
+  name        = "release-protection"
+  repository  = data.github_repository.portfolio.name
+  target      = "branch"
+  enforcement = "active"
 
-  enforce_admins      = true
-  allows_deletions    = false
-  allows_force_pushes = false
+  conditions {
+    ref_name {
+      include = ["refs/heads/release/*"]
+      exclude = []
+    }
+  }
 
-  required_pull_request_reviews {
-    required_approving_review_count = 1
-    dismiss_stale_reviews           = true
+  rules {
+    deletion         = true
+    non_fast_forward = true
+
+    pull_request {
+      required_approving_review_count = 1
+      dismiss_stale_reviews_on_push   = true
+    }
   }
 }
 

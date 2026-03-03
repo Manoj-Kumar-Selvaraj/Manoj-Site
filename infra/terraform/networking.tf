@@ -18,7 +18,7 @@ data "aws_subnets" "default" {
 #                               internet access to reach S3, pip/npm, GitHub etc.# ── Security Group ────────────────────────────────────────────────────────────
 resource "aws_security_group" "portfolio" {
   name        = "${var.project}-sg"
-  description = "Portfolio EC2 — HTTP, HTTPS, SSH"
+  description = "Portfolio EC2 - HTTP, HTTPS, SSH"
   vpc_id      = data.aws_vpc.default.id
 
   # SSH — restrict to your IP in production
