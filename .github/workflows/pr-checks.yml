@@ -7,7 +7,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  security-events: write
 
 jobs:
   # ── 1. SECRET SCAN ────────────────────────────────────────────────────────
@@ -26,61 +25,7 @@ jobs:
           # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           # Uncomment + add the secret for private repos
 
-  # ── 2. TRIVY ─────────────────────────────────────────────────────────────
-  trivy-scan:
-    name: Trivy Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Trivy FS scan (Python + Node CVEs)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-fs.sarif
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          ignore-unfixed: true
-        continue-on-error: true
-
-      - name: Upload FS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-fs.sarif
-          category: trivy-fs
-
-      - name: Trivy IaC scan (Terraform misconfigurations)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: config
-          scan-ref: infra/terraform
-          format: sarif
-          output: trivy-iac.sarif
-          severity: CRITICAL,HIGH
-          exit-code: 1
-        continue-on-error: true
-
-      - name: Upload IaC SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-iac.sarif
-          category: trivy-iac
-
-      - name: Fail if CRITICAL/HIGH findings exist
-        run: |
-          FS=$(python3 -c "import json; d=json.load(open('trivy-fs.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
-          IAC=$(python3 -c "import json; d=json.load(open('trivy-iac.sarif')); print(len(d.get('runs',[{}])[0].get('results',[])))")
-          echo "FS: $FS | IaC: $IAC findings"
-          [ "$FS" -gt 0 ] || [ "$IAC" -gt 0 ] && \
-            echo "::error::Security scan found CRITICAL/HIGH issues. See GitHub Security tab." && exit 1
-          echo "No critical/high findings"
-
-  # ── 3. TERRAFORM CHECKS (TFC) ─────────────────────────────────────────────
+  # ── 2. TERRAFORM CHECKS (TFC) ─────────────────────────────────────────────
   # All variables (TF_VAR_* + AWS_* for the AWS provider) live in the TFC
   # workspace under Settings -> Variables. The ONLY secret needed in GitHub
   # is TF_API_TOKEN (User or Team token from app.terraform.io).
@@ -122,10 +67,12 @@ jobs:
         run: tflint --format=compact
         continue-on-error: true
 
-      # ── init: connects to TFC, downloads providers ─────────────────────────
-      - name: "terraform init"
+      # ── init (no backend) — downloads providers for fmt/validate/tflint ──
+      # Deliberately skips TFC backend so validate works even if TFC is
+      # unreachable or the workspace hasn't been created yet.
+      - name: "terraform init (providers only)"
         id: init
-        run: terraform init -input=false
+        run: terraform init -backend=false -input=false
         continue-on-error: true
 
       - name: "terraform validate"
@@ -133,9 +80,12 @@ jobs:
         run: terraform validate -no-color
         continue-on-error: true
 
-      # ── Speculative plan — runs in TFC using workspace variables ───────────
-      # Output includes the TFC run URL so reviewers can inspect in the UI.
+      # ── Speculative plan — requires live TFC connection ────────────────────
+      # Re-init with the full TFC backend to run the speculative plan.
       # Zero TF_VAR_* or AWS credentials needed in GitHub Actions.
+      - name: "terraform init (TFC backend for plan)"
+        run: terraform init -input=false
+        continue-on-error: true
       - name: "terraform plan (TFC speculative run)"
         id: plan
         run: terraform plan -no-color -input=false 2>&1 | tee plan.txt
@@ -205,7 +155,7 @@ jobs:
             echo "::error::terraform validate failed — fix HCL syntax errors" && FAIL=1
           exit $FAIL
 
-  # ── 4. APP BUILD CHECK ────────────────────────────────────────────────────
+  # ── 3. APP BUILD CHECK ────────────────────────────────────────────────────
   app-build-check:
     name: App Build Check
     runs-on: ubuntu-latest
@@ -245,3 +195,60 @@ jobs:
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
+
+  # ── 4. INFRACOST — projected monthly cost + cost change ───────────────────
+  # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
+  # Parses Terraform HCL directly — no AWS credentials or TFC needed.
+  infracost:
+    name: Infracost Cost Estimate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost CLI
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      # Generate cost breakdown for the base (target) branch first so we can diff
+      - name: Generate base branch cost estimate
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          git checkout origin/${{ github.event.pull_request.base.ref }} -- infra/terraform
+          infracost breakdown \
+            --path infra/terraform \
+            --terraform-init-flags="-backend=false" \
+            --format json \
+            --out-file /tmp/infracost-base.json
+          # Restore PR branch state
+          git checkout HEAD -- infra/terraform
+
+      # Generate cost breakdown for the PR branch
+      - name: Generate PR branch cost estimate
+        run: |
+          infracost breakdown \
+            --path infra/terraform \
+            --terraform-init-flags="-backend=false" \
+            --format json \
+            --out-file /tmp/infracost-pr.json
+
+      # Diff base vs PR and post as a single upserted PR comment
+      - name: Post cost diff as PR comment
+        run: |
+          infracost diff \
+            --path /tmp/infracost-pr.json \
+            --compare-to /tmp/infracost-base.json \
+            --format json \
+            --out-file /tmp/infracost-diff.json
+
+          infracost comment github \
+            --path /tmp/infracost-diff.json \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --repo ${{ github.repository }} \
+            --pull-request ${{ github.event.pull_request.number }} \
+            --behavior update

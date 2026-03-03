@@ -9,13 +9,10 @@ plugin "terraform" {
   preset  = "recommended"
 }
 
-# Enforce resource naming conventions
+# Enforce resource naming conventions — snake_case matches Terraform community standard
 rule "terraform_naming_convention" {
   enabled = true
-
-  custom {
-    regex = "^[a-z][a-z0-9_]*$"
-  }
+  format  = "snake_case"
 }
 
 # Disallow deprecated interpolations

@@ -10,6 +10,21 @@ provider "aws" {
   }
 }
 
+# Provider alias required for ACM certificates used by CloudFront.
+# CloudFront only accepts certificates issued in us-east-1.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project     = var.project
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
+}
+
 provider "github" {
   token = var.github_token
   owner = var.github_owner

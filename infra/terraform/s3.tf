@@ -1,3 +1,6 @@
+# trivy:ignore:AVD-AWS-0070  -- S3 access logging intentionally omitted: log delivery
+#                                 would require a separate logging bucket, adding cost
+#                                 and complexity not warranted for a personal portfolio.
 # ── Frontend Bucket ──────────────────────────────────────────────────────────
 resource "aws_s3_bucket" "frontend" {
   bucket = "${var.frontend_bucket_name}-${random_id.suffix.hex}"
@@ -55,6 +58,11 @@ resource "aws_s3_bucket_policy" "frontend" {
   depends_on = [aws_s3_bucket_public_access_block.frontend]
 }
 
+# trivy:ignore:AVD-AWS-0070  -- logging: same rationale as frontend bucket above.
+# trivy:ignore:AVD-AWS-0094  -- public read is intentional: portfolio media files
+#                               (profile photos, project screenshots) must be
+#                               publicly accessible. Block-public-access flags are
+#                               deliberately off for this bucket only.
 # ── Media Bucket ─────────────────────────────────────────────────────────────
 resource "aws_s3_bucket" "media" {
   bucket = "${var.media_bucket_name}-${random_id.suffix.hex}"

@@ -20,7 +20,7 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
 # assume this role (enforced in the StringLike condition below).
 resource "aws_iam_role" "github_actions" {
   name        = "${var.project}-github-actions-role"
-  description = "Assumed by GitHub Actions via OIDC — no long-lived credentials stored"
+  description = "Assumed by GitHub Actions via OIDC - no long-lived credentials stored"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -157,4 +157,52 @@ resource "aws_iam_role_policy" "ec2_media_s3" {
 resource "aws_iam_instance_profile" "ec2_instance" {
   name = "${var.project}-ec2-instance-profile"
   role = aws_iam_role.ec2_instance.name
+}
+
+# ── Budget-check read-only role ───────────────────────────────────────────────
+# Scoped to *any* ref in the repo so PRs can use it without needing
+# the "environment:production" gate (read-only, no deploy permissions).
+resource "aws_iam_role" "budget_check" {
+  name        = "${var.project}-budget-check-role"
+  description = "Read-only Cost Explorer access for budget gate PR checks"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Federated = aws_iam_openid_connect_provider.github_actions.arn }
+        Action    = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
+            # Any event (push, PR, etc.) from this repo can assume this role.
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_owner}/${var.github_repo_name}:*"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# trivy:ignore:AVD-AWS-0057  -- ce:GetCostAndUsage has no resource-level ARN
+#                               support in IAM. AWS requires Resource="*" for all
+#                               Cost Explorer API calls. This is read-only access.
+resource "aws_iam_role_policy" "budget_check" {
+  name = "${var.project}-budget-check-policy"
+  role = aws_iam_role.budget_check.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "CostExplorerReadOnly"
+        Effect   = "Allow"
+        Action   = ["ce:GetCostAndUsage"]
+        Resource = "*"
+      }
+    ]
+  })
 }

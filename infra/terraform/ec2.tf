@@ -1,4 +1,7 @@
-# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
+# trivy:ignore:AVD-AWS-0029  -- EC2 detailed monitoring intentionally disabled:
+#                               CloudWatch detailed monitoring costs ~$3.50/mo
+#                               per instance, which exceeds the budget for this
+#                               personal portfolio. Basic monitoring is sufficient.# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -34,6 +37,14 @@ resource "aws_instance" "portfolio" {
     volume_size           = 20
     delete_on_termination = true
     encrypted             = true
+  }
+
+  # Enforce IMDSv2 — prevents SSRF-based metadata credential theft.
+  # hop_limit=1 blocks requests from containers/nested VMs on the same host.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
   }
 
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh.tpl", {

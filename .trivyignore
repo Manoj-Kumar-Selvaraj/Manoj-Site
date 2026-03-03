@@ -1,0 +1,27 @@
+# .trivyignore — accepted / false-positive Trivy findings
+#
+# Format:  <CVE-ID>  [optional comment]
+# Trivy picks this file up automatically when run from the repo root.
+#
+# To identify findings: open the PR → GitHub Security tab → Code scanning alerts
+# Add the CVE-ID here with a justification, then re-run the scan.
+#
+# Example:
+#   CVE-2024-XXXXX  # requests < 2.32: not exploitable via this app's usage pattern
+
+# ── Add accepted findings below this line ────────────────────────────────────
+
+# esbuild <=0.24.2 — dev server request forgery
+# GHSA-67mh-4wv8-2f99 / vite 0.11.0-6.1.6 depends on vulnerable esbuild.
+# Risk: only exploitable when the Vite dev server is running localhost.
+# The production build outputs static files; esbuild is never shipped or
+# executed server-side. Upgrading Vite requires a breaking v7 major bump.
+GHSA-67mh-4wv8-2f99
+
+# prismjs <1.30.0 — DOM Clobbering via react-syntax-highlighter
+# GHSA-x7hr-w5r2-h6wg / react-syntax-highlighter 6.0.0-15.6.6 → refractor → prismjs.
+# Risk: DOM Clobbering is only exploitable when user-controlled HTML is
+# directly injected into the page without sanitization. This app renders
+# code blocks from admin-only content, not user input.
+# Fix requires upgrading react-syntax-highlighter to v16 (breaking change).
+GHSA-x7hr-w5r2-h6wg
