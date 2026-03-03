@@ -17,10 +17,9 @@ resource "github_repository_ruleset" "main" {
   }
 
   rules {
-    deletion         = true # Prevent branch deletion
-    non_fast_forward = true # Prevent force pushes
-
-    required_signatures {}
+    deletion            = true # Prevent branch deletion
+    non_fast_forward    = true # Prevent force pushes
+    required_signatures = true
 
     pull_request {
       required_approving_review_count   = 1
