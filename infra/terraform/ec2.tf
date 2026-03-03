@@ -1,4 +1,7 @@
-# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
+# trivy:ignore:AVD-AWS-0029  -- EC2 detailed monitoring intentionally disabled:
+#                               CloudWatch detailed monitoring costs ~$3.50/mo
+#                               per instance, which exceeds the budget for this
+#                               personal portfolio. Basic monitoring is sufficient.# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical

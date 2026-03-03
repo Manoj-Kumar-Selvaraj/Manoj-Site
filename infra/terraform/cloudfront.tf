@@ -80,7 +80,7 @@ resource "aws_cloudfront_distribution" "frontend" {
     # fall back to the default *.cloudfront.net cert otherwise.
     acm_certificate_arn            = local.dns_enabled ? aws_acm_certificate_validation.frontend[0].certificate_arn : null
     ssl_support_method             = local.dns_enabled ? "sni-only" : null
-    minimum_protocol_version       = local.dns_enabled ? "TLSv1.2_2021" : null
+    minimum_protocol_version       = local.dns_enabled ? "TLSv1.2_2021" : "TLSv1"
     cloudfront_default_certificate = local.dns_enabled ? false : true
   }
 

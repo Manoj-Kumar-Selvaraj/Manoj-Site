@@ -14,8 +14,8 @@ data "aws_subnets" "default" {
 #                               default 0.0.0.0/0 is overridden with your IP in
 #                               terraform.tfvars before first apply.
 # trivy:ignore:AVD-AWS-0104  -- HTTP/HTTPS ingress open to world is required for
-#                               a public-facing portfolio web server.
-# ── Security Group ────────────────────────────────────────────────────────────
+#                               a public-facing portfolio web server.# trivy:ignore:AVD-AWS-0048  -- egress 0.0.0.0/0 is required: EC2 needs outbound
+#                               internet access to reach S3, pip/npm, GitHub etc.# ── Security Group ────────────────────────────────────────────────────────────
 resource "aws_security_group" "portfolio" {
   name        = "${var.project}-sg"
   description = "Portfolio EC2 — HTTP, HTTPS, SSH"
