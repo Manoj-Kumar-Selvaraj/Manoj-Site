@@ -107,6 +107,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
 ]
+
+# Allow the deployed frontend to call the API (CloudFront + custom domain)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\\.cloudfront\\.net$",
+    r"^https://(www\\.)?manoj-tech-solutions\\.site$",
+]
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 # REST Framework
