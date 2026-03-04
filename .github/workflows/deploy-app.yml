@@ -85,6 +85,47 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-backend-deploy
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Temporarily allow SSH from this runner
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUNNER_IP=$(curl -fsS https://api.ipify.org || true)
+          if [ -z "${RUNNER_IP}" ]; then
+            RUNNER_IP=$(curl -fsS https://checkip.amazonaws.com | tr -d '\n')
+          fi
+          if [ -z "${RUNNER_IP}" ]; then
+            echo "::error::Could not determine runner public IP"
+            exit 1
+          fi
+          echo "RUNNER_IP=${RUNNER_IP}" >> "$GITHUB_ENV"
+
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:Name,Values=portfolio-sg" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+
+          if [ -z "${SG_ID}" ] || [ "${SG_ID}" = "None" ]; then
+            echo "::error::Could not find security group with tag Name=portfolio-sg"
+            exit 1
+          fi
+          echo "SG_ID=${SG_ID}" >> "$GITHUB_ENV"
+
+          echo "Allowing SSH from ${RUNNER_IP}/32 to ${SG_ID}..."
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Ingress rule already exists (continuing)"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -119,6 +160,23 @@ jobs:
             sleep 3
             sudo systemctl is-active portfolio-gunicorn || { sudo journalctl -u portfolio-gunicorn -n 30; exit 1; }
             echo "✓ Deployment complete"
+
+      - name: Revoke temporary SSH rule
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SG_ID:-}" ] || [ -z "${RUNNER_IP:-}" ]; then
+            echo "No SG_ID/RUNNER_IP found; skipping revoke"
+            exit 0
+          fi
+          echo "Revoking SSH from ${RUNNER_IP}/32 on ${SG_ID}..."
+          aws ec2 revoke-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Rule already revoked (continuing)"
 
   # ──────────────────────────────────────────────────────────────────────────
   # Post-deploy health check

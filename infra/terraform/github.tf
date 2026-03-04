@@ -31,9 +31,11 @@ resource "github_repository_ruleset" "main" {
     required_status_checks {
       strict_required_status_checks_policy = true # Branch must be up to date
 
+      # integration_id 15368 = GitHub Actions app — required so the ruleset can
+      # match checks reported by GitHub Actions workflows to these requirements.
       required_check {
         context        = "PR Checks / Secret Scan (Gitleaks)"
-        integration_id = 15368 # GitHub Actions app ID
+        integration_id = 15368
       }
       required_check {
         context        = "PR Checks / Terraform Checks"

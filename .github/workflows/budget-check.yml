@@ -1,0 +1,77 @@
+name: Budget Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  monthly-cost-check:
+    name: Monthly AWS Cost Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials (OIDC - read-only budget role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_BUDGET_ROLE_ARN }}
+          role-session-name: budget-check
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fetch current month AWS cost
+        id: cost
+        run: |
+          START=$(date +%Y-%m-01)
+          END=$(date -d "tomorrow" +%Y-%m-%d 2>/dev/null || date -v+1d +%Y-%m-%d)
+          RESULT=$(aws ce get-cost-and-usage \
+            --time-period Start=$START,End=$END \
+            --granularity MONTHLY \
+            --metrics AmortizedCost \
+            --output json)
+          COST=$(python3 -c "import json,sys; d=json.loads(sys.stdin.read()); print(d['ResultsByTime'][0]['Total']['AmortizedCost']['Amount'])" <<< "$RESULT")
+          echo "cost=$COST" >> "$GITHUB_OUTPUT"
+          echo "Monthly cost so far: \$$COST"
+
+      - name: Post cost as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const cost  = parseFloat("${{ steps.cost.outputs.cost }}").toFixed(2)
+            const limit = parseFloat("${{ vars.BUDGET_THRESHOLD_USD || '10' }}")
+            const over  = parseFloat(cost) > limit
+            const icon  = over ? "🔴" : "🟢"
+            const body  = [
+              `## ${icon} AWS Monthly Cost Gate`,
+              "",
+              `| Metric | Value |`,
+              `|--------|-------|`,
+              `| Month-to-date cost | **$${cost}** |`,
+              `| Budget threshold   | $${limit} |`,
+              `| Status             | ${over ? "⚠️ **OVER BUDGET**" : "✅ Within budget"} |`,
+              "",
+              over
+                ? `> ⚠️ Current spend **\\$${cost}** exceeds the \\$${limit} threshold. Review before merging.`
+                : `> Current spend is within the \\$${limit} threshold.`,
+            ].join("\n")
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const existing = comments.find(
+              c => c.user.type === "Bot" && c.body.includes("AWS Monthly Cost Gate")
+            )
+            const method = existing ? "updateComment" : "createComment"
+            const params = existing
+              ? { owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body }
+              : { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body }
+            await github.rest.issues[method](params)
+
+      - name: Fail if over budget
+        run: |
+          COST="${{ steps.cost.outputs.cost }}"
+          LIMIT="${{ vars.BUDGET_THRESHOLD_USD || '10' }}"
+          python3 -c "import sys; cost=float('$COST'); limit=float('$LIMIT'); sys.exit(1) if cost > limit else print(f'Cost \${cost:.2f} is within \${limit:.2f} limit')"
