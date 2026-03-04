@@ -153,6 +153,17 @@ jobs:
             python manage.py collectstatic --noinput -v 0
             cd ..
 
+            echo "→ Ensuring systemd service is installed..."
+            if ! systemctl list-unit-files portfolio-gunicorn.service &>/dev/null || \
+               ! sudo test -f /etc/systemd/system/portfolio-gunicorn.service; then
+              echo "  Service not found — installing from repo..."
+              sudo cp /home/ubuntu/portfolio/infra/portfolio-gunicorn.service \
+                     /etc/systemd/system/portfolio-gunicorn.service
+              sudo systemctl daemon-reload
+              sudo systemctl enable portfolio-gunicorn
+              echo "  Service installed and enabled."
+            fi
+
             echo "→ Restarting Gunicorn (zero-downtime via systemd reload)..."
             sudo systemctl reload-or-restart portfolio-gunicorn
 
