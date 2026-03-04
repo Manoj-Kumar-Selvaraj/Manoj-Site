@@ -1,0 +1,803 @@
+[
+{
+  "model": "content.profile",
+  "pk": 4,
+  "fields": {
+    "name": "Manoj Kumar Selvaraj",
+    "title": "Cloud Platform | DevOps | LLM Benchmarking",
+    "tagline": "Building enterprise DevOps platforms. Automating cloud infrastructure at scale.",
+    "bio": "I am a Cloud Platform and DevOps engineer focused on building reliable infrastructure that engineering teams depend on every day.\r\n\r\nMy work centers on AWS platforms, Kubernetes, Terraform, and large-scale CI/CD systems. I specialize in stabilizing complex DevOps environments, executing major migrations, and designing infrastructure that scales reliably.\r\n\r\nAt Accenture, I owned enterprise DevOps platforms including Jenkins, GitHub Enterprise, Terraform Cloud, SonarQube, and Kubernetes clusters across 30+ AWS accounts. I led migrations of 1,000+ Terraform workspaces and 15,000+ CI/CD pipelines while maintaining production stability.\r\n\r\nI also build Python automation frameworks to reduce operational effort and contribute to AI system evaluation and benchmarking, validating AI-generated code and designing adversarial tasks for coding agents.",
+    "bio_extended": "AAAAA",
+    "avatar": "",
+    "resume": "",
+    "email": "ss.mano1998@gmail.com",
+    "phone": "+918098476095",
+    "location": "Bangalore, India",
+    "github_url": "https://github.com/",
+    "linkedin_url": "https://linkedin.com/in/",
+    "twitter_url": "",
+    "website_url": "",
+    "years_experience": 5,
+    "projects_completed": 15,
+    "is_available": true,
+    "updated_at": "2026-03-02T14:08:04.250Z"
+  }
+},
+{
+  "model": "content.profilestat",
+  "pk": 1,
+  "fields": {
+    "profile": 4,
+    "label": "EKS Clusters",
+    "value": "50+",
+    "order": 1
+  }
+},
+{
+  "model": "content.profilestat",
+  "pk": 2,
+  "fields": {
+    "profile": 4,
+    "label": "Pipelines",
+    "value": "15K+",
+    "order": 0
+  }
+},
+{
+  "model": "content.profilestat",
+  "pk": 3,
+  "fields": {
+    "profile": 4,
+    "label": "Terraform WS",
+    "value": "1000+",
+    "order": 0
+  }
+},
+{
+  "model": "content.profilestat",
+  "pk": 4,
+  "fields": {
+    "profile": 4,
+    "label": "AWS Accounts",
+    "value": "40+",
+    "order": 0
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 89,
+  "fields": {
+    "category": "iac",
+    "name": "Terraform",
+    "icon": "terraform",
+    "proficiency": 4,
+    "order": 3
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 90,
+  "fields": {
+    "category": "iac",
+    "name": "Terraform Cloud",
+    "icon": "terraform",
+    "proficiency": 4,
+    "order": 4
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 91,
+  "fields": {
+    "category": "iac",
+    "name": "CloudFormation",
+    "icon": "amazonaws",
+    "proficiency": 3,
+    "order": 5
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 93,
+  "fields": {
+    "category": "devops",
+    "name": "GitHub Actions",
+    "icon": "github",
+    "proficiency": 4,
+    "order": 13
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 94,
+  "fields": {
+    "category": "devops",
+    "name": "Harness",
+    "icon": "",
+    "proficiency": 4,
+    "order": 14
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 96,
+  "fields": {
+    "category": "devops",
+    "name": "SonarQube",
+    "icon": "sonarqube",
+    "proficiency": 3,
+    "order": 15
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 97,
+  "fields": {
+    "category": "devops",
+    "name": "JFrog Artifactory",
+    "icon": "jfrog",
+    "proficiency": 3,
+    "order": 16
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 98,
+  "fields": {
+    "category": "devops",
+    "name": "UDeploy",
+    "icon": "",
+    "proficiency": 3,
+    "order": 17
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 99,
+  "fields": {
+    "category": "containers",
+    "name": "Docker",
+    "icon": "docker",
+    "proficiency": 4,
+    "order": 9
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 100,
+  "fields": {
+    "category": "containers",
+    "name": "Kubernetes",
+    "icon": "kubernetes",
+    "proficiency": 4,
+    "order": 7
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 101,
+  "fields": {
+    "category": "containers",
+    "name": "Helm",
+    "icon": "helm",
+    "proficiency": 3,
+    "order": 10
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 103,
+  "fields": {
+    "category": "python",
+    "name": "Python",
+    "icon": "python",
+    "proficiency": 4,
+    "order": 18
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 136,
+  "fields": {
+    "category": "cloud",
+    "name": "AWS (EC2, EKS, S3, IAM, KMS, VPC, CloudFront, Route53)",
+    "icon": "amazonaws",
+    "proficiency": 4,
+    "order": 0
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 137,
+  "fields": {
+    "category": "cloud",
+    "name": "CloudWatch / EventBridge",
+    "icon": "amazonaws",
+    "proficiency": 4,
+    "order": 1
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 138,
+  "fields": {
+    "category": "cloud",
+    "name": "Multi-account architecture",
+    "icon": "",
+    "proficiency": 4,
+    "order": 2
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 139,
+  "fields": {
+    "category": "iac",
+    "name": "Infrastructure automation frameworks",
+    "icon": "",
+    "proficiency": 3,
+    "order": 6
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 140,
+  "fields": {
+    "category": "containers",
+    "name": "AWS EKS",
+    "icon": "amazonaws",
+    "proficiency": 4,
+    "order": 8
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 141,
+  "fields": {
+    "category": "containers",
+    "name": "GitHub Actions ARC runners",
+    "icon": "",
+    "proficiency": 4,
+    "order": 11
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 142,
+  "fields": {
+    "category": "devops",
+    "name": "Jenkins / CloudBees CI",
+    "icon": "jenkins",
+    "proficiency": 4,
+    "order": 12
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 143,
+  "fields": {
+    "category": "python",
+    "name": "Bash scripting",
+    "icon": "gnubash",
+    "proficiency": 4,
+    "order": 19
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 144,
+  "fields": {
+    "category": "python",
+    "name": "API integrations",
+    "icon": "",
+    "proficiency": 3,
+    "order": 20
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 145,
+  "fields": {
+    "category": "python",
+    "name": "Operational automation",
+    "icon": "",
+    "proficiency": 4,
+    "order": 21
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 149,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Adversarial task design",
+    "icon": "",
+    "proficiency": 4,
+    "order": 25
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 150,
+  "fields": {
+    "category": "ai_llm",
+    "name": "GitHub Copilot / Cursor / AntiGravity",
+    "icon": "",
+    "proficiency": 3,
+    "order": 31
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 151,
+  "fields": {
+    "category": "ai_llm",
+    "name": "LLM / AI evaluation",
+    "icon": "",
+    "proficiency": 4,
+    "order": 22
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 152,
+  "fields": {
+    "category": "ai_llm",
+    "name": "AI agent benchmarking",
+    "icon": "",
+    "proficiency": 4,
+    "order": 23
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 153,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Prompt design and refinement",
+    "icon": "",
+    "proficiency": 4,
+    "order": 24
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 154,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Code correctness evaluation",
+    "icon": "",
+    "proficiency": 4,
+    "order": 26
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 155,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Multi-turn agent evaluation",
+    "icon": "",
+    "proficiency": 4,
+    "order": 27
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 156,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Test environment design",
+    "icon": "",
+    "proficiency": 4,
+    "order": 28
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 157,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Docker-based benchmarking environments",
+    "icon": "",
+    "proficiency": 4,
+    "order": 29
+  }
+},
+{
+  "model": "content.skill",
+  "pk": 158,
+  "fields": {
+    "category": "ai_llm",
+    "name": "Structured evaluation rubrics",
+    "icon": "",
+    "proficiency": 4,
+    "order": 30
+  }
+},
+{
+  "model": "content.project",
+  "pk": 14,
+  "fields": {
+    "title": "Full Stack Business Management Platform",
+    "slug": "full-stack-business-management-platform",
+    "description": "Full-stack web application using React.js (S3 + CloudFront) and Django (EC2 + ALB) to manage employee records, inventory, billing, and operational workflows for a small business. Complete AWS infrastructure provisioned via Terraform OSS, CI/CD via CodePipeline + CodeBuild + CodeDeploy. Included a Python framework to auto-generate infrastructure architecture diagrams from live AWS resources.",
+    "long_description": "",
+    "tech_stack": [
+      "React",
+      "Django",
+      "Terraform",
+      "AWS EC2",
+      "S3",
+      "CloudFront",
+      "ALB",
+      "CodePipeline",
+      "MySQL",
+      "Python"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 1,
+    "created_at": "2026-03-01T06:57:29.219Z",
+    "updated_at": "2026-03-02T11:39:14.316Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 15,
+  "fields": {
+    "title": "Terraform Enterprise to Cloud Migration",
+    "slug": "terraform-enterprise-to-cloud-migration",
+    "description": "Migrated 1,000+ Terraform Enterprise workspaces to Terraform Cloud, resolving state drift, deprecated resources, sensitive variable handling, VCS integration issues, and outdated Terraform versions. Built Python automation to orchestrate workspace migration and validation, reducing overall migration effort by 50%.",
+    "long_description": "",
+    "tech_stack": [
+      "Terraform",
+      "Terraform Cloud",
+      "Python",
+      "AWS",
+      "GitHub"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 2,
+    "created_at": "2026-03-01T06:57:29.224Z",
+    "updated_at": "2026-03-02T11:39:14.319Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 16,
+  "fields": {
+    "title": "Jenkins CJP to CloudBees CI Migration",
+    "slug": "jenkins-cjp-to-cloudbees-ci-migration",
+    "description": "Led enterprise Jenkins migration from traditional CJP to CloudBees CI, migrating 15,000+ pipelines and ~500 GB of Jenkins home data. Designed a highly available Jenkins architecture with resilient storage and backup strategies. Cleaned up unused jobs reclaiming over 100 GB of storage.",
+    "long_description": "",
+    "tech_stack": [
+      "Jenkins",
+      "CloudBees CI",
+      "Kubernetes",
+      "AWS EKS",
+      "Docker",
+      "Groovy"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 3,
+    "created_at": "2026-03-01T06:57:29.228Z",
+    "updated_at": "2026-03-02T11:39:14.319Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 17,
+  "fields": {
+    "title": "Mainframe Scheduler Migration (ESP to StoneBranch)",
+    "slug": "mainframe-scheduler-migration-esp-to-stonebranch",
+    "description": "Developed a Python-based automation tool that migrated 3,000 mainframe jobs from ESP to StoneBranch, ensuring 100% accuracy through data validation scripts. Integrated mainframe batch processes with AWS-based monitoring and file transfer automation, initiating modernization initiatives.",
+    "long_description": "",
+    "tech_stack": [
+      "Python",
+      "COBOL",
+      "JCL",
+      "AWS",
+      "StoneBranch"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": false,
+    "order": 4,
+    "created_at": "2026-03-01T06:57:29.233Z",
+    "updated_at": "2026-03-02T11:39:14.335Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 18,
+  "fields": {
+    "title": "GitHub Actions ARC Runners on EKS",
+    "slug": "github-actions-arc-runners-on-eks",
+    "description": "Deployed GitHub Actions Actions Runner Controller (ARC) runners in EKS clusters across 5 AWS accounts, enabling 500+ workflows per day with zero service interruption. Implemented OIDC-based authentication for GitHub Actions, eliminating long-lived IAM credentials and enabling secure short-lived role-based access to AWS.",
+    "long_description": "",
+    "tech_stack": [
+      "GitHub Actions",
+      "Kubernetes",
+      "AWS EKS",
+      "IAM",
+      "OIDC",
+      "Helm"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 5,
+    "created_at": "2026-03-01T06:57:29.237Z",
+    "updated_at": "2026-03-02T11:39:14.336Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 19,
+  "fields": {
+    "title": "SonarQube Upgrade (9.x → 2025.1.4)",
+    "slug": "sonarqube-upgrade-9x-202514",
+    "description": "Upgraded SonarQube through a major version jump and validated quality gates across multiple tech stacks in Jenkins and Harness. Tested rollout end-to-end on Jenkins running on EC2 and on EKS, aligning plugins, JDK/scanners, and pipeline templates for low-downtime execution.",
+    "long_description": "",
+    "tech_stack": [
+      "SonarQube",
+      "Helm",
+      "Harness",
+      "Kubernetes",
+      "Linux"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 7,
+    "created_at": "2026-03-01T19:03:08.040Z",
+    "updated_at": "2026-03-02T11:39:14.336Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 21,
+  "fields": {
+    "title": "Manual AI Code Evaluation (Large Python Repositories)",
+    "slug": "manual-ai-code-evaluation-large-python-repositories",
+    "description": "Manually evaluated AI-generated code changes for large Python codebases: correctness, edge cases, test impact, style consistency, and safety. Produced structured scoring rubrics and repeatable review workflows.",
+    "long_description": "",
+    "tech_stack": [
+      "Python",
+      "LLM Evaluation",
+      "Benchmarking",
+      "Testing",
+      "Code Review"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": false,
+    "order": 9,
+    "created_at": "2026-03-01T19:03:08.051Z",
+    "updated_at": "2026-03-02T10:40:17.093Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 23,
+  "fields": {
+    "title": "IAM User Decommissioning Automation",
+    "slug": "iam-user-decommissioning-automation",
+    "description": "Built an automated decommissioning workflow for IAM users across multiple AWS accounts: access validation, key/token cleanup, policy detachment, and audit-ready reporting with safe rollback checks.",
+    "long_description": "",
+    "tech_stack": [
+      "AWS IAM",
+      "Python",
+      "Automation",
+      "Security",
+      "CloudTrail"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 8,
+    "created_at": "2026-03-01T19:11:49.487Z",
+    "updated_at": "2026-03-02T11:39:14.357Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 24,
+  "fields": {
+    "title": "Kubernetes Cluster Upgrade Program",
+    "slug": "kubernetes-cluster-upgrade-program",
+    "description": "Planned and executed Kubernetes/EKS version upgrades (control plane, node groups, and core add-ons) with phased rollouts, workload validation, and rollback playbooks across a large cluster fleet.",
+    "long_description": "",
+    "tech_stack": [
+      "Kubernetes",
+      "AWS EKS",
+      "Helm",
+      "Terraform",
+      "Linux"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": true,
+    "order": 6,
+    "created_at": "2026-03-01T19:29:52.928Z",
+    "updated_at": "2026-03-02T11:39:14.352Z"
+  }
+},
+{
+  "model": "content.project",
+  "pk": 25,
+  "fields": {
+    "title": "AI Agent Benchmarking Framework",
+    "slug": "ai-agent-benchmarking-framework",
+    "description": "Built reproducible evaluation workflows for AI coding agents: adversarial task design, Docker-based environments, deterministic oracle solutions, and automated verification suites to validate code correctness and multi-step tool use.",
+    "long_description": "Designed end-to-end evaluation tasks that mirror real software engineering work: multi-step changes in real repositories, strict acceptance criteria, and deterministic validation.\n\nCreated benchmark task environments that include Docker images, oracle implementations, and automated verification suites so results are reproducible across runs.\n\nFocused on measuring correctness, robustness, and maintainability of agent-produced code, with clear rubrics and iterative prompt refinement based on observed failure modes.",
+    "tech_stack": [
+      "AI agent benchmarking",
+      "Prompt design and refinement",
+      "Adversarial task design",
+      "Code correctness evaluation",
+      "Multi-turn agent evaluation",
+      "Test environment design",
+      "Docker",
+      "Docker-based benchmarking environments",
+      "pytest",
+      "Deterministic oracle solutions",
+      "Structured evaluation rubrics",
+      "TerminalBench"
+    ],
+    "github_url": "",
+    "live_url": "",
+    "image": "",
+    "status": "completed",
+    "featured": false,
+    "order": 9,
+    "created_at": "2026-03-02T10:56:25.899Z",
+    "updated_at": "2026-03-02T11:39:14.362Z"
+  }
+},
+{
+  "model": "content.experience",
+  "pk": 7,
+  "fields": {
+    "company": "Accenture Solutions Pvt Ltd",
+    "role": "DevOps / Cloud Engineer",
+    "location": "Bangalore, India",
+    "start_date": "2020-09-01",
+    "end_date": null,
+    "is_current": true,
+    "description": "Owned enterprise DevOps platforms and cloud infrastructure at scale, driving large migrations, CI/CD stability, and AWS multi-account operations.",
+    "highlights": [
+      "Owned and operated enterprise DevOps platforms including Jenkins, Harness, Terraform Cloud, GitHub Enterprise, SonarQube, and Artifactory supporting hundreds of engineers.",
+      "Migrated 1,000+ Terraform Enterprise workspaces to Terraform Cloud; built Python automation reducing migration effort by 50%.",
+      "Led Jenkins migration from CJP to CloudBees CI — 15,000+ pipelines and ~500 GB of Jenkins home data.",
+      "Deployed GitHub Actions ARC runners across 5 AWS accounts, enabling 500+ workflows/day with zero service interruption.",
+      "Owned and upgraded Kubernetes fleets across 50+ clusters with safe rollout/rollback and workload validation.",
+      "Led EKS version upgrades across 30+ AWS accounts, coordinating node group updates, add-on compatibility, and IAM adjustments.",
+      "Implemented OIDC-based authentication for GitHub Actions, eliminating long-lived IAM credentials.",
+      "Upgraded SonarQube from 9.x to 2025.1.4 and validated it across Jenkins (EC2 + EKS) and Harness pipelines for multiple tech stacks.",
+      "Used GitHub Copilot, Cursor, and AntiGravity for assisted prototyping and review workflows.",
+      "Implemented cost visibility and optimization practices (e.g., Harness CCM) to improve spend governance and reduce waste.",
+      "Defined reusable Terraform module patterns, guardrails, and review workflows to reduce drift and improve delivery safety.",
+      "Improved CI/CD throughput and stability for high-volume delivery (15K+ pipelines) through standardization, cleanup, and platform hardening.",
+      "Defined SLO/SLI-based CloudWatch monitoring and alerting for UDeploy and Jenkins."
+    ],
+    "tech_stack": [
+      "AWS EKS",
+      "Terraform",
+      "Jenkins",
+      "Harness",
+      "GitHub Actions",
+      "Kubernetes",
+      "Python",
+      "SonarQube",
+      "JFrog",
+      "CloudWatch"
+    ],
+    "company_logo": "",
+    "company_url": "",
+    "order": 2
+  }
+},
+{
+  "model": "content.experience",
+  "pk": 8,
+  "fields": {
+    "company": "Accenture Solutions Pvt Ltd",
+    "role": "Mainframe Support Engineer",
+    "location": "Bangalore, India",
+    "start_date": "2020-09-01",
+    "end_date": "2022-06-01",
+    "is_current": false,
+    "description": "Supported mission-critical mainframe disbursement systems and drove modernization by migrating scheduler workloads to AWS-integrated automation.",
+    "highlights": [
+      "Supported mission-critical mainframe disbursement systems with 99.99% SLA.",
+      "Delivered production changes and fixes to meet regulatory and business requirements.",
+      "Developed a Python-based automation tool migrating 3,000 mainframe jobs from ESP to StoneBranch with 100% accuracy.",
+      "Integrated mainframe batch processes with AWS-based monitoring and file transfer automation."
+    ],
+    "tech_stack": [
+      "COBOL",
+      "JCL",
+      "Python",
+      "AWS",
+      "StoneBranch"
+    ],
+    "company_logo": "",
+    "company_url": "",
+    "order": 3
+  }
+},
+{
+  "model": "content.experience",
+  "pk": 13,
+  "fields": {
+    "company": "AI/LLM Evaluation and Benchmarking",
+    "role": "AI / LLM Evaluation & Agent Benchmarking",
+    "location": "Remote",
+    "start_date": "2024-01-01",
+    "end_date": null,
+    "is_current": false,
+    "description": "Work on structured evaluation and benchmarking of AI coding agents with a focus on reproducible engineering tasks, deterministic validation, and clear scoring rubrics.",
+    "highlights": [
+      "SECTION: AI Agent Code Evaluation in Open Source Repositories",
+      "Selected real pull requests from active open-source Python repositories and converted them into structured agent tasks.",
+      "Designed prompts that describe the change requirements and repository context so that AI agents can implement the modification.",
+      "Evaluated multiple agent-generated implementations, comparing correctness, reasoning quality, maintainability, and edge-case handling.",
+      "Documented strengths and weaknesses of each implementation including missed requirements, incorrect assumptions, and incomplete fixes.",
+      "Iteratively refined prompts based on agent mistakes to improve instruction clarity and coverage of edge cases.",
+      "Conducted multi-turn evaluation cycles (typically three or more iterations) until the agent successfully implemented the required change.",
+      "Verified that the final implementation satisfies the repository’s functional requirements and passes relevant tests.",
+      "SECTION: AI Benchmark Task Engineering (TerminalBench)",
+      "Designed adversarial engineering tasks for benchmarking AI coding agents using the TerminalBench framework.",
+      "Built complete task environments including Docker containers, deterministic oracle solutions, and automated verification tests.",
+      "Authored structured task prompts (instruction.md) describing real engineering problems in a concise and human-authentic style.",
+      "Implemented deterministic oracle solutions to demonstrate correct behavior and provide a baseline for agent evaluation.",
+      "Developed automated verification scripts and pytest-based validation suites to ensure reproducible task outcomes.",
+      "Defined scoring rubrics to evaluate agent behavior, correctness, safety, and problem-solving strategies.",
+      "Ensured tasks meet difficulty thresholds by evaluating agent success rates across multiple runs.",
+      "Created environments requiring multi-step reasoning, debugging, and terminal interaction rather than single-command solutions.",
+      "Validated tasks using automated CI checks and agent evaluation runs before submission to the benchmark platform."
+    ],
+    "tech_stack": [
+      "AI agent benchmarking",
+      "Prompt design and refinement",
+      "Adversarial task design",
+      "Code correctness evaluation",
+      "Multi-turn agent evaluation",
+      "Test environment design",
+      "Docker-based benchmarking environments",
+      "Structured evaluation rubrics",
+      "TerminalBench",
+      "Docker",
+      "pytest"
+    ],
+    "company_logo": "",
+    "company_url": "",
+    "order": 1
+  }
+}
+]

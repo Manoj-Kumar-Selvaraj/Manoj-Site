@@ -1,0 +1,114 @@
+name: Seed Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_superuser:
+        description: "Create superuser? (yes/no)"
+        required: false
+        default: "no"
+      superuser_username:
+        description: "Superuser username (if creating)"
+        required: false
+        default: "admin"
+      superuser_email:
+        description: "Superuser email (if creating)"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  seed:
+    name: Seed EC2 Database from fixture
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-seed-db
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Temporarily allow SSH from this runner
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUNNER_IP=$(curl -fsS https://api.ipify.org || true)
+          if [ -z "${RUNNER_IP}" ]; then
+            RUNNER_IP=$(curl -fsS https://checkip.amazonaws.com | tr -d '\n')
+          fi
+          echo "RUNNER_IP=${RUNNER_IP}" >> "$GITHUB_ENV"
+
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:Name,Values=portfolio-sg" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+          echo "SG_ID=${SG_ID}" >> "$GITHUB_ENV"
+
+          echo "Allowing SSH from ${RUNNER_IP}/32 to ${SG_ID}..."
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Ingress rule already exists (continuing)"
+
+      - name: Seed database via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          CREATE_SUPERUSER: ${{ github.event.inputs.create_superuser }}
+          SUPERUSER_USERNAME: ${{ github.event.inputs.superuser_username }}
+          SUPERUSER_EMAIL: ${{ github.event.inputs.superuser_email }}
+          SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+        with:
+          host:     ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key:      ${{ secrets.EC2_SSH_KEY }}
+          timeout:  120s
+          envs:     CREATE_SUPERUSER,SUPERUSER_USERNAME,SUPERUSER_EMAIL,SUPERUSER_PASSWORD
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/portfolio
+            source backend/venv/bin/activate
+
+            echo "→ Pulling latest code (ensures fixture is up to date)..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "→ Loading fixture data..."
+            python backend/manage.py loaddata \
+              backend/content/fixtures/initial_data.json \
+              --ignorenonexistent
+            echo "✓ Fixture loaded"
+
+            if [ "${CREATE_SUPERUSER:-no}" = "yes" ]; then
+              echo "→ Creating superuser '${SUPERUSER_USERNAME}'..."
+              DJANGO_SUPERUSER_PASSWORD="${SUPERUSER_PASSWORD}" \
+              python backend/manage.py createsuperuser \
+                --noinput \
+                --username "${SUPERUSER_USERNAME}" \
+                --email "${SUPERUSER_EMAIL}" \
+              && echo "✓ Superuser created" \
+              || echo "⚠ Superuser already exists — skipping"
+            fi
+
+            echo "→ Reloading gunicorn to clear any cached state..."
+            sudo systemctl reload portfolio-gunicorn
+            echo "✓ Done"
+
+      - name: Revoke temporary SSH rule
+        if: always()
+        shell: bash
+        run: |
+          if [ -z "${SG_ID:-}" ] || [ -z "${RUNNER_IP:-}" ]; then exit 0; fi
+          aws ec2 revoke-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Rule already revoked"
