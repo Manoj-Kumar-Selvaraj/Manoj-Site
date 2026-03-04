@@ -247,7 +247,13 @@ CSRF_TRUSTED_ORIGINS = [
     if h.strip() not in ('localhost', '127.0.0.1', '')
 ] + ['http://localhost:5173', 'http://127.0.0.1:5173']
 
-# ── CORS: production CloudFront domain ───────────────────────────────────────
+# ── CORS / ALLOWED_HOSTS / CSRF: production CloudFront domain ────────────────
 _cf_domain = os.environ.get('CLOUDFRONT_DOMAIN', '')
 if _cf_domain:
-    CORS_ALLOWED_ORIGINS.append(f'https://{_cf_domain}')
+    _cf_origin = f'https://{_cf_domain}'
+    if _cf_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_cf_domain)
+    if _cf_origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_cf_origin)
+    if _cf_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_cf_origin)
