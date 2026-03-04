@@ -178,6 +178,10 @@ jobs:
               exit 1
             }
 
+            echo "→ Ensuring gunicorn log files exist and are writable..."
+            sudo touch /var/log/gunicorn-access.log /var/log/gunicorn-error.log
+            sudo chown ubuntu:ubuntu /var/log/gunicorn-access.log /var/log/gunicorn-error.log
+
             echo "→ Restarting Gunicorn (zero-downtime via systemd reload)..."
             if ! sudo systemctl reload-or-restart portfolio-gunicorn; then
               echo "=== Gunicorn failed — systemctl status ==="
