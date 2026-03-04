@@ -56,6 +56,24 @@ resource "aws_iam_policy" "cicd" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # EC2: temporarily open SSH ingress to the GitHub Actions runner IP during deploy
+      {
+        Sid    = "DescribeSecurityGroups"
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeSecurityGroups"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "TemporarySSHIngress"
+        Effect = "Allow"
+        Action = [
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupIngress"
+        ]
+        Resource = aws_security_group.portfolio.arn
+      },
       # S3: frontend bucket — sync (read + write + delete)
       {
         Sid    = "FrontendS3Sync"
