@@ -46,7 +46,15 @@ resource "github_repository_ruleset" "main" {
         integration_id = 15368
       }
       required_check {
+        context        = "PR Checks / App Health Check"
+        integration_id = 15368
+      }
+      required_check {
         context        = "PR Checks / Infracost Cost Estimate"
+        integration_id = 15368
+      }
+      required_check {
+        context        = "PR Checks / Security Scan (Trivy)"
         integration_id = 15368
       }
       required_check {
