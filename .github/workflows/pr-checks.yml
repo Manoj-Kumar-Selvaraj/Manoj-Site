@@ -189,14 +189,65 @@ jobs:
         run: cd backend && pip install -r requirements.txt -q
 
       - name: Django system check
-        run: cd backend && python manage.py check --deploy 2>&1 || true
+        run: cd backend && python manage.py check --deploy
         env:
           SECRET_KEY: ci-check-not-real
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
 
-  # ── 4. INFRACOST — projected monthly cost + cost change ───────────────────
+  # ── 4. APP HEALTH CHECK ───────────────────────────────────────────────────
+  app-health-check:
+    name: App Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend deps
+        run: cd backend && pip install -r requirements.txt -q
+
+      - name: Django deploy checks
+        run: cd backend && python manage.py check --deploy
+        env:
+          SECRET_KEY: ci-check-not-real
+          DEBUG: "False"
+          ALLOWED_HOSTS: localhost
+          DJANGO_SETTINGS_MODULE: portfolio_api.settings
+
+      - name: Apply migrations (sqlite)
+        run: cd backend && python manage.py migrate --noinput
+        env:
+          SECRET_KEY: ci-check-not-real
+          DEBUG: "False"
+          ALLOWED_HOSTS: localhost
+          DJANGO_SETTINGS_MODULE: portfolio_api.settings
+
+  # ── 5. SECURITY SCAN (TRIVY) ──────────────────────────────────────────────
+  trivy-scan:
+    name: Security Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy FS scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+
+  # ── 6. INFRACOST — projected monthly cost + cost change ───────────────────
   # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
   # Parses Terraform HCL directly — no AWS credentials or TFC needed.
   infracost:
