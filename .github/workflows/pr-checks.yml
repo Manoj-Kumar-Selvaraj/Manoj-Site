@@ -272,6 +272,29 @@ jobs:
           scanners: vuln
           skip-files: "backend/requirements.txt"
 
+      - name: Upload Trivy scan results (debug)
+        if: failure()
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 0
+          trivyignores: .trivyignore
+          scanners: vuln
+          skip-files: "backend/requirements.txt"
+          format: json
+          output: trivy-results.json
+
+      - name: Upload scan report artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-results
+          path: trivy-results.json
+          retention-days: 3
+
   # ── 6. INFRACOST — projected monthly cost + cost change ───────────────────
   # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
   # Parses Terraform HCL directly — no AWS credentials or TFC needed.
