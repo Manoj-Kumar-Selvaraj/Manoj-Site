@@ -269,6 +269,7 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
           trivyignores: .trivyignore
+          scanners: vuln
 
   # ── 6. INFRACOST — projected monthly cost + cost change ───────────────────
   # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
