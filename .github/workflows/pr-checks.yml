@@ -260,41 +260,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.56.1
-          trivy --version
-
       - name: Run Trivy FS scan
-        run: |
-          trivy fs frontend \
-            --severity HIGH,CRITICAL \
-            --ignore-unfixed \
-            --exit-code 1 \
-            --scanners vuln
-        continue-on-error: true
-
-      - name: Run Trivy FS scan (show all findings without exit-code)
-        run: |
-          trivy fs frontend \
-            --severity HIGH,CRITICAL \
-            --ignore-unfixed \
-            --exit-code 0 \
-            --scanners vuln
-          echo "--- exit code saved above ---"
-
-      - name: Show Trivy results in log
-        if: always()
-        run: echo "Trivy step completed (see above for results)"
-
-      - name: Upload Trivy results (debug)
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: aquasecurity/trivy-action@0.28.0
         with:
-          name: trivy-scan-results
-          path: trivy-results.txt
-          retention-days: 3
-          if-no-files-found: warn
+          scan-type: fs
+          scan-ref: frontend
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
 
   # ── 6. INFRACOST — projected monthly cost + cost change ───────────────────
   # Requires INFRACOST_API_KEY GitHub Secret (free at https://infracost.io)
