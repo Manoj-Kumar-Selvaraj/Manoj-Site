@@ -6,6 +6,8 @@ on:
     paths:
       - "frontend/**"
       - "backend/**"
+      - "infra/**"
+      - ".github/workflows/deploy-app.yml"
   workflow_dispatch:
 
 concurrency:

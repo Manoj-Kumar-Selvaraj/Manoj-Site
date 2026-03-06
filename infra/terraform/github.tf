@@ -34,31 +34,31 @@ resource "github_repository_ruleset" "main" {
       # integration_id 15368 = GitHub Actions app — required so the ruleset can
       # match checks reported by GitHub Actions workflows to these requirements.
       required_check {
-        context        = "PR Checks / Secret Scan (Gitleaks)"
+        context        = "PR Checks / Secret Scan (Gitleaks) (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "PR Checks / Terraform Checks"
+        context        = "PR Checks / Terraform Checks (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "PR Checks / App Build Check"
+        context        = "PR Checks / App Build Check (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "PR Checks / App Health Check"
+        context        = "PR Checks / App Health Check (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "PR Checks / Infracost Cost Estimate"
+        context        = "PR Checks / Infracost Cost Estimate (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "PR Checks / Security Scan (Trivy)"
+        context        = "PR Checks / Security Scan (Trivy) (pull_request)"
         integration_id = 15368
       }
       required_check {
-        context        = "Budget Gate / Monthly AWS Cost Check"
+        context        = "Budget Gate / Monthly AWS Cost Check (pull_request)"
         integration_id = 15368
       }
     }
