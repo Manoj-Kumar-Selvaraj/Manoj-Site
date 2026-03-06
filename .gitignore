@@ -54,5 +54,5 @@ infra/terraform/*.auto.tfvars
 *.sarif
 
 # Temp / agent scratch
-tmpclaude-*/
+tmpclaude-*
 tmp_resume_text.txt

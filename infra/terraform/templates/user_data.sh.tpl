@@ -31,6 +31,8 @@ sudo -u ubuntu venv/bin/pip install --upgrade pip -q
 sudo -u ubuntu venv/bin/pip install -r requirements.txt -q
 
 # ── Environment file ──────────────────────────────────────────────────────────
+# Disable xtrace to prevent secret values from appearing in user-data logs
+set +x
 cat > "$REPO_DIR/backend/.env" <<'ENVEOF'
 SECRET_KEY=${django_secret_key}
 DEBUG=False
@@ -42,6 +44,7 @@ AWS_S3_REGION_NAME=${aws_region}
 ENVEOF
 chmod 600 "$REPO_DIR/backend/.env"
 chown ubuntu:ubuntu "$REPO_DIR/backend/.env"
+set -x
 
 # ── Django setup ──────────────────────────────────────────────────────────────
 cd "$REPO_DIR/backend"
