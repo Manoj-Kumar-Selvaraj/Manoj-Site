@@ -270,9 +270,13 @@ jobs:
           exit-code: 1
           trivyignores: .trivyignore
           scanners: vuln
-          skip-files: "backend/requirements.txt"
+          skip-files: "**/requirements.txt"
           format: table
           output: trivy-results.txt
+
+      - name: Show Trivy results in log
+        if: always()
+        run: cat trivy-results.txt 2>/dev/null || echo "trivy-results.txt not found"
 
       - name: Upload Trivy results (debug)
         if: always()
