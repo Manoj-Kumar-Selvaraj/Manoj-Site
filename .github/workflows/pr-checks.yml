@@ -269,12 +269,10 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
           scanners: vuln
-          format: table
-          output: trivy-results.txt
 
       - name: Show Trivy results in log
         if: always()
-        run: cat trivy-results.txt 2>/dev/null || echo "trivy-results.txt not found"
+        run: echo "Trivy step completed (see above for results)"
 
       - name: Upload Trivy results (debug)
         if: always()
