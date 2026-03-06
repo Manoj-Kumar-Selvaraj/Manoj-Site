@@ -37,6 +37,8 @@ jobs:
   terraform-checks:
     name: Terraform Checks
     runs-on: ubuntu-latest
+    env:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
     defaults:
       run:
         working-directory: infra/terraform
@@ -50,14 +52,14 @@ jobs:
           terraform_version: "~1.6"
 
       - name: Configure Terraform Cloud token (optional)
-        if: ${{ secrets.TF_API_TOKEN != '' }}
+        if: ${{ env.TF_API_TOKEN != '' }}
         run: |
           mkdir -p ~/.terraform.d
           cat > ~/.terraform.d/credentials.tfrc.json <<'JSON'
           {
             "credentials": {
               "app.terraform.io": {
-                "token": "${{ secrets.TF_API_TOKEN }}"
+                "token": "${{ env.TF_API_TOKEN }}"
               }
             }
           }
@@ -102,12 +104,12 @@ jobs:
       # Re-init with the full TFC backend to run the speculative plan.
       # Zero TF_VAR_* or AWS credentials needed in GitHub Actions.
       - name: "terraform init (TFC backend for plan)"
-        if: ${{ secrets.TF_API_TOKEN != '' }}
+        if: ${{ env.TF_API_TOKEN != '' }}
         run: terraform init -input=false
         continue-on-error: true
       - name: "terraform plan (TFC speculative run)"
         id: plan
-        if: ${{ secrets.TF_API_TOKEN != '' }}
+        if: ${{ env.TF_API_TOKEN != '' }}
         run: terraform plan -no-color -input=false 2>&1 | tee plan.txt
         continue-on-error: true
 
