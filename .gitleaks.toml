@@ -1,0 +1,27 @@
+# .gitleaks.toml — Gitleaks configuration
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+#
+# Use the default ruleset and add allowlists for known false positives.
+
+title = "Manoj-Site Gitleaks Config"
+
+[extend]
+# Inherit all default Gitleaks rules
+useDefault = true
+
+[allowlist]
+description = "Project-wide allowlists for false-positive findings"
+
+# ── Ignore example / template files ──────────────────────────────────────────
+# *.example and *.tpl files contain intentional placeholder values, not real secrets.
+paths = [
+    '''.env\.example''',
+    '''\.env\.example$''',
+    '''templates/.*\.tpl$''',
+]
+
+# ── Ignore Terraform template variable syntax ─────────────────────────────────
+# ${variable_name} is a Terraform templatefile() substitution, not a real value.
+regexes = [
+    '''\$\{[a-z_][a-z0-9_]*\}''',
+]
