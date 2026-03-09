@@ -3,10 +3,13 @@ name: Budget Gate
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 # Avoid an ever-growing queue when pushing multiple times to the same PR.
 concurrency:
-  group: budget-gate-${{ github.event.pull_request.number }}
+  group: budget-gate-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -42,6 +45,7 @@ jobs:
 
       - name: Post cost as PR comment
         uses: actions/github-script@v7
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           script: |
             const cost  = parseFloat("${{ steps.cost.outputs.cost }}").toFixed(2)
