@@ -218,7 +218,7 @@ jobs:
       - name: Django system check
         run: cd backend && python manage.py check --deploy
         env:
-          SECRET_KEY: ci-check-not-real
+          SECRET_KEY: ci-check-not-real-but-long-enough-0123456789abcdef0123456789abcdef0123456789
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
@@ -244,7 +244,7 @@ jobs:
       - name: Django deploy checks
         run: cd backend && python manage.py check --deploy
         env:
-          SECRET_KEY: ci-check-not-real
+          SECRET_KEY: ci-check-not-real-but-long-enough-0123456789abcdef0123456789abcdef0123456789
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
@@ -252,7 +252,7 @@ jobs:
       - name: Apply migrations (sqlite)
         run: cd backend && python manage.py migrate --noinput
         env:
-          SECRET_KEY: ci-check-not-real
+          SECRET_KEY: ci-check-not-real-but-long-enough-0123456789abcdef0123456789abcdef0123456789
           DEBUG: "False"
           ALLOWED_HOSTS: localhost
           DJANGO_SETTINGS_MODULE: portfolio_api.settings
