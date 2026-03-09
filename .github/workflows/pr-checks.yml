@@ -3,10 +3,13 @@ name: PR Checks
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 # Avoid an ever-growing queue when pushing multiple times to the same PR.
 concurrency:
-  group: pr-checks-${{ github.event.pull_request.number }}
+  group: pr-checks-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -116,7 +119,7 @@ jobs:
       # ── PR comment — upsert so only one bot comment per PR ─────────────────
       - name: Post Terraform summary as PR comment
         uses: actions/github-script@v7
-        if: always()
+        if: ${{ always() && github.event_name == 'pull_request' }}
         with:
           script: |
             const fs = require("fs")
@@ -128,12 +131,14 @@ jobs:
             const icon = (s) => ({ success: "✅", failure: "❌", skipped: "⏭️" }[s] ?? "⚠️")
             const steps = ${{ toJSON(steps) }}
 
+            const outcome = (id) => (steps[id] && steps[id].outcome) ? steps[id].outcome : "skipped"
+
             const rows = [
-              ["terraform fmt -check", steps.fmt.outcome],
-              ["tflint",               steps.tflint.outcome],
-              ["terraform init",       steps.init.outcome],
-              ["terraform validate",   steps.validate.outcome],
-              ["terraform plan (TFC speculative)", steps.plan.outcome],
+              ["terraform fmt -check", outcome("fmt")],
+              ["tflint",               outcome("tflint")],
+              ["terraform init",       outcome("init")],
+              ["terraform validate",   outcome("validate")],
+              ["terraform plan (TFC speculative)", outcome("plan")],
             ].map(([n, s]) => `| \`${n}\` | ${icon(s)} \`${s}\` |`).join("\n")
 
             const body = [
@@ -291,6 +296,7 @@ jobs:
 
       # Generate cost breakdown for the base (target) branch first so we can diff
       - name: Generate base branch cost estimate
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
           git checkout origin/${{ github.event.pull_request.base.ref }} -- infra/terraform
@@ -304,6 +310,7 @@ jobs:
 
       # Generate cost breakdown for the PR branch
       - name: Generate PR branch cost estimate
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           infracost breakdown \
             --path infra/terraform \
@@ -313,6 +320,7 @@ jobs:
 
       # Diff base vs PR and post as a single upserted PR comment
       - name: Post cost diff as PR comment
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           infracost diff \
             --path /tmp/infracost-pr.json \
@@ -326,3 +334,13 @@ jobs:
             --repo ${{ github.repository }} \
             --pull-request ${{ github.event.pull_request.number }} \
             --behavior update
+
+      # On push to main (or manual run), just produce a cost estimate so GitHub
+      # registers the check context for branch protection selection.
+      - name: Cost estimate (no PR context)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          infracost breakdown \
+            --path infra/terraform \
+            --terraform-init-flags="-backend=false" \
+            --format table
