@@ -28,7 +28,10 @@ resource "github_repository_ruleset" "main" {
     }
 
     required_status_checks {
-      strict_required_status_checks_policy = true # Branch must be up to date
+      # Keep checks mandatory, but don't require the PR branch to be perfectly
+      # up-to-date with `main` (strict mode frequently leaves checks "Expected"
+      # and blocks merges for solo-dev workflows).
+      strict_required_status_checks_policy = false
 
       # integration_id 15368 = GitHub Actions app — required so the ruleset can
       # match checks reported by GitHub Actions workflows to these requirements.
