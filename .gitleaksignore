@@ -1,0 +1,10 @@
+# .gitleaksignore — suppress known false-positive Gitleaks findings
+#
+# Format: <commit-sha>:<rule-id>
+#
+# To identify findings: look at the gitleaks output in the "Secret Scan (Gitleaks)"
+# check run, note the commit SHA and rule ID, then add them here.
+#
+# Terraform template placeholders (infra/terraform/templates/*.tpl) use
+# ${variable} syntax that can trigger generic-api-key or similar rules.
+# These are NOT real secrets; they are filled in by Terraform at apply time.
