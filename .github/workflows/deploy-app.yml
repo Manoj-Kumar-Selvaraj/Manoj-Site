@@ -44,7 +44,7 @@ jobs:
       - name: Build React app
         run: cd frontend && npm run build
         env:
-          VITE_API_URL: ${{ secrets.API_BASE_URL }}
+          VITE_API_URL: /api
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
