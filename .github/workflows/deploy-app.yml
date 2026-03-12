@@ -158,16 +158,12 @@ jobs:
             python manage.py collectstatic --noinput -v 0
             cd ..
 
-            echo "→ Ensuring systemd service is installed..."
-            if ! systemctl list-unit-files portfolio-gunicorn.service &>/dev/null || \
-               ! sudo test -f /etc/systemd/system/portfolio-gunicorn.service; then
-              echo "  Service not found — installing from repo..."
-              sudo cp /home/ubuntu/portfolio/infra/portfolio-gunicorn.service \
-                     /etc/systemd/system/portfolio-gunicorn.service
-              sudo systemctl daemon-reload
-              sudo systemctl enable portfolio-gunicorn
-              echo "  Service installed and enabled."
-            fi
+            echo "→ Refreshing systemd service definition..."
+            sudo cp /home/ubuntu/portfolio/infra/portfolio-gunicorn.service \
+              /etc/systemd/system/portfolio-gunicorn.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable portfolio-gunicorn
+            echo "  Service definition refreshed ✓"
 
             echo "→ Pre-flight checks..."
             if [ ! -f /home/ubuntu/portfolio/backend/.env ]; then
@@ -178,19 +174,27 @@ jobs:
             echo "  .env file present ✓"
 
             echo "→ Patching .env with runtime hosts..."
-            EC2_PUBLIC_DNS=$(curl -sf http://169.254.169.254/latest/meta-data/public-hostname || echo "")
-            EC2_PUBLIC_IP=$(curl -sf http://169.254.169.254/latest/meta-data/public-ipv4 || echo "")
-            CURRENT_HOSTS=$(grep -E '^ALLOWED_HOSTS=' backend/.env | cut -d= -f2- || echo "localhost")
+            IMDSV2_TOKEN=$(curl -sf -X PUT "http://169.254.169.254/latest/api/token" \
+              -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" || echo "")
+            METADATA_HEADERS=()
+            if [ -n "$IMDSV2_TOKEN" ]; then
+              METADATA_HEADERS=(-H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}")
+            fi
+
+            EC2_PUBLIC_DNS=$(curl -sf "${METADATA_HEADERS[@]}" http://169.254.169.254/latest/meta-data/public-hostname || echo "")
+            EC2_PUBLIC_IP=$(curl -sf "${METADATA_HEADERS[@]}" http://169.254.169.254/latest/meta-data/public-ipv4 || echo "")
+            SANITIZED_CLOUDFRONT_DOMAIN=$(printf '%s' "$CLOUDFRONT_DOMAIN" | sed -E 's#^https?://##; s#/.*$##')
+            CURRENT_HOSTS=$(grep -E '^ALLOWED_HOSTS=' backend/.env | cut -d= -f2- || echo "localhost,127.0.0.1")
             NEW_HOSTS="${CURRENT_HOSTS}"
-            for H in "$EC2_PUBLIC_DNS" "$EC2_PUBLIC_IP" "$CLOUDFRONT_DOMAIN"; do
+            for H in "$EC2_PUBLIC_DNS" "$EC2_PUBLIC_IP" "$SANITIZED_CLOUDFRONT_DOMAIN"; do
               [ -n "$H" ] && [[ ",$NEW_HOSTS," != *",$H,"* ]] && NEW_HOSTS="${NEW_HOSTS},${H}"
             done
             sed -i "s|^ALLOWED_HOSTS=.*|ALLOWED_HOSTS=${NEW_HOSTS}|" backend/.env
             # Ensure CLOUDFRONT_DOMAIN is set in .env for Django to read
             if grep -q '^CLOUDFRONT_DOMAIN=' backend/.env; then
-              sed -i "s|^CLOUDFRONT_DOMAIN=.*|CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}|" backend/.env
+              sed -i "s|^CLOUDFRONT_DOMAIN=.*|CLOUDFRONT_DOMAIN=${SANITIZED_CLOUDFRONT_DOMAIN}|" backend/.env
             else
-              echo "CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}" >> backend/.env
+              echo "CLOUDFRONT_DOMAIN=${SANITIZED_CLOUDFRONT_DOMAIN}" >> backend/.env
             fi
             echo "  ALLOWED_HOSTS → ${NEW_HOSTS}"
 
@@ -204,8 +208,8 @@ jobs:
             sudo touch /var/log/gunicorn-access.log /var/log/gunicorn-error.log
             sudo chown ubuntu:ubuntu /var/log/gunicorn-access.log /var/log/gunicorn-error.log
 
-            echo "→ Restarting Gunicorn (zero-downtime via systemd reload)..."
-            if ! sudo systemctl reload-or-restart portfolio-gunicorn; then
+            echo "→ Restarting Gunicorn service..."
+            if ! sudo systemctl restart portfolio-gunicorn; then
               echo "=== Gunicorn failed — systemctl status ==="
               sudo systemctl status portfolio-gunicorn --no-pager -l || true
               echo "=== Last 50 journal lines ==="
@@ -254,8 +258,9 @@ jobs:
           for i in 1 2 3; do
             STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
               "https://${{ secrets.CLOUDFRONT_DOMAIN }}/api/profile/me/" 2>/dev/null || echo "000")
-            # 200 = profile exists, 404 = Django up but no profile yet — both mean API is healthy
-            if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            # 200 = profile exists, 404 = Django up but no profile yet — both mean API is healthy.
+            # 400 must fail because it usually indicates DisallowedHost / bad proxy host handling.
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
               echo "✓ API healthy (HTTP $STATUS) on attempt $i"
               exit 0
             fi
