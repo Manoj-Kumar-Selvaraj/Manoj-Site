@@ -24,7 +24,6 @@ Minimum set to deploy:
 - `AWS_ROLE_ARN`, `AWS_REGION`
 - `EC2_HOST`, `EC2_SSH_KEY`
 - `S3_BUCKET_FRONTEND`, `CLOUDFRONT_DISTRIBUTION_ID`, `CLOUDFRONT_DOMAIN`
-- `API_BASE_URL` = `https://<cloudfront-domain>/api`
 
 Minimum set for PR gates:
 - `TF_API_TOKEN`, `INFRACOST_API_KEY`, `AWS_BUDGET_ROLE_ARN`
@@ -263,7 +262,6 @@ If you enforce signed commits, you must configure local GPG signing before mergi
 | `S3_BUCKET_FRONTEND` | Deploy | Frontend S3 bucket name |
 | `CLOUDFRONT_DISTRIBUTION_ID` | Deploy | CloudFront distribution id |
 | `CLOUDFRONT_DOMAIN` | Deploy/Health | CloudFront domain name (e.g. `d123...cloudfront.net`) |
-| `API_BASE_URL` | Deploy | Value injected into frontend build (should be `https://<cloudfront-domain>/api`) |
 | `TF_API_TOKEN` | PR Checks | Terraform Cloud API token for speculative plan |
 | `INFRACOST_API_KEY` | PR Checks | Infracost API key |
 | `DJANGO_SUPERUSER_PASSWORD` | Seed DB | Password for automatic superuser creation |

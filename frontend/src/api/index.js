@@ -6,6 +6,14 @@ import axios from 'axios'
 
 const DEFAULT_API_BASE = '/api'
 
+function isLocalHostname(hostname) {
+  return ['localhost', '127.0.0.1', '0.0.0.0'].includes(String(hostname || '').toLowerCase())
+}
+
+function isAwsEc2Hostname(hostname) {
+  return /^ec2-\d{1,3}-\d{1,3}-\d{1,3}-\d{1,3}\..*\.compute(-\d+)?\.amazonaws\.com$/i.test(String(hostname || ''))
+}
+
 function normalizeApiBase(raw) {
   const value = String(raw || '').trim()
   if (!value) return DEFAULT_API_BASE
@@ -31,6 +39,27 @@ function normalizeApiBase(raw) {
     } else if (!path.endsWith('/api')) {
       url.pathname = `${path}/api`
     }
+
+    if (typeof window !== 'undefined' && window.location) {
+      const pageHost = window.location.hostname
+      const apiHost = url.hostname
+      const pageIsLocal = isLocalHostname(pageHost)
+      const apiIsLocal = isLocalHostname(apiHost)
+
+      // Production architecture expects the browser to call same-origin `/api`
+      // through CloudFront/custom-domain routing. If an absolute API origin is
+      // accidentally baked into the build and it points at a different host
+      // (especially a raw EC2 hostname/IP), prefer the safe same-origin path.
+      if (!pageIsLocal && url.origin !== window.location.origin) {
+        return DEFAULT_API_BASE
+      }
+
+      // In local development, keep explicit localhost API URLs working.
+      if (!pageIsLocal && !apiIsLocal && isAwsEc2Hostname(apiHost)) {
+        return DEFAULT_API_BASE
+      }
+    }
+
     return url.toString().replace(/\/+$/, '')
   } catch {
     // Unknown format — safest fallback.
