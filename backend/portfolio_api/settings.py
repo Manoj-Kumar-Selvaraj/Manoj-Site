@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,7 +12,34 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-produc
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+def _normalize_host(value: str) -> str:
+    raw = (value or '').strip()
+    if not raw:
+        return ''
+
+    if '://' in raw:
+        parsed = urlparse(raw)
+        raw = parsed.netloc or parsed.path
+
+    raw = raw.split('/')[0].strip()
+
+    # Keep IPv6 literals intact, but strip ports from standard host:port values.
+    if raw.count(':') == 1 and not raw.startswith('['):
+        raw = raw.split(':', 1)[0]
+
+    return raw.strip('[]')
+
+
+def _split_hosts(value: str) -> list[str]:
+    hosts = []
+    for item in (value or '').split(','):
+        host = _normalize_host(item)
+        if host and host not in hosts:
+            hosts.append(host)
+    return hosts
+
+
+ALLOWED_HOSTS = _split_hosts(os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 INSTALLED_APPS = [
     'jazzmin',  # must be before django.contrib.admin
@@ -251,7 +279,7 @@ CSRF_TRUSTED_ORIGINS = [
 ] + ['http://localhost:5173', 'http://127.0.0.1:5173']
 
 # ── CORS / ALLOWED_HOSTS / CSRF: production CloudFront domain ────────────────
-_cf_domain = os.environ.get('CLOUDFRONT_DOMAIN', '')
+_cf_domain = _normalize_host(os.environ.get('CLOUDFRONT_DOMAIN', ''))
 if _cf_domain:
     _cf_origin = f'https://{_cf_domain}'
     if _cf_domain not in ALLOWED_HOSTS:
