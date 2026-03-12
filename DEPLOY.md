@@ -161,13 +161,15 @@ Go to: **GitHub repo → Settings → Secrets and Variables → Actions → New 
 | `CLOUDFRONT_DISTRIBUTION_ID` | `terraform output cloudfront_distribution_id` |
 | `CLOUDFRONT_DOMAIN` | `terraform output cloudfront_domain` (without `https://`) |
 | `EC2_HOST` | `terraform output ec2_public_ip` |
-| `API_BASE_URL` | `http://<EC2_HOST>/api` |
 | `EC2_SSH_KEY` | contents of `~/.ssh/portfolio_deploy` (the **private** key) |
 | `DJANGO_SECRET_KEY` | same value as in your `terraform.tfvars` |
 | `TF_API_TOKEN` | your Terraform Cloud API token |
 
 > ℹ️ `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are **no longer needed** in GitHub Secrets.  
 > GitHub Actions now authenticates via OIDC → IAM role (zero stored credentials).
+>
+> ℹ️ The frontend deploy now always builds with same-origin `/api` in production.
+> Do not set a direct EC2 API host in frontend build configuration.
 
 ---
 

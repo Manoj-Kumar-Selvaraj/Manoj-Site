@@ -39,9 +39,9 @@
 #                         Generate at: app.terraform.io → User Settings → Tokens
 #
 #   (All app deployment secrets are still needed in GitHub for deploy-app.yml:
-#    AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_FRONTEND,
-#    S3_BUCKET_MEDIA, CLOUDFRONT_DISTRIBUTION_ID, CLOUDFRONT_DOMAIN,
-#    EC2_HOST, EC2_SSH_KEY, API_BASE_URL, DJANGO_SECRET_KEY)
+#    AWS_ROLE_ARN, AWS_REGION, S3_BUCKET_FRONTEND, S3_BUCKET_MEDIA,
+#    CLOUDFRONT_DISTRIBUTION_ID, CLOUDFRONT_DOMAIN, EC2_HOST,
+#    EC2_SSH_KEY, DJANGO_SECRET_KEY)
 #
 # ── This file is intentionally NOT a working tfvars file ────────────────────────
 # There is nothing to copy here. All variables are managed in TFC.

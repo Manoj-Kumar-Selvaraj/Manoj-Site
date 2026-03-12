@@ -49,7 +49,7 @@ output "django_admin_url" {
 }
 
 output "api_base_url" {
-  description = "Backend API base URL — set as API_BASE_URL in GitHub Secrets"
+  description = "Backend API base URL for direct troubleshooting (the frontend deploy uses same-origin /api in production)"
   value       = local.dns_enabled ? "https://api.${var.domain_name}/api" : "http://${aws_eip.portfolio.public_ip}/api"
 }
 
@@ -67,7 +67,7 @@ output "github_secrets_summary" {
     │  CLOUDFRONT_DISTRIBUTION_ID          │  ${aws_cloudfront_distribution.frontend.id}
     │  CLOUDFRONT_DOMAIN                   │  ${aws_cloudfront_distribution.frontend.domain_name}
     │  EC2_HOST                            │  ${aws_eip.portfolio.public_ip}
-    │  API_BASE_URL                        │  ${local.dns_enabled ? "https://api.${var.domain_name}/api" : "http://${aws_eip.portfolio.public_ip}/api"}
+    │  API_BASE_URL (optional debug only)  │  ${local.dns_enabled ? "https://api.${var.domain_name}/api" : "http://${aws_eip.portfolio.public_ip}/api"}
     │  (EC2_SSH_KEY            — your private key, never stored in TF)
     │  (DJANGO_SECRET_KEY      — your Django secret key)
     │  (TF_API_TOKEN           — Terraform Cloud token)
