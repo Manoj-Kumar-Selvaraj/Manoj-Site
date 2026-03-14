@@ -19,8 +19,8 @@
 #   frontend_bucket_name    no          portfolio-frontend
 #   media_bucket_name       no          portfolio-media
 #   cloudfront_price_class  no          PriceClass_100
-#   domain_name             no          (leave empty until you have a domain)
-#   acm_certificate_arn     no          (leave empty until you have a cert)
+#   domain_name             no          manoj-tech-solutions.site
+#   hosted_zone_id          no          <Route 53 hosted zone id for manoj-tech-solutions.site>
 #   github_token            YES         <GitHub PAT: repo + admin:repo_hook scopes>
 #   github_owner            no          <your GitHub username>
 #   github_repo_name        no          portfolio

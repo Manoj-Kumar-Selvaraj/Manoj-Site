@@ -13,10 +13,9 @@ resource "aws_acm_certificate" "frontend" {
   provider = aws.us_east_1
 
   domain_name = var.domain_name
-  # Cover apex, www, and API subdomain with a single cert
+  # Cover apex + www with a single cert (CloudFront custom domain)
   subject_alternative_names = [
     "www.${var.domain_name}",
-    "api.${var.domain_name}",
   ]
   validation_method = "DNS"
 
@@ -84,15 +83,4 @@ resource "aws_route53_record" "www" {
   }
 }
 
-# ── Route 53: api subdomain → EC2 Elastic IP ─────────────────────────────────
-# After applying, also:
-#   1. Add "api.yourdomain.com" to django_allowed_hosts in TFC workspace variables
-#   2. Add "api.yourdomain.com" to the Nginx server_name directive on EC2
-resource "aws_route53_record" "api" {
-  count   = local.dns_enabled ? 1 : 0
-  zone_id = var.hosted_zone_id
-  name    = "api.${var.domain_name}"
-  type    = "A"
-  ttl     = 300
-  records = [aws_eip.portfolio.public_ip]
-}
+
