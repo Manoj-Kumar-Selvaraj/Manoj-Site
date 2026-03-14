@@ -265,9 +265,14 @@ if not DEBUG:
     SECURE_HSTS_SECONDS         = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD         = True
-    # SSL terminates at CloudFront/ALB; honor X-Forwarded-Proto.
+    # SSL terminates at CloudFront; CloudFront already enforces HTTPS for viewers
+    # (viewer_protocol_policy = "redirect-to-https"), so Django must NOT issue
+    # its own HTTPS redirect — otherwise it would redirect to https://ec2-host:443
+    # which has no TLS listener (causing ERR_CONNECTION_REFUSED in the browser).
+    # Honor the X-Forwarded-Proto header so Django knows the original request was
+    # secure (required for CSRF, secure cookies, etc.).
     SECURE_PROXY_SSL_HEADER     = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT         = True
+    SECURE_SSL_REDIRECT         = False
     SESSION_COOKIE_SECURE       = True
     CSRF_COOKIE_SECURE          = True
 
