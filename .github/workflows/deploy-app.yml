@@ -165,6 +165,12 @@ jobs:
             sudo systemctl enable portfolio-gunicorn
             echo "  Service definition refreshed ✓"
 
+            echo "→ Updating nginx config and reloading..."
+            sudo cp /home/ubuntu/portfolio/infra/nginx.conf /etc/nginx/sites-available/portfolio
+            sudo ln -sf /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
+            sudo nginx -t && sudo systemctl reload nginx
+            echo "  nginx reloaded ✓"
+
             echo "→ Pre-flight checks..."
             if [ ! -f /home/ubuntu/portfolio/backend/.env ]; then
               echo "ERROR: /home/ubuntu/portfolio/backend/.env is missing!"
