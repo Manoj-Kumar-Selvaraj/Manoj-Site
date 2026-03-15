@@ -8,6 +8,16 @@ output "frontend_url" {
   value       = local.dns_enabled ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
 
+output "route53_hosted_zone_id" {
+  description = "Route 53 hosted zone id used for the custom domain (created or provided). Empty when custom domain is disabled."
+  value       = local.dns_enabled ? local.hosted_zone_id_effective : ""
+}
+
+output "route53_name_servers" {
+  description = "Nameservers for the Terraform-created hosted zone (set these at your domain registrar). Empty when create_hosted_zone=false."
+  value       = var.create_hosted_zone && local.dns_enabled ? aws_route53_zone.public[0].name_servers : []
+}
+
 output "cloudfront_distribution_id" {
   description = "CloudFront distribution ID — set as CLOUDFRONT_DISTRIBUTION_ID in GitHub Secrets"
   value       = aws_cloudfront_distribution.frontend.id
