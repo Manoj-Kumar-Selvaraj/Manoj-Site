@@ -82,8 +82,14 @@ variable "domain_name" {
   default     = ""
 }
 
+variable "create_hosted_zone" {
+  description = "When true and domain_name is set, Terraform will create a public Route 53 hosted zone for the domain. You must still update your registrar nameservers to the zone's name_servers output."
+  type        = bool
+  default     = false
+}
+
 variable "hosted_zone_id" {
-  description = "Route 53 hosted zone ID for your domain (e.g. Z1PA6795UKMFR9). Set together with domain_name to enable automatic ACM cert + DNS records."
+  description = "Existing Route 53 hosted zone ID for your domain (e.g. Z1PA6795UKMFR9). Used when create_hosted_zone=false."
   type        = string
   default     = ""
 }

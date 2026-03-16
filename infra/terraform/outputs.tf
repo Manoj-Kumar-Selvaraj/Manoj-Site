@@ -8,13 +8,23 @@ output "frontend_url" {
   value       = local.dns_enabled ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
 
+output "route53_hosted_zone_id" {
+  description = "Route 53 hosted zone id used for the custom domain (created or provided). Empty when custom domain is disabled."
+  value       = local.dns_enabled ? local.hosted_zone_id_effective : ""
+}
+
+output "route53_name_servers" {
+  description = "Nameservers for the Terraform-created hosted zone (set these at your domain registrar). Empty when create_hosted_zone=false."
+  value       = var.create_hosted_zone && local.dns_enabled ? aws_route53_zone.public[0].name_servers : []
+}
+
 output "cloudfront_distribution_id" {
   description = "CloudFront distribution ID — set as CLOUDFRONT_DISTRIBUTION_ID in GitHub Secrets"
   value       = aws_cloudfront_distribution.frontend.id
 }
 
 output "ec2_public_ip" {
-  description = "EC2 Elastic IP — set as EC2_HOST in GitHub Secrets. Point your domain here."
+  description = "EC2 Elastic IP — set as EC2_HOST in GitHub Secrets (SSH target / backend origin)"
   value       = aws_eip.portfolio.public_ip
 }
 
@@ -45,12 +55,12 @@ output "github_actions_role_arn" {
 
 output "django_admin_url" {
   description = "Django admin portal URL"
-  value       = local.dns_enabled ? "https://api.${var.domain_name}/admin/" : "http://${aws_eip.portfolio.public_ip}/admin/"
+  value       = local.dns_enabled ? "https://${var.domain_name}/admin/" : "https://${aws_cloudfront_distribution.frontend.domain_name}/admin/"
 }
 
 output "api_base_url" {
   description = "Backend API base URL for direct troubleshooting (the frontend deploy uses same-origin /api in production)"
-  value       = local.dns_enabled ? "https://api.${var.domain_name}/api" : "http://${aws_eip.portfolio.public_ip}/api"
+  value       = local.dns_enabled ? "https://${var.domain_name}/api" : "https://${aws_cloudfront_distribution.frontend.domain_name}/api"
 }
 
 output "github_secrets_summary" {
@@ -65,9 +75,9 @@ output "github_secrets_summary" {
     │  S3_BUCKET_FRONTEND                  │  ${aws_s3_bucket.frontend.bucket}
     │  S3_BUCKET_MEDIA                     │  ${aws_s3_bucket.media.bucket}
     │  CLOUDFRONT_DISTRIBUTION_ID          │  ${aws_cloudfront_distribution.frontend.id}
-    │  CLOUDFRONT_DOMAIN                   │  ${aws_cloudfront_distribution.frontend.domain_name}
+    │  CLOUDFRONT_DOMAIN                   │  ${local.dns_enabled ? var.domain_name : aws_cloudfront_distribution.frontend.domain_name}
     │  EC2_HOST                            │  ${aws_eip.portfolio.public_ip}
-    │  API_BASE_URL (optional debug only)  │  ${local.dns_enabled ? "https://api.${var.domain_name}/api" : "http://${aws_eip.portfolio.public_ip}/api"}
+    │  API_BASE_URL (optional debug only)  │  ${local.dns_enabled ? "https://${var.domain_name}/api" : "https://${aws_cloudfront_distribution.frontend.domain_name}/api"}
     │  (EC2_SSH_KEY            — your private key, never stored in TF)
     │  (DJANGO_SECRET_KEY      — your Django secret key)
     │  (TF_API_TOKEN           — Terraform Cloud token)

@@ -1,9 +1,24 @@
 # ── DNS & TLS — custom domain via Route 53 + ACM ─────────────────────────────
-# Set both `domain_name` and `hosted_zone_id` in terraform.tfvars to enable.
-# When either is empty the stack works fine on the default CloudFront domain.
+# Enable by setting `domain_name` and either:
+#  - `create_hosted_zone = true` (Terraform creates the Route 53 hosted zone), OR
+#  - `hosted_zone_id` (use an existing hosted zone)
+#
+# Note: If Terraform creates the hosted zone, you must update your registrar
+# nameservers to the zone's `name_servers` output.
 
 locals {
-  dns_enabled = var.domain_name != "" && var.hosted_zone_id != ""
+  dns_enabled = var.domain_name != "" && (var.create_hosted_zone || var.hosted_zone_id != "")
+}
+
+resource "aws_route53_zone" "public" {
+  count = var.domain_name != "" && var.create_hosted_zone ? 1 : 0
+
+  name    = var.domain_name
+  comment = "Managed by Terraform for ${var.project}"
+}
+
+locals {
+  hosted_zone_id_effective = var.create_hosted_zone ? aws_route53_zone.public[0].zone_id : var.hosted_zone_id
 }
 
 # ── ACM Certificate ───────────────────────────────────────────────────────────
@@ -13,10 +28,9 @@ resource "aws_acm_certificate" "frontend" {
   provider = aws.us_east_1
 
   domain_name = var.domain_name
-  # Cover apex, www, and API subdomain with a single cert
+  # Cover apex + www with a single cert (CloudFront custom domain)
   subject_alternative_names = [
     "www.${var.domain_name}",
-    "api.${var.domain_name}",
   ]
   validation_method = "DNS"
 
@@ -38,7 +52,7 @@ resource "aws_route53_record" "cert_validation" {
     }
   } : {}
 
-  zone_id         = var.hosted_zone_id
+  zone_id         = local.hosted_zone_id_effective
   name            = each.value.name
   type            = each.value.type
   records         = [each.value.record]
@@ -59,7 +73,7 @@ resource "aws_acm_certificate_validation" "frontend" {
 # ── Route 53: apex domain → CloudFront ────────────────────────────────────────
 resource "aws_route53_record" "apex" {
   count   = local.dns_enabled ? 1 : 0
-  zone_id = var.hosted_zone_id
+  zone_id = local.hosted_zone_id_effective
   name    = var.domain_name
   type    = "A"
 
@@ -73,7 +87,7 @@ resource "aws_route53_record" "apex" {
 # ── Route 53: www → CloudFront ────────────────────────────────────────────────
 resource "aws_route53_record" "www" {
   count   = local.dns_enabled ? 1 : 0
-  zone_id = var.hosted_zone_id
+  zone_id = local.hosted_zone_id_effective
   name    = "www.${var.domain_name}"
   type    = "A"
 
@@ -84,15 +98,4 @@ resource "aws_route53_record" "www" {
   }
 }
 
-# ── Route 53: api subdomain → EC2 Elastic IP ─────────────────────────────────
-# After applying, also:
-#   1. Add "api.yourdomain.com" to django_allowed_hosts in TFC workspace variables
-#   2. Add "api.yourdomain.com" to the Nginx server_name directive on EC2
-resource "aws_route53_record" "api" {
-  count   = local.dns_enabled ? 1 : 0
-  zone_id = var.hosted_zone_id
-  name    = "api.${var.domain_name}"
-  type    = "A"
-  ttl     = 300
-  records = [aws_eip.portfolio.public_ip]
-}
+
