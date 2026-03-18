@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Profile, ProfileStat, Skill, Project, Experience,
+    Profile, ProfileStat, AboutFocusArea, AboutCareerItem, Skill, Project, Experience,
     BlogPost, Activity, Certification, ContactMessage
 )
 
@@ -11,8 +11,27 @@ class ProfileStatSerializer(serializers.ModelSerializer):
         fields = ['label', 'value', 'order']
 
 
+class AboutFocusAreaSerializer(serializers.ModelSerializer):
+    points = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AboutFocusArea
+        fields = ['title', 'points', 'order']
+
+    def get_points(self, obj):
+        return obj.points()
+
+
+class AboutCareerItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutCareerItem
+        fields = ['text', 'order']
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     stats = ProfileStatSerializer(many=True, read_only=True)
+    about_focus_areas = AboutFocusAreaSerializer(many=True, read_only=True)
+    about_career_items = AboutCareerItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile

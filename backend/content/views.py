@@ -16,13 +16,13 @@ from .serializers import (
 
 
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Profile.objects.prefetch_related('stats').all()
+    queryset = Profile.objects.prefetch_related('stats', 'about_focus_areas', 'about_career_items').all()
     serializer_class = ProfileSerializer
     permission_classes = [AllowAny]
 
     @action(detail=False, methods=['get'])
     def me(self, request):
-        profile = Profile.objects.prefetch_related('stats').first()
+        profile = Profile.objects.prefetch_related('stats', 'about_focus_areas', 'about_career_items').first()
         if not profile:
             return Response({'detail': 'Profile not found.'}, status=404)
         return Response(ProfileSerializer(profile, context={'request': request}).data)
