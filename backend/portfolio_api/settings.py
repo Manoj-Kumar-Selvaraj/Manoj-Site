@@ -39,6 +39,24 @@ def _split_hosts(value: str) -> list[str]:
     return hosts
 
 
+def _host_variants(host: str) -> list[str]:
+    base = _normalize_host(host)
+    if not base:
+        return []
+
+    variants = [base]
+    if base.startswith('www.'):
+        variants.append(base[4:])
+    elif '.' in base and not base.endswith('.cloudfront.net'):
+        variants.append(f"www.{base}")
+
+    deduped = []
+    for item in variants:
+        if item and item not in deduped:
+            deduped.append(item)
+    return deduped
+
+
 ALLOWED_HOSTS = _split_hosts(os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 INSTALLED_APPS = [
@@ -285,11 +303,11 @@ CSRF_TRUSTED_ORIGINS = [
 
 # ── CORS / ALLOWED_HOSTS / CSRF: production CloudFront domain ────────────────
 _cf_domain = _normalize_host(os.environ.get('CLOUDFRONT_DOMAIN', ''))
-if _cf_domain:
-    _cf_origin = f'https://{_cf_domain}'
-    if _cf_domain not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(_cf_domain)
-    if _cf_origin not in CORS_ALLOWED_ORIGINS:
-        CORS_ALLOWED_ORIGINS.append(_cf_origin)
-    if _cf_origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(_cf_origin)
+for _domain in _host_variants(_cf_domain):
+    _origin = f'https://{_domain}'
+    if _domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_domain)
+    if _origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_origin)
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
