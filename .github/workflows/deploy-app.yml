@@ -146,16 +146,30 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "→ Installing Python dependencies..."
+            echo "→ Setting up Python virtual environment..."
+            if [ ! -d "backend/venv" ]; then
+              echo "  Creating venv (first deploy)..."
+              python3 -m venv backend/venv
+            fi
             source backend/venv/bin/activate
+
+            echo "→ Installing Python dependencies..."
             pip install -r backend/requirements.txt -q
 
             echo "→ Running database migrations..."
             cd backend
-            python manage.py migrate --noinput
+            python manage.py migrate --noinput || {
+              echo "ERROR: Database migration failed"
+              exit 1
+            }
 
             echo "→ Collecting static files..."
-            python manage.py collectstatic --noinput -v 0
+            python manage.py collectstatic --noinput -v 1 || {
+              echo "ERROR: collectstatic failed"
+              exit 1
+            }
+            echo "  Static files collected ✓"
+            ls -lh staticfiles/ | head -20
             cd ..
 
             echo "→ Refreshing systemd service definition..."
