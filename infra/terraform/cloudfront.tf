@@ -137,6 +137,17 @@ resource "aws_cloudfront_distribution" "frontend" {
   # 2. Or add Lambda@Edge to intercept 404s from S3 origin only
   # For now, we accept that non-existent SPA routes return 404 instead of index.html.
   # This avoids break static asset serving.
+  # SPA routing: return index.html for 404 only for default (S3) origin 404s.
+  # NOTE: This applies globally, but in practice only default_cache_behavior returns 404s
+  # since /static/*, /api/*, /admin/* have specific origins and error handling.
+  # If static files are missing and return 404 from backend, that will incorrectly
+  # serve index.html — ensure Django static_root collection is always run on deploy.
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 10
+  }
 
   # Geo restrictions — none
   restrictions {
