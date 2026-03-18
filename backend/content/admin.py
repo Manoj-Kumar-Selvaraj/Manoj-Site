@@ -44,6 +44,9 @@ class ProfileAdmin(admin.ModelAdmin):
         ('Basic Info', {
             'fields': ('name', 'title', 'tagline', 'avatar', 'avatar_preview', 'email', 'phone', 'location', 'is_available')
         }),
+        ('About Section Content', {
+            'fields': ('about_section_badge', 'about_heading_prefix', 'about_heading_highlight', 'about_section_intro')
+        }),
         ('Bio', {
             'fields': ('bio', 'bio_extended', 'resume')
         }),

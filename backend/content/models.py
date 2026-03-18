@@ -6,6 +6,30 @@ class Profile(models.Model):
     name = models.CharField(max_length=200)
     title = models.CharField(max_length=300, help_text="e.g. Cloud Platform | DevOps | LLM Benchmarking")
     tagline = models.CharField(max_length=500, blank=True)
+    about_section_badge = models.CharField(
+        max_length=80,
+        blank=True,
+        default='About Me',
+        help_text='Small label shown above the About heading.',
+    )
+    about_heading_prefix = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Building infrastructure that',
+        help_text='First line of the About heading.',
+    )
+    about_heading_highlight = models.CharField(
+        max_length=200,
+        blank=True,
+        default='teams actually rely on.',
+        help_text='Highlighted second line of the About heading.',
+    )
+    about_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='This is where I share my background, impact, and current focus.',
+        help_text='Short intro text shown under the About heading.',
+    )
     bio = models.TextField(
         verbose_name="Opening bio",
         help_text="Short bio used in the hero/intro (use blank lines to split paragraphs).",
