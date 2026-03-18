@@ -130,13 +130,11 @@ resource "aws_cloudfront_distribution" "frontend" {
     max_ttl     = 31536000
   }
 
-  # SPA routing: return index.html for 403/404 so React Router handles the path
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
-  }
+  # SPA routing: return index.html for 404 only for default (S3) origin 404s.
+  # NOTE: This applies globally, but in practice only default_cache_behavior returns 404s
+  # since /static/*, /api/*, /admin/* have specific origins and error handling.
+  # If static files are missing and return 404 from backend, that will incorrectly
+  # serve index.html — ensure Django static_root collection is always run on deploy.
   custom_error_response {
     error_code            = 404
     response_code         = 200
