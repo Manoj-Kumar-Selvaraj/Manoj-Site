@@ -170,6 +170,20 @@ jobs:
             }
             echo "  Static files collected ✓"
             ls -lh staticfiles/ | head -20
+
+            echo "→ Verifying required admin static assets..."
+            for F in \
+              "staticfiles/vendor/fontawesome-free/css/all.min.css" \
+              "staticfiles/vendor/adminlte/css/adminlte.min.css" \
+              "staticfiles/jazzmin/css/main.css" \
+              "staticfiles/admin/js/vendor/jquery/jquery.js" \
+              "staticfiles/vendor/bootstrap/js/bootstrap.bundle.min.js"; do
+              if [ ! -f "$F" ]; then
+                echo "ERROR: Missing required static file: $F"
+                exit 1
+              fi
+            done
+            echo "  Required admin static assets present ✓"
             cd ..
 
             echo "→ Refreshing systemd service definition..."
