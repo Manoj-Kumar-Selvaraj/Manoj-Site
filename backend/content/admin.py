@@ -3,6 +3,7 @@ import json
 
 from django.contrib import admin
 from django.http import HttpResponse
+from django.utils.html import format_html
 from .models import (
     Profile, ProfileStat, Skill, Project, Experience,
     BlogPost, Activity, Certification, ContactMessage
@@ -37,13 +38,14 @@ class ProfileStatAdmin(admin.ModelAdmin):
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['name', 'title', 'email', 'phone', 'is_available', 'updated_at']
+    readonly_fields = ['avatar_preview']
     inlines = [ProfileStatInline]
     fieldsets = (
         ('Basic Info', {
-            'fields': ('name', 'title', 'tagline', 'email', 'phone', 'location', 'is_available')
+            'fields': ('name', 'title', 'tagline', 'avatar', 'avatar_preview', 'email', 'phone', 'location', 'is_available')
         }),
         ('Bio', {
-            'fields': ('bio', 'bio_extended', 'avatar', 'resume')
+            'fields': ('bio', 'bio_extended', 'resume')
         }),
         ('Stats', {
             'fields': ('years_experience', 'projects_completed')
@@ -53,6 +55,15 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    @admin.display(description='Current photo')
+    def avatar_preview(self, obj):
+        if obj and obj.avatar:
+            return format_html(
+                '<img src="{}" alt="Profile photo" style="height:96px;width:96px;object-fit:cover;border-radius:12px;border:1px solid #d1d5db;" />',
+                obj.avatar.url,
+            )
+        return 'No photo uploaded yet.'
 
 
 @admin.register(Skill)

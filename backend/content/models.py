@@ -15,7 +15,13 @@ class Profile(models.Model):
         verbose_name="About me (detailed)",
         help_text="Detailed bio shown on the About section (optional).",
     )
-    avatar = models.ImageField(upload_to='profile/', blank=True, null=True)
+    avatar = models.ImageField(
+        'Profile photo',
+        upload_to='profile/',
+        blank=True,
+        null=True,
+        help_text='Upload your profile image (used in Hero and About sections).',
+    )
     resume = models.FileField(upload_to='resume/', blank=True, null=True)
     email = models.EmailField()
     phone = models.CharField(max_length=30, blank=True, help_text="Public contact number shown on site (e.g. +9180...)")

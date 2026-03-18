@@ -6,7 +6,7 @@ import { getProfile } from '../api'
 function PhotoBlock({ profile, name }) {
   return (
     <div className="relative">
-      <div className="w-36 h-36 sm:w-44 sm:h-44 lg:w-56 lg:h-56 rounded-3xl overflow-hidden
+      <div className="w-28 h-28 sm:w-44 sm:h-44 lg:w-56 lg:h-56 rounded-3xl overflow-hidden
                       border border-white/70
                       bg-white/60 backdrop-blur-md
                       flex items-center justify-center shadow-xl">
@@ -41,7 +41,7 @@ export default function Hero() {
     .slice(0, 2)
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden hero-section pt-16 sm:pt-20">
+    <section id="hero" className="relative min-h-screen flex items-start sm:items-center overflow-hidden hero-section pt-20 pb-10 sm:pb-0">
 
       {/* Photo — top-right, desktop/tablet */}
       <motion.div
@@ -56,6 +56,16 @@ export default function Hero() {
       {/* Main content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="sm:pr-56 md:pr-64 lg:pr-80">
+
+          {/* Mobile photo — keep it near the heading on small screens */}
+          <motion.div
+            className="sm:hidden mb-6 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.6 }}
+          >
+            <PhotoBlock profile={profile} name={name} />
+          </motion.div>
 
           {/* Title + story glass card */}
           <motion.div
@@ -79,16 +89,6 @@ export default function Hero() {
                 {intro.map((p, i) => <p key={i}>{p}</p>)}
               </div>
             )}
-          </motion.div>
-
-          {/* Mobile photo — below links */}
-          <motion.div
-            className="sm:hidden mt-10 flex justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            <PhotoBlock profile={profile} name={name} />
           </motion.div>
 
         </div>
