@@ -25,6 +25,10 @@ export default function About() {
     .filter(Boolean)
 
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
+  const aboutBadge = String(profile?.about_section_badge || 'About Me').trim() || 'About Me'
+  const aboutHeadingPrefix = String(profile?.about_heading_prefix || 'Building infrastructure that').trim() || 'Building infrastructure that'
+  const aboutHeadingHighlight = String(profile?.about_heading_highlight || 'teams actually rely on.').trim() || 'teams actually rely on.'
+  const aboutIntro = String(profile?.about_section_intro || '').trim()
   const statCards = [
     ...(profile?.years_experience > 0
       ? [{ value: `${profile.years_experience}+`, label: 'Years in tech' }]
@@ -45,11 +49,14 @@ export default function About() {
 
         {/* Section header */}
         <motion.div {...fadeUp(0)} className="mb-16">
-          <span className="section-badge mb-4">About Me</span>
+          <span className="section-badge mb-4">{aboutBadge}</span>
           <h2 className="section-title mt-3">
-            Building infrastructure that<br />
-            <span className="text-cobalt-600">teams actually rely on.</span>
+            {aboutHeadingPrefix}<br />
+            <span className="text-cobalt-600">{aboutHeadingHighlight}</span>
           </h2>
+          {aboutIntro && (
+            <p className="mt-3 text-ink-500 max-w-2xl">{aboutIntro}</p>
+          )}
         </motion.div>
 
         <div className="grid lg:grid-cols-1 gap-12 items-start">
