@@ -130,6 +130,13 @@ resource "aws_cloudfront_distribution" "frontend" {
     max_ttl     = 31536000
   }
 
+  # NOTE: Removed custom_error_response rules. CloudFront error responses apply to ALL
+  # paths and origins, which breaks /static/* 404s (they get served as index.html, causing
+  # SyntaxError). For SPA routing, either:
+  # 1. Use S3 error_document configuration (S3-side, not CloudFront)
+  # 2. Or add Lambda@Edge to intercept 404s from S3 origin only
+  # For now, we accept that non-existent SPA routes return 404 instead of index.html.
+  # This avoids break static asset serving.
   # SPA routing: return index.html for 404 only for default (S3) origin 404s.
   # NOTE: This applies globally, but in practice only default_cache_behavior returns 404s
   # since /static/*, /api/*, /admin/* have specific origins and error handling.
