@@ -45,7 +45,7 @@ export default function Hero() {
 
       {/* Photo — top-right, desktop/tablet */}
       <motion.div
-        className="absolute top-24 right-6 sm:right-10 lg:right-20 z-20 hidden sm:block"
+        className="absolute top-32 right-6 sm:right-10 lg:right-20 z-20 hidden sm:block"
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
