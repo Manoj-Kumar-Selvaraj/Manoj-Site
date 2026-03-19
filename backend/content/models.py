@@ -9,25 +9,25 @@ class Profile(models.Model):
     about_section_badge = models.CharField(
         max_length=80,
         blank=True,
-        default='About Me',
+        default='Tools & Architecture',
         help_text='Small label shown above the About heading.',
     )
     about_heading_prefix = models.CharField(
         max_length=200,
         blank=True,
-        default='Building infrastructure that',
+        default='Platform tooling and systems',
         help_text='First line of the About heading.',
     )
     about_heading_highlight = models.CharField(
         max_length=200,
         blank=True,
-        default='teams actually rely on.',
+        default='engineered to scale.',
         help_text='Highlighted second line of the About heading.',
     )
     about_section_intro = models.CharField(
         max_length=300,
         blank=True,
-        default='This is where I share my background, impact, and current focus.',
+        default='An overview of the tools, platforms, and architecture patterns I work with.',
         help_text='Short intro text shown under the About heading.',
     )
     bio = models.TextField(
@@ -36,8 +36,37 @@ class Profile(models.Model):
     )
     bio_extended = models.TextField(
         blank=True,
-        verbose_name="About me (detailed)",
-        help_text="Detailed bio shown on the About section (optional).",
+        verbose_name="Tooling & architecture details",
+        help_text="Detailed write-up shown in the Tools & Architecture section (optional).",
+    )
+    applications_section_title = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Applications',
+        help_text='Title for the applications detail section.',
+    )
+    applications_section_body = models.TextField(
+        blank=True,
+        default='',
+        help_text='Describe the applications you have built or maintain. Supports plain text.',
+    )
+    infra_section_title = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Infrastructure & Architecture',
+        help_text='Title for the infrastructure / architecture section.',
+    )
+    infra_section_body = models.TextField(
+        blank=True,
+        default='',
+        help_text='Describe your infrastructure architecture and design decisions.',
+    )
+    infra_diagram = models.ImageField(
+        'Infrastructure diagram',
+        upload_to='infra/',
+        blank=True,
+        null=True,
+        help_text='Upload an infrastructure diagram or architecture image (optional).',
     )
     avatar = models.ImageField(
         'Profile photo',
