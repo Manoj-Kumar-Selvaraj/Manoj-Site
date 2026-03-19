@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.utils.html import format_html
 from .models import (
-    Profile, ProfileStat, AboutFocusArea, AboutCareerItem, Skill, Project, Experience,
+    Profile, ProfileStat, Skill, Project, Experience,
     BlogPost, Activity, Certification, ContactMessage
 )
 
@@ -18,26 +18,6 @@ class ProfileStatInline(admin.TabularInline):
     ordering = ('order', 'id')
     verbose_name = 'Stat'
     verbose_name_plural = 'Stats (add as many as you like)'
-
-
-class AboutFocusAreaInline(admin.StackedInline):
-    model = AboutFocusArea
-    extra = 0
-    min_num = 0
-    fields = ('title', 'points_text', 'order')
-    ordering = ('order', 'id')
-    verbose_name = 'Focus Area'
-    verbose_name_plural = 'About Focus Areas'
-
-
-class AboutCareerItemInline(admin.TabularInline):
-    model = AboutCareerItem
-    extra = 0
-    min_num = 0
-    fields = ('text', 'order')
-    ordering = ('order', 'id')
-    verbose_name = 'Career Item'
-    verbose_name_plural = 'About Career Timeline'
 
 
 @admin.register(ProfileStat)
@@ -59,21 +39,13 @@ class ProfileStatAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['name', 'title', 'email', 'phone', 'is_available', 'updated_at']
     readonly_fields = ['avatar_preview']
-    inlines = [ProfileStatInline, AboutFocusAreaInline, AboutCareerItemInline]
+    inlines = [ProfileStatInline]
     fieldsets = (
         ('Basic Info', {
             'fields': ('name', 'title', 'tagline', 'avatar', 'avatar_preview', 'email', 'phone', 'location', 'is_available')
         }),
         ('About Section Content', {
-            'fields': (
-                'about_role',
-                'about_section_badge', 'about_heading_prefix', 'about_heading_highlight', 'about_section_intro',
-                'about_career_title', 'about_career_badge',
-                'about_focus_title', 'about_focus_intro', 'about_focus_badge',
-                'about_metrics_title', 'about_metrics_intro', 'about_metrics_badge',
-                'about_notes_title', 'about_notes_intro', 'about_cta_label',
-                'years_experience_label', 'projects_completed_label',
-            )
+            'fields': ('about_section_badge', 'about_heading_prefix', 'about_heading_highlight', 'about_section_intro')
         }),
         ('Bio', {
             'fields': ('bio', 'bio_extended', 'resume')
@@ -95,24 +67,6 @@ class ProfileAdmin(admin.ModelAdmin):
                 obj.avatar.url,
             )
         return 'No photo uploaded yet.'
-
-
-@admin.register(AboutFocusArea)
-class AboutFocusAreaAdmin(admin.ModelAdmin):
-    list_display = ['title', 'profile', 'order']
-    list_editable = ['order']
-    list_filter = ['profile']
-    search_fields = ['title', 'points_text', 'profile__name']
-    ordering = ['profile', 'order', 'id']
-
-
-@admin.register(AboutCareerItem)
-class AboutCareerItemAdmin(admin.ModelAdmin):
-    list_display = ['text', 'profile', 'order']
-    list_editable = ['order']
-    list_filter = ['profile']
-    search_fields = ['text', 'profile__name']
-    ordering = ['profile', 'order', 'id']
 
 
 @admin.register(Skill)

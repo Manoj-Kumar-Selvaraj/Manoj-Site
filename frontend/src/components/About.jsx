@@ -18,176 +18,106 @@ export default function About() {
 
   if (!profile) return null
 
-  const bioParas = String(profile?.bio || '')
+  const bioText = String(profile?.bio_extended || profile?.bio || '')
+  const bioParas = bioText
     .split(/\n\n+/)
     .map(s => s.trim())
     .filter(Boolean)
-  const notesParas = String(profile?.bio_extended || '')
-    .split(/\n\n+/)
-    .map(s => s.trim())
-    .filter(Boolean)
+
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
-  const focusAreas = Array.isArray(profile?.about_focus_areas) ? profile.about_focus_areas : []
-  const careerItems = Array.isArray(profile?.about_career_items) ? profile.about_career_items : []
-  const name = String(profile?.name || '').trim()
-  const role = String(profile?.about_role || profile?.title || '').trim()
-  const shortBio = bioParas.slice(0, 2)
-  const detailParas = notesParas.length > 0 ? notesParas : bioParas.slice(2)
-  const metrics = [
-    ...(profile?.years_experience ? [{ value: `${profile.years_experience}+`, label: String(profile?.years_experience_label || '').trim() || 'Years in Engineering' }] : []),
-    ...(profile?.projects_completed ? [{ value: `${profile.projects_completed}+`, label: String(profile?.projects_completed_label || '').trim() || 'Infrastructure Projects' }] : []),
+  const aboutBadge = String(profile?.about_section_badge || 'About Me').trim() || 'About Me'
+  const aboutHeadingPrefix = String(profile?.about_heading_prefix || 'Building infrastructure that').trim() || 'Building infrastructure that'
+  const aboutHeadingHighlight = String(profile?.about_heading_highlight || 'teams actually rely on.').trim() || 'teams actually rely on.'
+  const aboutIntro = String(profile?.about_section_intro || '').trim()
+  const statCards = [
+    ...(profile?.years_experience > 0
+      ? [{ value: `${profile.years_experience}+`, label: 'Years in tech' }]
+      : []),
+    ...(profile?.projects_completed > 0
+      ? [{ value: `${profile.projects_completed}+`, label: 'Projects' }]
+      : []),
     ...dynamicStats
       .slice()
       .sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0))
-      .map((stat) => ({ value: String(stat?.value || '').trim(), label: String(stat?.label || '').trim() }))
-      .filter((stat) => stat.value && stat.label),
+      .map(s => ({ value: String(s?.value || '').trim(), label: String(s?.label || '').trim() }))
+      .filter(s => s.value && s.label),
   ]
 
   return (
     <section id="about" className="py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <motion.div {...fadeUp(0)} className="mb-12">
-          <span className="section-badge mb-4">{profile?.about_section_badge}</span>
-          <h2 className="section-title mt-3 max-w-3xl">
-            {profile?.about_heading_prefix} {profile?.about_heading_highlight}
+        {/* Section header */}
+        <motion.div {...fadeUp(0)} className="mb-16">
+          <span className="section-badge mb-4">{aboutBadge}</span>
+          <h2 className="section-title mt-3">
+            {aboutHeadingPrefix}<br />
+            <span className="text-cobalt-600">{aboutHeadingHighlight}</span>
           </h2>
-          <p className="mt-3 text-ink-500 max-w-2xl">
-            {profile?.about_section_intro}
-          </p>
+          {aboutIntro && (
+            <p className="mt-3 text-ink-500 max-w-2xl">{aboutIntro}</p>
+          )}
         </motion.div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] items-start">
-          <motion.div {...fadeUp(0.08)} className="card p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
+        <div className="grid lg:grid-cols-1 gap-12 items-start">
+
+          {/* Bio */}
+          <motion.div {...fadeUp(0.1)} className="space-y-6">
+
+            {/* Avatar / initial */}
+            <div className="flex items-center gap-5">
               {profile?.avatar ? (
                 <img
                   src={profile.avatar}
-                  alt={name}
-                  className="w-24 h-24 rounded-3xl object-cover border-2 border-ink-200 shadow-card flex-shrink-0"
+                  alt={profile.name}
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-ink-200 shadow-card"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-3xl bg-cobalt-600 flex items-center justify-center shadow-card flex-shrink-0">
-                  <span className="text-4xl font-black text-white">{name[0]}</span>
+                <div className="w-20 h-20 rounded-2xl bg-cobalt-600 flex items-center justify-center shadow-card flex-shrink-0">
+                  <span className="text-3xl font-black text-white">
+                    {(profile?.name || 'P')[0]}
+                  </span>
                 </div>
               )}
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-ink-900">{name}</h3>
-                    {role && <p className="text-sm sm:text-base text-ink-500 mt-1">{role}</p>}
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 self-start text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+              <div>
+                <div className="font-black text-2xl text-ink-900">{profile?.name}</div>
+                {profile?.title && (
+                  <div className="text-ink-500 text-sm mt-0.5">{profile.title}</div>
+                )}
+                {profile?.is_available && (
+                  <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-soft" />
                     Open to work
                   </span>
-                </div>
-
-                <div className="mt-6 space-y-4 text-ink-600 leading-relaxed text-sm sm:text-base">
-                  {shortBio.map((para) => <p key={para}>{para}</p>)}
-                </div>
+                )}
               </div>
             </div>
-          </motion.div>
 
-          <motion.div {...fadeUp(0.12)} className="card p-6 sm:p-8">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h3 className="text-lg font-black text-ink-900">{profile?.about_career_title}</h3>
-              <span className="tag-cobalt">{profile?.about_career_badge}</span>
+            {/* Bio text */}
+            <div className="space-y-4 text-ink-600 leading-relaxed text-base">
+              {bioParas.map((para, i) => <p key={i}>{para}</p>)}
             </div>
-            <ul className="space-y-3">
-              {careerItems.map((item) => (
-                <li key={`${item.order}-${item.text}`} className="flex items-start gap-3 text-sm text-ink-600 leading-relaxed">
-                  <span className="w-2 h-2 rounded-full bg-cobalt-500 mt-1.5 flex-shrink-0" />
-                  <span>{item.text}</span>
-                </li>
-              ))}
-            </ul>
+
+            {/* Quick facts */}
+            {statCards.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
+                {statCards.map((s, i) => (
+                  <div key={`${s.label}-${i}`} className="card p-4 text-center">
+                    <div className="text-xl font-black text-amber-600">{s.value}</div>
+                    <div className="text-xs text-ink-500 mt-0.5">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              <a href="/#contact" className="btn-primary">Let's Talk</a>
+              {profile?.resume && (
+                <a href={profile.resume} download className="btn-outline">Download CV</a>
+              )}
+            </div>
           </motion.div>
         </div>
-
-        <motion.div {...fadeUp(0.16)} className="mt-6 card p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-            <div>
-              <h3 className="text-xl font-black text-ink-900">{profile?.about_focus_title}</h3>
-              <p className="text-sm text-ink-500 mt-1">{profile?.about_focus_intro}</p>
-            </div>
-            <span className="tag-amber self-start">{profile?.about_focus_badge}</span>
-          </div>
-
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {focusAreas.map((area, index) => (
-              <motion.div
-                key={`${area.order}-${area.title}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.06, duration: 0.45 }}
-                className="rounded-2xl border border-ink-200 bg-white/80 p-5 shadow-sm"
-              >
-                <h4 className="text-sm font-black text-ink-900 mb-3">{area.title}</h4>
-                <ul className="space-y-2">
-                  {area.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2 text-sm text-ink-600 leading-relaxed">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div {...fadeUp(0.2)} className="mt-6 card p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-            <div>
-              <h3 className="text-xl font-black text-ink-900">{profile?.about_metrics_title}</h3>
-              <p className="text-sm text-ink-500 mt-1">{profile?.about_metrics_intro}</p>
-            </div>
-            <span className="tag">{profile?.about_metrics_badge}</span>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            {metrics.map((metric, index) => (
-              <motion.div
-                key={metric.label}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05, duration: 0.4 }}
-                className="card-hover rounded-2xl p-5 text-left"
-              >
-                <div className="text-2xl sm:text-3xl font-black text-cobalt-700">{metric.value}</div>
-                <div className="text-xs sm:text-sm text-ink-500 mt-1 leading-snug">{metric.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div {...fadeUp(0.24)} className="mt-6 card p-6 sm:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
-            <div className="lg:w-56 flex-shrink-0">
-              <h3 className="text-xl font-black text-ink-900">{profile?.about_notes_title}</h3>
-              <p className="text-sm text-ink-500 mt-2">{profile?.about_notes_intro}</p>
-            </div>
-            <div className="grid gap-4 flex-1 md:grid-cols-2">
-              {detailParas.slice(0, 4).map((para, index) => (
-                <div key={`${index}-${para.slice(0, 20)}`} className="rounded-2xl border border-ink-200 bg-white/70 p-5">
-                  <p className="text-sm text-ink-600 leading-relaxed">{para}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3 pt-6 mt-6 border-t border-ink-100">
-            <a href="/#contact" className="btn-primary">{profile?.about_cta_label || "Let's Talk"}</a>
-            {profile?.resume && (
-              <a href={profile.resume} download className="btn-outline">Download CV</a>
-            )}
-          </div>
-        </motion.div>
       </div>
     </section>
   )
