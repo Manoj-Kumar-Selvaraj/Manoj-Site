@@ -6,12 +6,6 @@ class Profile(models.Model):
     name = models.CharField(max_length=200)
     title = models.CharField(max_length=300, help_text="e.g. Cloud Platform | DevOps | LLM Benchmarking")
     tagline = models.CharField(max_length=500, blank=True)
-    about_role = models.CharField(
-        max_length=300,
-        blank=True,
-        default='Platform Engineer | Cloud Infrastructure | DevOps',
-        help_text='Role line shown under your name in the About profile card.',
-    )
     about_section_badge = models.CharField(
         max_length=80,
         blank=True,
@@ -35,84 +29,6 @@ class Profile(models.Model):
         blank=True,
         default='This is where I share my background, impact, and current focus.',
         help_text='Short intro text shown under the About heading.',
-    )
-    about_career_title = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Career Background',
-        help_text='Title for the career background card.',
-    )
-    about_career_badge = models.CharField(
-        max_length=80,
-        blank=True,
-        default='Journey',
-        help_text='Small badge shown in the career background card.',
-    )
-    about_focus_title = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Engineering Focus',
-        help_text='Title for the engineering focus section.',
-    )
-    about_focus_intro = models.CharField(
-        max_length=300,
-        blank=True,
-        default='Detailed but easy to scan across the systems I spend the most time building.',
-        help_text='Short intro line for the engineering focus section.',
-    )
-    about_focus_badge = models.CharField(
-        max_length=80,
-        blank=True,
-        default='Core Areas',
-        help_text='Small badge shown in the engineering focus section.',
-    )
-    about_metrics_title = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Impact Metrics',
-        help_text='Title for the metrics section.',
-    )
-    about_metrics_intro = models.CharField(
-        max_length=300,
-        blank=True,
-        default='A quick engineering snapshot across platform scale, delivery volume, and operating footprint.',
-        help_text='Short intro line for the metrics section.',
-    )
-    about_metrics_badge = models.CharField(
-        max_length=80,
-        blank=True,
-        default='At a Glance',
-        help_text='Small badge shown in the metrics section.',
-    )
-    about_notes_title = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Profile Notes',
-        help_text='Title for the detailed notes section.',
-    )
-    about_notes_intro = models.CharField(
-        max_length=300,
-        blank=True,
-        default='Additional context from the portfolio profile, kept in shorter paragraphs for fast scanning.',
-        help_text='Short intro line for the detailed notes section.',
-    )
-    about_cta_label = models.CharField(
-        max_length=80,
-        blank=True,
-        default="Let's Talk",
-        help_text='Primary call-to-action label for the About section.',
-    )
-    years_experience_label = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Years in Engineering',
-        help_text='Label shown for the years experience metric.',
-    )
-    projects_completed_label = models.CharField(
-        max_length=120,
-        blank=True,
-        default='Infrastructure Projects',
-        help_text='Label shown for the projects completed metric.',
     )
     bio = models.TextField(
         verbose_name="Opening bio",
@@ -164,38 +80,6 @@ class ProfileStat(models.Model):
 
     def __str__(self):
         return f"{self.label}: {self.value}"
-
-
-class AboutFocusArea(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='about_focus_areas')
-    title = models.CharField(max_length=120)
-    points_text = models.TextField(help_text='Enter one bullet point per line.')
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order', 'id']
-        verbose_name = 'About Focus Area'
-        verbose_name_plural = 'About Focus Areas'
-
-    def points(self):
-        return [line.strip() for line in str(self.points_text or '').splitlines() if line.strip()]
-
-    def __str__(self):
-        return self.title
-
-
-class AboutCareerItem(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='about_career_items')
-    text = models.CharField(max_length=300)
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order', 'id']
-        verbose_name = 'About Career Item'
-        verbose_name_plural = 'About Career Items'
-
-    def __str__(self):
-        return self.text
 
 
 SKILL_CATEGORIES = [
