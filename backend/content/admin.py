@@ -53,6 +53,18 @@ class ProfileAdmin(admin.ModelAdmin):
         ('Stats (shown in Hero)', {
             'fields': ('years_experience', 'projects_completed')
         }),
+        ('Homepage Section Copy', {
+            'description': 'Text labels/headings used by Hero, Experience, Projects, Blog, Certifications, and Contact sections.',
+            'fields': (
+                'hero_tools_label', 'hero_stats_label',
+                'experience_section_badge', 'experience_section_title', 'experience_section_intro',
+                'projects_section_badge', 'projects_section_title', 'projects_section_intro', 'projects_empty_text', 'projects_view_all_label',
+                'blog_section_badge', 'blog_section_title', 'blog_section_intro', 'blog_view_all_label',
+                'certifications_section_badge', 'certifications_section_title',
+                'contact_section_badge', 'contact_section_title', 'contact_section_intro',
+            ),
+            'classes': ('collapse',),
+        }),
         ('Applications', {
             'description': 'Add details about the applications you have built or maintain. This will appear as a placeholder section on the site.',
             'fields': ('applications_section_title', 'applications_section_body'),

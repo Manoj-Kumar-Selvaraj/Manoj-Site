@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { getExperiences } from '../api'
+import { getExperiences, getProfile } from '../api'
 
 function ExpCard({ exp, index }) {
   const [open, setOpen] = useState(index === 0)
@@ -75,17 +75,23 @@ function ExpCard({ exp, index }) {
 
 export default function Experience() {
   const [experiences, setExperiences] = useState([])
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    getExperiences()
-      .then(r => {
-        const data = r.data.results || r.data
+    Promise.all([getExperiences(), getProfile()])
+      .then(([expRes, profileRes]) => {
+        const data = expRes.data.results || expRes.data
         setExperiences(Array.isArray(data) ? data : [])
+        setProfile(profileRes.data)
       })
       .catch(() => {})
   }, [])
 
   if (!experiences.length) return null
+
+  const sectionBadge = String(profile?.experience_section_badge || 'Work History').trim() || 'Work History'
+  const sectionTitle = String(profile?.experience_section_title || 'Experience').trim() || 'Experience'
+  const sectionIntro = String(profile?.experience_section_intro || 'Platform engineering and large-scale migrations.').trim()
 
   return (
     <section id="experience" className="py-24 bg-surface">
@@ -97,11 +103,9 @@ export default function Experience() {
           viewport={{ once: true }}
           className="mb-14"
         >
-          <span className="section-badge mb-4">Work History</span>
-          <h2 className="section-title mt-3">Experience</h2>
-          <p className="mt-3 text-ink-500">
-            Platform engineering and large-scale migrations.
-          </p>
+          <span className="section-badge mb-4">{sectionBadge}</span>
+          <h2 className="section-title mt-3">{sectionTitle}</h2>
+          {sectionIntro && <p className="mt-3 text-ink-500">{sectionIntro}</p>}
         </motion.div>
 
         <div className="space-y-4">

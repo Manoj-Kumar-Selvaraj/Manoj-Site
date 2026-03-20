@@ -30,6 +30,51 @@ class Profile(models.Model):
         default='An overview of the tools, platforms, and architecture patterns I work with.',
         help_text='Short intro text shown under the About heading.',
     )
+    hero_tools_label = models.CharField(
+        max_length=120,
+        blank=True,
+        default='Core tools & services',
+        help_text='Heading shown above hero tool chips.',
+    )
+    hero_stats_label = models.CharField(
+        max_length=120,
+        blank=True,
+        default='Quick stats',
+        help_text='Heading shown above hero stats cards.',
+    )
+    experience_section_badge = models.CharField(max_length=80, blank=True, default='Work History')
+    experience_section_title = models.CharField(max_length=200, blank=True, default='Experience')
+    experience_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='Platform engineering and large-scale migrations.',
+    )
+    projects_section_badge = models.CharField(max_length=80, blank=True, default='Portfolio')
+    projects_section_title = models.CharField(max_length=200, blank=True, default='Projects & Initiatives')
+    projects_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='Large-scale migrations, automation frameworks, and full-stack systems built in production.',
+    )
+    projects_empty_text = models.CharField(max_length=160, blank=True, default='Projects coming soon.')
+    projects_view_all_label = models.CharField(max_length=80, blank=True, default='View All Projects')
+    blog_section_badge = models.CharField(max_length=80, blank=True, default='Writing')
+    blog_section_title = models.CharField(max_length=200, blank=True, default='Latest Posts')
+    blog_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='Thoughts on AI, DevOps, cloud infrastructure and engineering.',
+    )
+    blog_view_all_label = models.CharField(max_length=80, blank=True, default='Read All Posts')
+    certifications_section_badge = models.CharField(max_length=80, blank=True, default='Credentials')
+    certifications_section_title = models.CharField(max_length=200, blank=True, default='Certifications')
+    contact_section_badge = models.CharField(max_length=80, blank=True, default='Contact')
+    contact_section_title = models.CharField(max_length=200, blank=True, default="Let's Work Together")
+    contact_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default="Send a message and I'll get back to you.",
+    )
     bio = models.TextField(
         verbose_name="Opening bio",
         help_text="Short bio used in the hero/intro (use blank lines to split paragraphs).",

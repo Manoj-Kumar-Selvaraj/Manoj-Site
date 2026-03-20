@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Github, Linkedin, Mail, ArrowUp } from 'lucide-react'
-import { getProfile } from '../api'
+import { getFeaturedSkills, getProfile } from '../api'
 
 const NAV_LINKS = [
   { label: 'About',      href: '/#about' },
@@ -14,9 +14,15 @@ const NAV_LINKS = [
 export default function Footer() {
   const year = new Date().getFullYear()
   const [profile, setProfile] = useState(null)
+  const [featuredSkills, setFeaturedSkills] = useState([])
 
   useEffect(() => {
-    getProfile().then(r => setProfile(r.data)).catch(() => {})
+    Promise.all([getProfile(), getFeaturedSkills()])
+      .then(([profileRes, skillsRes]) => {
+        setProfile(profileRes.data)
+        setFeaturedSkills(Array.isArray(skillsRes.data) ? skillsRes.data : [])
+      })
+      .catch(() => {})
   }, [])
 
   const title = profile?.title || ''
@@ -26,6 +32,7 @@ export default function Footer() {
   const location = profile?.location || ''
   const isAvailable = Boolean(profile?.is_available)
   const name = profile?.name || ''
+  const stackSummary = featuredSkills.slice(0, 5).map(s => s.name).join(' · ')
 
   return (
     <footer className="bg-ink-900 text-ink-400">
@@ -98,7 +105,7 @@ export default function Footer() {
             </ul>
             <div className="mt-5">
               <p className="text-xs text-ink-500 uppercase tracking-widest font-semibold mb-2">Stack</p>
-              <p className="text-xs text-ink-400 leading-relaxed">React · Django · Terraform · AWS · Python</p>
+              <p className="text-xs text-ink-400 leading-relaxed">{stackSummary || 'Curate hero tools in admin to show stack summary.'}</p>
             </div>
           </div>
 

@@ -119,6 +119,8 @@ export default function Hero() {
   const name    = profile?.name    || ''
   const title   = profile?.title   || ''
   const tagline = profile?.tagline || ''
+  const heroToolsLabel = String(profile?.hero_tools_label || 'Core tools & services').trim() || 'Core tools & services'
+  const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
 
   const intro = String(profile?.bio || '')
     .split(/\n\n+/)
@@ -221,7 +223,7 @@ export default function Hero() {
           <div id="hero-toolkit" className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Wrench size={14} className="text-white/50" />
-              <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">Core tools & services</span>
+              <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">{heroToolsLabel}</span>
             </div>
             <div className="flex flex-wrap gap-2.5">
               {featuredSkills.slice(0, 8).map((skill, i) => (
@@ -235,7 +237,7 @@ export default function Hero() {
         {statCards.length > 0 && (
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp size={14} className="text-white/50" />
-            <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">Quick stats</span>
+            <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">{heroStatsLabel}</span>
           </div>
         )}
         {statCards.length > 0 && (() => {

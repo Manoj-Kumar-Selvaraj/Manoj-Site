@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Award, ExternalLink, Calendar } from 'lucide-react'
-import { getCertifications } from '../api'
+import { getCertifications, getProfile } from '../api'
 
 export default function Certifications() {
   const [certs, setCerts] = useState([])
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    getCertifications().then(r => setCerts(r.data.results || r.data)).catch(() => {})
+    Promise.all([getCertifications(), getProfile()])
+      .then(([certRes, profileRes]) => {
+        setCerts(certRes.data.results || certRes.data)
+        setProfile(profileRes.data)
+      })
+      .catch(() => {})
   }, [])
 
   if (!certs.length) return null
+
+  const sectionBadge = String(profile?.certifications_section_badge || 'Credentials').trim() || 'Credentials'
+  const sectionTitle = String(profile?.certifications_section_title || 'Certifications').trim() || 'Certifications'
 
   return (
     <section id="certifications" className="relative py-24 bg-canvas">
@@ -23,8 +32,8 @@ export default function Certifications() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="badge mb-4">Credentials</span>
-          <h2 className="section-title gradient-text">Certifications</h2>
+          <span className="badge mb-4">{sectionBadge}</span>
+          <h2 className="section-title gradient-text">{sectionTitle}</h2>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

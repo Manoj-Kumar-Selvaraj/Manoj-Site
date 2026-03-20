@@ -15,6 +15,9 @@ export default function Contact() {
   const contactEmail = profile?.email || ''
   const location = profile?.location || ''
   const isAvailable = Boolean(profile?.is_available)
+  const sectionBadge = String(profile?.contact_section_badge || 'Contact').trim() || 'Contact'
+  const sectionTitle = String(profile?.contact_section_title || "Let's Work Together").trim() || "Let's Work Together"
+  const sectionIntro = String(profile?.contact_section_intro || "Send a message and I'll get back to you.").trim()
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -40,11 +43,11 @@ export default function Contact() {
           viewport={{ once: true }}
           className="mb-14"
         >
-          <span className="section-badge mb-4">Contact</span>
-          <h2 className="section-title mt-3">Let's Work Together</h2>
-          <p className="mt-3 text-ink-500 max-w-xl">
-            Send a message and I'll get back to you.
-          </p>
+          <span className="section-badge mb-4">{sectionBadge}</span>
+          <h2 className="section-title mt-3">{sectionTitle}</h2>
+          {sectionIntro && (
+            <p className="mt-3 text-ink-500 max-w-xl">{sectionIntro}</p>
+          )}
         </motion.div>
 
         <div className="grid lg:grid-cols-5 gap-8">
