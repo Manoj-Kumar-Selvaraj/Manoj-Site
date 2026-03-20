@@ -118,6 +118,7 @@ export default function Hero() {
   const [profile, setProfile] = useState(null)
   const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
+  const [showAllSkills, setShowAllSkills] = useState(false)
 
   useEffect(() => {
     Promise.all([getProfile(), getFeaturedSkills()])
@@ -129,6 +130,10 @@ export default function Hero() {
         getProfile().then(r => setProfile(r.data)).catch(() => {})
       })
   }, [])
+
+  useEffect(() => {
+    setShowAllSkills(false)
+  }, [featuredSkills.length])
 
   const name    = profile?.name    || ''
   const title   = profile?.title   || ''
@@ -142,6 +147,8 @@ export default function Hero() {
     .filter(Boolean)
   const heroIntro = intro[0] || ''
   const shortIntro = heroIntro.length > 340 ? `${heroIntro.slice(0, 337).trimEnd()}...` : heroIntro
+  const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, 12)
+  const hasMoreSkills = featuredSkills.length > 12
 
   /* Build stat cards from fixed fields + dynamic ProfileStat entries */
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
@@ -240,10 +247,21 @@ export default function Hero() {
               <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">{heroToolsLabel}</span>
             </div>
             <div className="flex flex-wrap gap-2.5">
-              {featuredSkills.slice(0, 8).map((skill, i) => (
+              {visibleSkills.map((skill, i) => (
                 <SkillChip key={skill.id || `${skill.name}-${i}`} skill={skill} delay={0.35 + i * 0.05} />
               ))}
             </div>
+            {hasMoreSkills && (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAllSkills(current => !current)}
+                  className="inline-flex items-center rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/85 transition-colors duration-200 hover:bg-white/15"
+                >
+                  {showAllSkills ? 'Show less' : `Show more (${featuredSkills.length - 12})`}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
