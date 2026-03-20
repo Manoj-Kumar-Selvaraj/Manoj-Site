@@ -114,6 +114,7 @@ export default function Hero() {
   const [profile, setProfile] = useState(null)
   const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
+  const [showAllSkills, setShowAllSkills] = useState(false)
 
   useEffect(() => {
     Promise.all([getProfile(), getFeaturedSkills()])
@@ -123,11 +124,17 @@ export default function Hero() {
       })
   }, [])
 
+  const name = profile?.name || ''
+  const title = profile?.title || ''
+  const tagline = profile?.tagline || ''
+
   const openingBioLines = String(profile?.bio || '')
     .split('\n')
     .map(s => s.trim())
     .filter(Boolean)
   const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
+  const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, 12)
+  const hiddenSkillCount = Math.max(featuredSkills.length - 12, 0)
 
   /* Build stat cards from fixed fields + dynamic ProfileStat entries */
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
@@ -146,55 +153,156 @@ export default function Hero() {
   ]
 
   return (
-    <section className="min-h-screen pt-20">
-
-      {/* Bio Glass Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white/10 backdrop-blur-xl rounded-3xl px-6 py-6
-                   shadow-2xl border border-white/20 mb-6
-                   transition-all duration-300 hover:bg-white/15"
-      >
-        {profile?.tagline && (
-          <p className="text-xs sm:text-sm font-semibold text-amber-300 mb-4 uppercase tracking-wide">
-            {profile.tagline}
-          </p>
-        )}
-
-        <div className="max-w-3xl space-y-4 text-white/90 leading-relaxed">
-          {openingBioLines.map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Stat cards */}
-      {statCards.length > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp size={14} className="text-white/60" />
-            <span className="text-xs text-white/60 uppercase tracking-widest font-semibold">{heroStatsLabel}</span>
-          </div>
-          {(() => {
-            const cols = statCards.length <= 2 ? 'grid-cols-2'
-              : statCards.length === 3 ? 'grid-cols-3'
-              : 'grid-cols-2 sm:grid-cols-4'
-            return (
-              <div className={`grid gap-3 ${cols}`}>
-                {statCards.map((s, i) => (
-                  <StatCard key={s.label} value={s.value} label={s.label} delay={0.2 + i * 0.08} />
-                ))}
-              </div>
-            )
-          })()}
-        </div>
-      )}
-
-      <div className="mt-2 mb-2 flex gap-3">
-        <a href="#contact" className="btn-primary">Lets Connect</a>
+    <section
+      id="hero"
+      className="relative min-h-screen flex items-start sm:items-center overflow-hidden hero-section pt-20 pb-10 sm:pb-0"
+    >
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-cobalt-600/20 blur-3xl animate-float-1" />
+        <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl animate-float-2" />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-cobalt-400/10 blur-3xl animate-float-3" />
       </div>
 
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
+        <motion.div
+          className="flex items-center gap-4 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.6 }}
+        >
+          <Avatar
+            profile={profile}
+            name={name}
+            size="md"
+            onClick={profile?.avatar ? () => setAvatarOpen(true) : undefined}
+          />
+          <div>
+            {name && (
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white hero-text-glow leading-tight">
+                {name}
+              </h1>
+            )}
+            <div className="text-sm sm:text-base font-semibold text-white/80 mt-0.5 leading-snug">
+              {title || 'Portfolio'}
+            </div>
+            {profile?.is_available && (
+              <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-300 bg-emerald-900/40 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
+                Open to work
+              </span>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.7 }}
+          className="bg-white/10 backdrop-blur-xl rounded-3xl px-6 py-6
+                     shadow-2xl border border-white/20 mb-6
+                     transition-all duration-300 hover:bg-white/15"
+        >
+          {tagline && (
+            <p className="text-xs sm:text-sm font-semibold text-amber-300 mb-4 uppercase tracking-wide">
+              {tagline}
+            </p>
+          )}
+
+          <div className="max-w-3xl space-y-4 text-white/90 leading-relaxed">
+            {openingBioLines.map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
+        </motion.div>
+
+        {featuredSkills.length > 0 && (
+          <div id="hero-toolkit" className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench size={14} className="text-white/60" />
+              <span className="text-xs text-white/60 uppercase tracking-widest font-semibold">Core tools & services</span>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {visibleSkills.map((skill, i) => (
+                <SkillChip key={skill.id || `${skill.name}-${i}`} skill={skill} delay={0.35 + i * 0.05} />
+              ))}
+            </div>
+            {hiddenSkillCount > 0 && !showAllSkills && (
+              <button
+                type="button"
+                onClick={() => setShowAllSkills(true)}
+                className="mt-3 inline-flex items-center rounded-xl border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85 hover:bg-white/15"
+              >
+                Show {hiddenSkillCount} more
+              </button>
+            )}
+            {showAllSkills && featuredSkills.length > 12 && (
+              <button
+                type="button"
+                onClick={() => setShowAllSkills(false)}
+                className="mt-3 ml-2 inline-flex items-center rounded-xl border border-white/25 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:bg-white/10"
+              >
+                Show less
+              </button>
+            )}
+          </div>
+        )}
+
+        {statCards.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp size={14} className="text-white/60" />
+              <span className="text-xs text-white/60 uppercase tracking-widest font-semibold">{heroStatsLabel}</span>
+            </div>
+            {(() => {
+              const cols = statCards.length <= 2 ? 'grid-cols-2'
+                : statCards.length === 3 ? 'grid-cols-3'
+                : 'grid-cols-2 sm:grid-cols-4'
+              return (
+                <div className={`grid gap-3 ${cols}`}>
+                  {statCards.map((s, i) => (
+                    <StatCard key={s.label} value={s.value} label={s.label} delay={0.2 + i * 0.08} />
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+        )}
+
+        <div className="mt-2 mb-2 flex gap-3">
+          <a href="#contact" className="btn-primary">Lets Connect</a>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {avatarOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setAvatarOpen(false)}
+          >
+            <motion.div
+              className="relative"
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <Avatar profile={profile} name={name} size="lg" />
+              <button
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white/30
+                           flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                onClick={() => setAvatarOpen(false)}
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

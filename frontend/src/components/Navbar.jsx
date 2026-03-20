@@ -78,7 +78,7 @@ export default function Navbar() {
             </span>
 
             {/* Small contact icons near brand */}
-            <div className="hidden min-[1200px]:flex items-center gap-1.5 ml-2">
+            <div className="hidden min-[960px]:flex items-center gap-1.5 ml-2">
               {linkedin && (
                 <a
                   href={linkedin}
@@ -91,7 +91,7 @@ export default function Navbar() {
                              hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Linkedin size={16} />
+                  <Linkedin size={17} />
                 </a>
               )}
               {github && (
@@ -106,7 +106,7 @@ export default function Navbar() {
                              hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Github size={16} />
+                  <Github size={17} />
                 </a>
               )}
               {email && (
@@ -114,7 +114,7 @@ export default function Navbar() {
                   href={`mailto:${email}`}
                   aria-label="Email"
                   title={email}
-                  className="w-8 h-8 rounded-lg bg-white/50 border border-white/60 backdrop-blur
+                  className="hidden min-[1240px]:flex w-8 h-8 rounded-lg bg-white/50 border border-white/60 backdrop-blur
                              flex items-center justify-center text-ink-700
                              hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
                   onClick={(e) => e.stopPropagation()}
@@ -127,7 +127,7 @@ export default function Navbar() {
                   href={`tel:${phone}`}
                   aria-label="Call"
                   title={phone}
-                  className="w-8 h-8 rounded-lg bg-white/50 border border-white/60 backdrop-blur
+                  className="hidden min-[1240px]:flex w-8 h-8 rounded-lg bg-white/50 border border-white/60 backdrop-blur
                              flex items-center justify-center text-ink-700
                              hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
                   onClick={(e) => e.stopPropagation()}
