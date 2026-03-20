@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, X, TrendingUp } from 'lucide-react'
-import { getProfile } from '../api'
+import { Camera, X, TrendingUp, Wrench } from 'lucide-react'
+import { getFeaturedSkills, getProfile } from '../api'
 
 /* ── Avatar component ───────────────────────────────────────────── */
 function Avatar({ profile, name, size = 'md', onClick }) {
@@ -49,13 +49,71 @@ function StatCard({ value, label, delay = 0 }) {
   )
 }
 
+function resolveIconSlug(skill) {
+  const explicit = String(skill?.icon || '').trim()
+  if (explicit) return explicit
+
+  const name = String(skill?.name || '').toLowerCase()
+  if (/aws|cloudwatch|eventbridge|route\s*53|eks|s3|vpc|iam|kms/.test(name)) return 'amazonaws'
+  if (/kubernetes/.test(name)) return 'kubernetes'
+  if (/docker/.test(name)) return 'docker'
+  if (/helm/.test(name)) return 'helm'
+  if (/github actions|arc runner/.test(name)) return 'githubactions'
+  if (/jenkins|cloudbees/.test(name)) return 'jenkins'
+  if (/sonarqube/.test(name)) return 'sonarqube'
+  if (/jfrog|artifactory/.test(name)) return 'jfrog'
+  if (/python/.test(name)) return 'python'
+  if (/bash/.test(name)) return 'gnubash'
+  if (/terraform/.test(name)) return 'terraform'
+  if (/cloudformation/.test(name)) return 'amazonaws'
+  if (/harness/.test(name)) return 'harness'
+  if (/api integrations/.test(name)) return 'postman'
+
+  return ''
+}
+
+function SkillChip({ skill, delay = 0 }) {
+  const [iconFailed, setIconFailed] = useState(false)
+  const slug = resolveIconSlug(skill)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.35, ease: 'easeOut' }}
+      className="inline-flex items-center gap-2.5 rounded-xl px-3 py-2
+                 bg-white/10 backdrop-blur-md border border-white/20 text-white/90"
+    >
+      {slug && !iconFailed ? (
+        <img
+          src={`https://cdn.simpleicons.org/${slug}`}
+          alt={skill.name}
+          className="w-4 h-4 object-contain"
+          onError={() => setIconFailed(true)}
+        />
+      ) : (
+        <span className="w-1.5 h-1.5 rounded-full bg-cobalt-300" />
+      )}
+      <span className="text-xs sm:text-sm font-medium leading-none">{skill.name}</span>
+    </motion.div>
+  )
+}
+
 /* ── Hero component ─────────────────────────────────────────────── */
 export default function Hero() {
   const [profile, setProfile] = useState(null)
+  const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
 
   useEffect(() => {
-    getProfile().then(r => setProfile(r.data)).catch(() => {})
+    Promise.all([getProfile(), getFeaturedSkills()])
+      .then(([profileRes, skillsRes]) => {
+        setProfile(profileRes.data)
+        setFeaturedSkills(Array.isArray(skillsRes.data) ? skillsRes.data : [])
+      })
+      .catch(() => {
+        getProfile().then(r => setProfile(r.data)).catch(() => {})
+      })
   }, [])
 
   const name    = profile?.name    || ''
@@ -66,7 +124,8 @@ export default function Hero() {
     .split(/\n\n+/)
     .map(s => s.trim())
     .filter(Boolean)
-    .slice(0, 2)
+  const heroIntro = intro[0] || ''
+  const shortIntro = heroIntro.length > 340 ? `${heroIntro.slice(0, 337).trimEnd()}...` : heroIntro
 
   /* Build stat cards from fixed fields + dynamic ProfileStat entries */
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
@@ -144,9 +203,9 @@ export default function Hero() {
               {tagline}
             </p>
           )}
-          {intro.length > 0 && (
+          {shortIntro && (
             <div className="space-y-3 text-sm sm:text-base text-white/85 leading-relaxed">
-              {intro.map((p, i) => <p key={i}>{p}</p>)}
+              <p>{shortIntro}</p>
             </div>
           )}
           <div className="flex flex-wrap gap-3 mt-5">
@@ -156,6 +215,21 @@ export default function Hero() {
             )}
           </div>
         </motion.div>
+
+        {/* Curated tools and services */}
+        {featuredSkills.length > 0 && (
+          <div id="hero-toolkit" className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench size={14} className="text-white/50" />
+              <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">Core tools & services</span>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {featuredSkills.slice(0, 8).map((skill, i) => (
+                <SkillChip key={skill.id || `${skill.name}-${i}`} skill={skill} delay={0.35 + i * 0.05} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Stat cards */}
         {statCards.length > 0 && (

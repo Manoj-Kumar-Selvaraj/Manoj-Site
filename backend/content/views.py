@@ -58,6 +58,22 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response(ordered)
 
+    @action(detail=False, methods=['get'])
+    def featured(self, request):
+        curated = Skill.objects.filter(show_in_hero=True).order_by('order', 'name')
+
+        if curated.exists():
+            skills = list(curated[:10])
+        else:
+            # Backward-compatible fallback so Hero still shows a concise tool strip
+            # before admins curate skills in Django admin.
+            skills = list(
+                Skill.objects.exclude(icon='')
+                .order_by('-proficiency', 'order', 'name')[:8]
+            )
+
+        return Response(SkillSerializer(skills, many=True).data)
+
 
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Project.objects.all()
