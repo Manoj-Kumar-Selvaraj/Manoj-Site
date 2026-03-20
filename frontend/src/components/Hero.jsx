@@ -127,6 +127,23 @@ export default function Hero() {
     .split('\n')
     .map(s => s.trim())
     .filter(Boolean)
+  const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
+
+  /* Build stat cards from fixed fields + dynamic ProfileStat entries */
+  const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
+  const statCards = [
+    ...(profile?.years_experience > 0
+      ? [{ value: `${profile.years_experience}+`, label: 'Years in tech' }]
+      : []),
+    ...(profile?.projects_completed > 0
+      ? [{ value: `${profile.projects_completed}+`, label: 'Projects' }]
+      : []),
+    ...dynamicStats
+      .slice()
+      .sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0))
+      .map(s => ({ value: String(s?.value || '').trim(), label: String(s?.label || '').trim() }))
+      .filter(s => s.value && s.label),
+  ]
 
   return (
     <section className="min-h-screen pt-20">
@@ -150,11 +167,33 @@ export default function Hero() {
             <p key={i}>{line}</p>
           ))}
         </div>
-
-        <div className="mt-6 flex gap-3">
-          <a href="#contact" className="btn-primary">Let's Talk</a>
-        </div>
       </motion.div>
+
+      {/* Stat cards */}
+      {statCards.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp size={14} className="text-white/60" />
+            <span className="text-xs text-white/60 uppercase tracking-widest font-semibold">{heroStatsLabel}</span>
+          </div>
+          {(() => {
+            const cols = statCards.length <= 2 ? 'grid-cols-2'
+              : statCards.length === 3 ? 'grid-cols-3'
+              : 'grid-cols-2 sm:grid-cols-4'
+            return (
+              <div className={`grid gap-3 ${cols}`}>
+                {statCards.map((s, i) => (
+                  <StatCard key={s.label} value={s.value} label={s.label} delay={0.2 + i * 0.08} />
+                ))}
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
+      <div className="mt-2 mb-2 flex gap-3">
+        <a href="#contact" className="btn-primary">Lets Connect</a>
+      </div>
 
     </section>
   )

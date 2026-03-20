@@ -14,6 +14,13 @@ const navLinks = [
   { label: 'Contact',    href: '/#contact' },
 ]
 
+function normalizeExternalUrl(value) {
+  const url = String(value || '').trim()
+  if (!url) return ''
+  if (/^(https?:)?\/\//i.test(url)) return url
+  return `https://${url}`
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -34,8 +41,8 @@ export default function Navbar() {
 
   const brand = String(profile?.name || 'Portfolio').trim() || 'Portfolio'
   const brandShort = brand.split(' ').slice(0, 2).join(' ') || brand
-  const github = String(profile?.github_url || '').trim()
-  const linkedin = String(profile?.linkedin_url || '').trim()
+  const github = normalizeExternalUrl(profile?.github_url)
+  const linkedin = normalizeExternalUrl(profile?.linkedin_url)
   const email = String(profile?.email || '').trim()
   const phone = String(profile?.phone || '').trim()
 
