@@ -17,7 +17,7 @@ function isDirectIconSource(value) {
 }
 
 function resolveIconSource(skill) {
-  const uploaded = String(skill?.icon_upload || '').trim()
+  const uploaded = String(skill?.icon_upload_url || skill?.icon_upload || '').trim()
   if (uploaded) return uploaded
 
   const explicit = String(skill?.icon || '').trim()
@@ -30,6 +30,10 @@ function SkillIcon({ skill, dot }) {
   const iconUrl = source && !isDirectIconSource(source)
     ? `https://cdn.simpleicons.org/${source}`
     : source
+
+  useEffect(() => {
+    setFailed(false)
+  }, [iconUrl])
 
   if (!iconUrl || failed) {
     return <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />

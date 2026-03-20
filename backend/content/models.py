@@ -193,11 +193,28 @@ class Skill(models.Model):
         default=False,
         help_text='Enable to show this skill in the Hero tools strip.',
     )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['category', 'order', 'name']
         verbose_name = "Skill"
         verbose_name_plural = "Skills"
+
+    def save(self, *args, **kwargs):
+        previous_icon_name = None
+        previous_storage = None
+
+        if self.pk:
+            previous = type(self).objects.filter(pk=self.pk).only('icon_upload').first()
+            if previous and previous.icon_upload:
+                previous_icon_name = previous.icon_upload.name
+                previous_storage = previous.icon_upload.storage
+
+        super().save(*args, **kwargs)
+
+        current_icon_name = self.icon_upload.name if self.icon_upload else None
+        if previous_icon_name and previous_icon_name != current_icon_name and previous_storage:
+            previous_storage.delete(previous_icon_name)
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"

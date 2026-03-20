@@ -22,10 +22,37 @@ class ProfileSerializer(serializers.ModelSerializer):
 class SkillSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     proficiency_display = serializers.CharField(source='get_proficiency_display', read_only=True)
+    icon_upload_url = serializers.SerializerMethodField()
+
+    def get_icon_upload_url(self, obj):
+        if not obj.icon_upload:
+            return ''
+
+        url = obj.icon_upload.url
+        request = self.context.get('request')
+        if request:
+            url = request.build_absolute_uri(url)
+
+        version = int(obj.updated_at.timestamp()) if obj.updated_at else 0
+        separator = '&' if '?' in url else '?'
+        return f'{url}{separator}v={version}'
 
     class Meta:
         model = Skill
-        fields = '__all__'
+        fields = [
+            'id',
+            'category',
+            'category_display',
+            'name',
+            'icon',
+            'icon_upload',
+            'icon_upload_url',
+            'proficiency',
+            'proficiency_display',
+            'order',
+            'show_in_hero',
+            'updated_at',
+        ]
 
 
 class ProjectSerializer(serializers.ModelSerializer):

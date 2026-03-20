@@ -54,7 +54,7 @@ function isDirectIconSource(value) {
 }
 
 function resolveIconSource(skill) {
-  const uploaded = String(skill?.icon_upload || '').trim()
+  const uploaded = String(skill?.icon_upload_url || skill?.icon_upload || '').trim()
   if (uploaded) return uploaded
 
   const explicit = String(skill?.icon || '').trim()
@@ -85,6 +85,10 @@ function SkillChip({ skill, delay = 0 }) {
   const iconUrl = source && !isDirectIconSource(source)
     ? `https://cdn.simpleicons.org/${source}`
     : source
+
+  useEffect(() => {
+    setIconFailed(false)
+  }, [iconUrl])
 
   return (
     <motion.div
