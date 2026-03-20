@@ -11,6 +11,13 @@ const NAV_LINKS = [
   { label: 'Contact',    href: '/#contact' },
 ]
 
+function normalizeExternalUrl(value) {
+  const url = String(value || '').trim()
+  if (!url) return ''
+  if (/^(https?:)?\/\//i.test(url)) return url
+  return `https://${url}`
+}
+
 export default function Footer() {
   const year = new Date().getFullYear()
   const [profile, setProfile] = useState(null)
@@ -26,8 +33,8 @@ export default function Footer() {
   }, [])
 
   const title = profile?.title || ''
-  const github = profile?.github_url || ''
-  const linkedin = profile?.linkedin_url || ''
+  const github = normalizeExternalUrl(profile?.github_url)
+  const linkedin = normalizeExternalUrl(profile?.linkedin_url)
   const email = profile?.email || ''
   const location = profile?.location || ''
   const isAvailable = Boolean(profile?.is_available)
