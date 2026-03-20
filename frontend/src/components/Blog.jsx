@@ -2,21 +2,28 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Clock, Tag, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { getBlogPosts } from '../api'
+import { getBlogPosts, getProfile } from '../api'
 
 export default function Blog({ limit }) {
   const [posts, setPosts] = useState([])
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    getBlogPosts()
-      .then(r => {
-        const data = r.data.results || r.data
+    Promise.all([getBlogPosts(), getProfile()])
+      .then(([postRes, profileRes]) => {
+        const data = postRes.data.results || postRes.data
         setPosts(limit ? data.slice(0, limit) : data)
+        setProfile(profileRes.data)
       })
       .catch(() => {})
   }, [limit])
 
   if (!posts.length) return null
+
+  const sectionBadge = String(profile?.blog_section_badge || 'Writing').trim() || 'Writing'
+  const sectionTitle = String(profile?.blog_section_title || 'Latest Posts').trim() || 'Latest Posts'
+  const sectionIntro = String(profile?.blog_section_intro || 'Thoughts on AI, DevOps, cloud infrastructure and engineering.').trim()
+  const viewAllLabel = String(profile?.blog_view_all_label || 'Read All Posts').trim() || 'Read All Posts'
 
   return (
     <section id="blog" className="relative py-24 bg-canvas">
@@ -29,9 +36,9 @@ export default function Blog({ limit }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="badge mb-4">Writing</span>
-          <h2 className="section-title gradient-text">Latest Posts</h2>
-          <p className="mt-4 text-slate-500">Thoughts on AI, DevOps, cloud infrastructure and engineering.</p>
+          <span className="badge mb-4">{sectionBadge}</span>
+          <h2 className="section-title gradient-text">{sectionTitle}</h2>
+          {sectionIntro && <p className="mt-4 text-slate-500">{sectionIntro}</p>}
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -88,7 +95,7 @@ export default function Blog({ limit }) {
             className="mt-12 text-center"
           >
             <Link to="/blog" className="btn-ghost">
-              Read All Posts
+              {viewAllLabel}
               <ArrowRight size={16} />
             </Link>
           </motion.div>

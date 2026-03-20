@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Github, ExternalLink, ArrowRight } from 'lucide-react'
-import { getProjects } from '../api'
+import { getProfile, getProjects } from '../api'
 
 function normalizeTitle(title) {
   return String(title || '').toLowerCase().replace(/\s+/g, ' ').trim()
@@ -34,19 +34,26 @@ const ACCENT_COLORS = [
 
 export default function Projects({ limit, showAll = false }) {
   const [projects, setProjects] = useState([])
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
-    getProjects(params)
-      .then(r => {
-        const data = r.data.results || r.data
+    Promise.all([getProjects(params), getProfile()])
+      .then(([projectRes, profileRes]) => {
+        const data = projectRes.data.results || projectRes.data
         setProjects(dedupeProjects(Array.isArray(data) ? data : []))
+        setProfile(profileRes.data)
       })
       .catch(() => setProjects([]))
   }, [limit])
 
   const filtered = limit ? projects.filter(p => p.featured) : projects
   const list = showAll ? filtered : filtered.slice(0, limit || 6)
+  const sectionBadge = String(profile?.projects_section_badge || 'Portfolio').trim() || 'Portfolio'
+  const sectionTitle = String(profile?.projects_section_title || 'Projects & Initiatives').trim() || 'Projects & Initiatives'
+  const sectionIntro = String(profile?.projects_section_intro || 'Large-scale migrations, automation frameworks, and full-stack systems built in production.').trim()
+  const emptyText = String(profile?.projects_empty_text || 'Projects coming soon.').trim() || 'Projects coming soon.'
+  const viewAllLabel = String(profile?.projects_view_all_label || 'View All Projects').trim() || 'View All Projects'
 
   return (
     <section id="projects" className="py-24 bg-canvas">
@@ -58,16 +65,14 @@ export default function Projects({ limit, showAll = false }) {
           viewport={{ once: true }}
           className="mb-14"
         >
-          <span className="section-badge mb-4">Portfolio</span>
-          <h2 className="section-title mt-3">Projects &amp; Initiatives</h2>
-          <p className="mt-3 text-ink-500 max-w-xl">
-            Large-scale migrations, automation frameworks, and full-stack systems built in production.
-          </p>
+          <span className="section-badge mb-4">{sectionBadge}</span>
+          <h2 className="section-title mt-3">{sectionTitle}</h2>
+          {sectionIntro && <p className="mt-3 text-ink-500 max-w-xl">{sectionIntro}</p>}
         </motion.div>
 
         {list.length === 0 ? (
           <div className="text-center text-ink-400 py-20">
-            <p className="text-lg">Projects coming soon.</p>
+            <p className="text-lg">{emptyText}</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -153,7 +158,7 @@ export default function Projects({ limit, showAll = false }) {
             className="mt-10 flex justify-center"
           >
             <Link to="/projects" className="btn-outline">
-              View All Projects
+              {viewAllLabel}
               <ArrowRight size={15} />
             </Link>
           </motion.div>
