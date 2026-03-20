@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Clock, Tag, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { getBlogPosts } from '../api'
 
 export default function Blog({ limit }) {
@@ -42,7 +43,7 @@ export default function Blog({ limit }) {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
             >
-              <a href={`/blog/${post.slug}`} className="block h-full glass-hover rounded-2xl overflow-hidden group gradient-border">
+              <Link to={`/blog/${post.slug}`} className="block h-full glass-hover rounded-2xl overflow-hidden group gradient-border">
                 {post.cover_image && (
                   <div className="h-40 overflow-hidden">
                     <img
@@ -74,7 +75,7 @@ export default function Blog({ limit }) {
                     {post.views > 0 && <span>· {post.views} views</span>}
                   </div>
                 </div>
-              </a>
+              </Link>
             </motion.article>
           ))}
         </div>
@@ -86,10 +87,10 @@ export default function Blog({ limit }) {
             viewport={{ once: true }}
             className="mt-12 text-center"
           >
-            <a href="/blog" className="btn-ghost">
+            <Link to="/blog" className="btn-ghost">
               Read All Posts
               <ArrowRight size={16} />
-            </a>
+            </Link>
           </motion.div>
         )}
       </div>

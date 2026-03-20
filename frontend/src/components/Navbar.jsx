@@ -134,15 +134,27 @@ export default function Navbar() {
           {/* Desktop nav */}
           <nav className="hidden min-[960px]:flex items-center gap-0.5">
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="px-2 py-1.5 rounded-lg text-xs text-ink-800 font-medium
-                           bg-white/50 border border-white/60 backdrop-blur
-                           hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
-              >
-                {link.label}
-              </a>
+              link.href.startsWith('/#') ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="px-2 py-1.5 rounded-lg text-xs text-ink-800 font-medium
+                             bg-white/50 border border-white/60 backdrop-blur
+                             hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="px-2 py-1.5 rounded-lg text-xs text-ink-800 font-medium
+                             bg-white/50 border border-white/60 backdrop-blur
+                             hover:text-cobalt-700 hover:bg-white/70 hover:border-cobalt-200 transition-all duration-150"
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
             <a href="/#contact" className="ml-2 btn-primary text-xs py-1.5 px-4">
               Hire Me
@@ -174,15 +186,27 @@ export default function Navbar() {
           >
             <div className="px-3 py-3 space-y-1">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="block px-3 py-2 rounded-xl text-ink-700 font-medium
-                             hover:text-cobalt-600 hover:bg-cobalt-50 transition-all"
-                  onClick={() => setOpen(false)}
-                >
-                  {link.label}
-                </a>
+                link.href.startsWith('/#') ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="block px-3 py-2 rounded-xl text-ink-700 font-medium
+                               hover:text-cobalt-600 hover:bg-cobalt-50 transition-all"
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className="block px-3 py-2 rounded-xl text-ink-700 font-medium
+                               hover:text-cobalt-600 hover:bg-cobalt-50 transition-all"
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                )
               ))}
               <a
                 href="/#contact"

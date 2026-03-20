@@ -170,6 +170,45 @@ jobs:
             }
             echo "  Static files collected ✓"
             ls -lh staticfiles/ | head -20
+
+            echo "→ Verifying required admin static assets..."
+            for F in \
+              "staticfiles/vendor/fontawesome-free/css/all.min.css" \
+              "staticfiles/vendor/adminlte/css/adminlte.min.css" \
+              "staticfiles/jazzmin/css/main.css" \
+              "staticfiles/admin/js/vendor/jquery/jquery.js" \
+              "staticfiles/vendor/bootstrap/js/bootstrap.bundle.min.js"; do
+              if [ ! -f "$F" ]; then
+                echo "ERROR: Missing required static file: $F"
+                exit 1
+              fi
+            done
+            echo "  Required admin static assets present ✓"
+
+            echo "→ Publishing static files to /var/www/portfolio/staticfiles..."
+            sudo mkdir -p /var/www/portfolio/staticfiles
+            if command -v rsync >/dev/null 2>&1; then
+              sudo rsync -a --delete staticfiles/ /var/www/portfolio/staticfiles/
+            else
+              sudo rm -rf /var/www/portfolio/staticfiles/*
+              sudo cp -a staticfiles/. /var/www/portfolio/staticfiles/
+            fi
+            sudo chown -R www-data:www-data /var/www/portfolio/staticfiles
+            sudo find /var/www/portfolio/staticfiles -type d -exec chmod 755 {} +
+            sudo find /var/www/portfolio/staticfiles -type f -exec chmod 644 {} +
+
+            for F in \
+              "/var/www/portfolio/staticfiles/vendor/fontawesome-free/css/all.min.css" \
+              "/var/www/portfolio/staticfiles/vendor/adminlte/css/adminlte.min.css" \
+              "/var/www/portfolio/staticfiles/jazzmin/css/main.css" \
+              "/var/www/portfolio/staticfiles/admin/js/vendor/jquery/jquery.js" \
+              "/var/www/portfolio/staticfiles/vendor/bootstrap/js/bootstrap.bundle.min.js"; do
+              if [ ! -f "$F" ]; then
+                echo "ERROR: Missing published static file: $F"
+                exit 1
+              fi
+            done
+            echo "  Published static files verified ✓"
             cd ..
 
             echo "→ Refreshing systemd service definition..."
@@ -249,6 +288,15 @@ jobs:
               exit 1
             }
             echo "✓ Deployment complete"
+
+      - name: Invalidate CloudFront static/admin cache
+        run: |
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/static/*" "/admin/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "Invalidation ID: $INVALIDATION_ID"
 
       - name: Revoke temporary SSH rule
         if: always()

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { Github, ExternalLink, ArrowRight } from 'lucide-react'
 import { getProjects } from '../api'
 
@@ -151,10 +152,10 @@ export default function Projects({ limit, showAll = false }) {
             viewport={{ once: true }}
             className="mt-10 flex justify-center"
           >
-            <a href="/projects" className="btn-outline">
+            <Link to="/projects" className="btn-outline">
               View All Projects
               <ArrowRight size={15} />
-            </a>
+            </Link>
           </motion.div>
         )}
       </div>

@@ -7,6 +7,32 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_protocol                  = "sigv4"
 }
 
+resource "aws_cloudfront_function" "frontend_spa_rewrite" {
+  name    = "${var.project}-frontend-spa-rewrite"
+  runtime = "cloudfront-js-1.0"
+  comment = "Rewrite SPA routes to index.html and serve favicon.svg for favicon.ico"
+  publish = true
+
+  code = <<-EOT
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri || "/";
+
+      if (uri === "/favicon.ico") {
+        request.uri = "/favicon.svg";
+        return request;
+      }
+
+      if (uri === "/" || uri.indexOf(".") !== -1) {
+        return request;
+      }
+
+      request.uri = "/index.html";
+      return request;
+    }
+  EOT
+}
+
 # trivy:ignore:AVD-AWS-0006  -- WAF omitted: AWS WAF costs ~$5/mo minimum which
 #                               exceeds the entire budget for this portfolio. The
 #                               default CloudFront rate-limiting provides baseline
@@ -117,6 +143,11 @@ resource "aws_cloudfront_distribution" "frontend" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.frontend_spa_rewrite.arn
+    }
+
     forwarded_values {
       query_string = false
       cookies {
@@ -130,13 +161,9 @@ resource "aws_cloudfront_distribution" "frontend" {
     max_ttl     = 31536000
   }
 
-  # NOTE: Removed custom_error_response rules. CloudFront error responses apply to ALL
-  # paths and origins, which breaks /static/* 404s (they get served as index.html, causing
-  # SyntaxError). For SPA routing, either:
-  # 1. Use S3 error_document configuration (S3-side, not CloudFront)
-  # 2. Or add Lambda@Edge to intercept 404s from S3 origin only
-  # For now, we accept that non-existent SPA routes return 404 instead of index.html.
-  # This avoids break static asset serving.
+  # NOTE: CloudFront custom_error_response blocks were removed intentionally.
+  # They apply globally across all behaviors/origins and can rewrite missing
+  # /static/* assets to HTML, which breaks Django admin JS/CSS loading.
 
   # Geo restrictions — none
   restrictions {

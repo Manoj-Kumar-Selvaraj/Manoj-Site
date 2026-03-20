@@ -3,6 +3,7 @@ import json
 
 from django.contrib import admin
 from django.http import HttpResponse
+from django.utils.html import format_html
 from .models import (
     Profile, ProfileStat, Skill, Project, Experience,
     BlogPost, Activity, Certification, ContactMessage
@@ -37,22 +38,43 @@ class ProfileStatAdmin(admin.ModelAdmin):
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['name', 'title', 'email', 'phone', 'is_available', 'updated_at']
+    readonly_fields = ['avatar_preview']
     inlines = [ProfileStatInline]
     fieldsets = (
         ('Basic Info', {
-            'fields': ('name', 'title', 'tagline', 'email', 'phone', 'location', 'is_available')
+            'fields': ('name', 'title', 'tagline', 'avatar', 'avatar_preview', 'email', 'phone', 'location', 'is_available')
         }),
-        ('Bio', {
-            'fields': ('bio', 'bio_extended', 'avatar', 'resume')
+        ('Tools & Architecture Section', {
+            'fields': ('about_section_badge', 'about_heading_prefix', 'about_heading_highlight', 'about_section_intro')
         }),
-        ('Stats', {
+        ('Bio / Tooling Details', {
+            'fields': ('bio', 'bio_extended', 'resume')
+        }),
+        ('Stats (shown in Hero)', {
             'fields': ('years_experience', 'projects_completed')
+        }),
+        ('Applications', {
+            'description': 'Add details about the applications you have built or maintain. This will appear as a placeholder section on the site.',
+            'fields': ('applications_section_title', 'applications_section_body'),
+        }),
+        ('Infrastructure & Architecture', {
+            'description': 'Describe your infrastructure design. You can also upload a diagram image.',
+            'fields': ('infra_section_title', 'infra_section_body', 'infra_diagram'),
         }),
         ('Social Links', {
             'fields': ('github_url', 'linkedin_url', 'twitter_url', 'website_url'),
             'classes': ('collapse',)
         }),
     )
+
+    @admin.display(description='Current photo')
+    def avatar_preview(self, obj):
+        if obj and obj.avatar:
+            return format_html(
+                '<img src="{}" alt="Profile photo" style="height:96px;width:96px;object-fit:cover;border-radius:12px;border:1px solid #d1d5db;" />',
+                obj.avatar.url,
+            )
+        return 'No photo uploaded yet.'
 
 
 @admin.register(Skill)

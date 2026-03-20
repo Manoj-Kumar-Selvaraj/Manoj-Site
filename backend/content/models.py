@@ -6,16 +6,75 @@ class Profile(models.Model):
     name = models.CharField(max_length=200)
     title = models.CharField(max_length=300, help_text="e.g. Cloud Platform | DevOps | LLM Benchmarking")
     tagline = models.CharField(max_length=500, blank=True)
+    about_section_badge = models.CharField(
+        max_length=80,
+        blank=True,
+        default='Tools & Architecture',
+        help_text='Small label shown above the About heading.',
+    )
+    about_heading_prefix = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Platform tooling and systems',
+        help_text='First line of the About heading.',
+    )
+    about_heading_highlight = models.CharField(
+        max_length=200,
+        blank=True,
+        default='engineered to scale.',
+        help_text='Highlighted second line of the About heading.',
+    )
+    about_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='An overview of the tools, platforms, and architecture patterns I work with.',
+        help_text='Short intro text shown under the About heading.',
+    )
     bio = models.TextField(
         verbose_name="Opening bio",
         help_text="Short bio used in the hero/intro (use blank lines to split paragraphs).",
     )
     bio_extended = models.TextField(
         blank=True,
-        verbose_name="About me (detailed)",
-        help_text="Detailed bio shown on the About section (optional).",
+        verbose_name="Tooling & architecture details",
+        help_text="Detailed write-up shown in the Tools & Architecture section (optional).",
     )
-    avatar = models.ImageField(upload_to='profile/', blank=True, null=True)
+    applications_section_title = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Applications',
+        help_text='Title for the applications detail section.',
+    )
+    applications_section_body = models.TextField(
+        blank=True,
+        default='',
+        help_text='Describe the applications you have built or maintain. Supports plain text.',
+    )
+    infra_section_title = models.CharField(
+        max_length=200,
+        blank=True,
+        default='Infrastructure & Architecture',
+        help_text='Title for the infrastructure / architecture section.',
+    )
+    infra_section_body = models.TextField(
+        blank=True,
+        default='',
+        help_text='Describe your infrastructure architecture and design decisions.',
+    )
+    infra_diagram = models.ImageField(
+        'Infrastructure diagram',
+        upload_to='infra/',
+        blank=True,
+        null=True,
+        help_text='Upload an infrastructure diagram or architecture image (optional).',
+    )
+    avatar = models.ImageField(
+        'Profile photo',
+        upload_to='profile/',
+        blank=True,
+        null=True,
+        help_text='Upload your profile image (used in Hero and About sections).',
+    )
     resume = models.FileField(upload_to='resume/', blank=True, null=True)
     email = models.EmailField()
     phone = models.CharField(max_length=30, blank=True, help_text="Public contact number shown on site (e.g. +9180...)")
