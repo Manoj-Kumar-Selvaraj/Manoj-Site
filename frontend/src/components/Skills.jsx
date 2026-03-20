@@ -12,16 +12,33 @@ const CATEGORY_META = {
 
 const PROFICIENCY_LABEL = { 1: 'Beginner', 2: 'Intermediate', 3: 'Advanced', 4: 'Expert' }
 
-function SkillIcon({ slug, name, dot }) {
+function isDirectIconSource(value) {
+  return /^(https?:)?\/\//.test(value) || value.startsWith('/') || value.startsWith('data:')
+}
+
+function resolveIconSource(skill) {
+  const uploaded = String(skill?.icon_upload || '').trim()
+  if (uploaded) return uploaded
+
+  const explicit = String(skill?.icon || '').trim()
+  return explicit
+}
+
+function SkillIcon({ skill, dot }) {
   const [failed, setFailed] = useState(false)
-  if (!slug || failed) {
+  const source = resolveIconSource(skill)
+  const iconUrl = source && !isDirectIconSource(source)
+    ? `https://cdn.simpleicons.org/${source}`
+    : source
+
+  if (!iconUrl || failed) {
     return <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
   }
   return (
     <div className="w-7 h-7 rounded-md bg-white border border-ink-100 shadow-sm flex items-center justify-center flex-shrink-0">
       <img
-        src={`https://cdn.simpleicons.org/${slug}`}
-        alt={name}
+        src={iconUrl}
+        alt={skill.name}
         className="w-[18px] h-[18px] object-contain"
         onError={() => setFailed(true)}
       />
@@ -98,7 +115,7 @@ export default function Skills() {
                       className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-ink-50 transition-colors cursor-default"
                       title={PROFICIENCY_LABEL[skill.proficiency]}
                     >
-                      <SkillIcon slug={skill.icon} name={skill.name} dot={meta.dot} />
+                      <SkillIcon skill={skill} dot={meta.dot} />
                       <span className="text-sm font-medium text-ink-800 flex-1 leading-tight">{skill.name}</span>
                       {skill.proficiency === 4 && (
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Expert" />
