@@ -6,7 +6,7 @@ import { getProfile } from '../api'
 
 const navLinks = [
   { label: 'About',      href: '/#about' },
-  { label: 'Skills',     href: '/#skills' },
+  { label: 'Toolkit',    href: '/#hero-toolkit' },
   { label: 'Experience', href: '/#experience' },
   { label: 'Projects',   href: '/projects' },
   { label: 'Blog',       href: '/blog' },

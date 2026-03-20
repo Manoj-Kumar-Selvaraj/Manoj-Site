@@ -131,9 +131,17 @@ PROFICIENCY_LEVELS = [
 class Skill(models.Model):
     category = models.CharField(max_length=50, choices=SKILL_CATEGORIES)
     name = models.CharField(max_length=100)
-    icon = models.CharField(max_length=100, blank=True, help_text="Icon name from devicons or simple-icons (e.g. python, docker)")
+    icon = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Simple Icons slug (e.g. amazonaws, githubactions, terraform, docker).',
+    )
     proficiency = models.IntegerField(choices=PROFICIENCY_LEVELS, default=3)
     order = models.PositiveIntegerField(default=0)
+    show_in_hero = models.BooleanField(
+        default=False,
+        help_text='Enable to show this skill in the Hero tools strip.',
+    )
 
     class Meta:
         ordering = ['category', 'order', 'name']

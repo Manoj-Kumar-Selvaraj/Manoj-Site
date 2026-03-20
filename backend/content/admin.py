@@ -44,10 +44,10 @@ class ProfileAdmin(admin.ModelAdmin):
         ('Basic Info', {
             'fields': ('name', 'title', 'tagline', 'avatar', 'avatar_preview', 'email', 'phone', 'location', 'is_available')
         }),
-        ('Tools & Architecture Section', {
+        ('About Section Content', {
             'fields': ('about_section_badge', 'about_heading_prefix', 'about_heading_highlight', 'about_section_intro')
         }),
-        ('Bio / Tooling Details', {
+        ('About Narrative', {
             'fields': ('bio', 'bio_extended', 'resume')
         }),
         ('Stats (shown in Hero)', {
@@ -79,11 +79,12 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'proficiency', 'order']
-    list_filter = ['category', 'proficiency']
-    list_editable = ['order', 'proficiency']
+    list_display = ['name', 'category', 'proficiency', 'show_in_hero', 'order']
+    list_filter = ['category', 'proficiency', 'show_in_hero']
+    list_editable = ['proficiency', 'show_in_hero', 'order']
     ordering = ['category', 'order']
     search_fields = ['name']
+    fields = ['name', 'category', 'icon', 'proficiency', 'show_in_hero', 'order']
 
 
 @admin.register(Project)
