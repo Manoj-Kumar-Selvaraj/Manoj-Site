@@ -49,9 +49,16 @@ function StatCard({ value, label, delay = 0 }) {
   )
 }
 
-function resolveIconSlug(skill) {
+function isDirectIconSource(value) {
+  return /^(https?:)?\/\//.test(value) || value.startsWith('/') || value.startsWith('data:')
+}
+
+function resolveIconSource(skill) {
+  const uploaded = String(skill?.icon_upload || '').trim()
+  if (uploaded) return uploaded
+
   const explicit = String(skill?.icon || '').trim()
-  if (explicit) return explicit
+  if (explicit && isDirectIconSource(explicit)) return explicit
 
   const name = String(skill?.name || '').toLowerCase()
   if (/aws|cloudwatch|eventbridge|route\s*53|eks|s3|vpc|iam|kms/.test(name)) return 'amazonaws'
@@ -69,12 +76,15 @@ function resolveIconSlug(skill) {
   if (/harness/.test(name)) return 'harness'
   if (/api integrations/.test(name)) return 'postman'
 
-  return ''
+  return explicit
 }
 
 function SkillChip({ skill, delay = 0 }) {
   const [iconFailed, setIconFailed] = useState(false)
-  const slug = resolveIconSlug(skill)
+  const source = resolveIconSource(skill)
+  const iconUrl = source && !isDirectIconSource(source)
+    ? `https://cdn.simpleicons.org/${source}`
+    : source
 
   return (
     <motion.div
@@ -84,9 +94,9 @@ function SkillChip({ skill, delay = 0 }) {
       className="inline-flex items-center gap-2.5 rounded-xl px-3 py-2
                  bg-white/10 backdrop-blur-md border border-white/20 text-white/90"
     >
-      {slug && !iconFailed ? (
+      {iconUrl && !iconFailed ? (
         <img
-          src={`https://cdn.simpleicons.org/${slug}`}
+          src={iconUrl}
           alt={skill.name}
           className="w-4 h-4 object-contain"
           onError={() => setIconFailed(true)}

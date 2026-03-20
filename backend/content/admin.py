@@ -91,12 +91,25 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'proficiency', 'show_in_hero', 'order']
+    list_display = ['name', 'category', 'icon_preview', 'proficiency', 'show_in_hero', 'order']
     list_filter = ['category', 'proficiency', 'show_in_hero']
     list_editable = ['proficiency', 'show_in_hero', 'order']
     ordering = ['category', 'order']
-    search_fields = ['name']
-    fields = ['name', 'category', 'icon', 'proficiency', 'show_in_hero', 'order']
+    search_fields = ['name', 'icon']
+    readonly_fields = ['icon_preview']
+    fields = ['name', 'category', 'icon', 'icon_upload', 'icon_preview', 'proficiency', 'show_in_hero', 'order']
+
+    @admin.display(description='Icon')
+    def icon_preview(self, obj):
+        if obj and obj.icon_upload:
+            return format_html(
+                '<img src="{}" alt="{}" style="height:24px;width:24px;object-fit:contain;border-radius:6px;border:1px solid #d1d5db;background:#fff;padding:2px;" /> Upload',
+                obj.icon_upload.url,
+                obj.name,
+            )
+        if obj and obj.icon:
+            return format_html('<code>{}</code>', obj.icon)
+        return 'No icon set'
 
 
 @admin.register(Project)

@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Profile, Skill, Project, Experience,
@@ -47,7 +48,7 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
                     'label': skill.get_category_display(),
                     'skills': []
                 }
-            groups[cat]['skills'].append(SkillSerializer(skill).data)
+            groups[cat]['skills'].append(SkillSerializer(skill, context={'request': request}).data)
 
         ordered_categories = [c for c, _ in SKILL_CATEGORIES]
         ordered = [groups[c] for c in ordered_categories if c in groups]
@@ -68,11 +69,11 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
             # Backward-compatible fallback so Hero still shows a concise tool strip
             # before admins curate skills in Django admin.
             skills = list(
-                Skill.objects.exclude(icon='')
+                Skill.objects.filter(Q(icon__gt='') | Q(icon_upload__gt=''))
                 .order_by('-proficiency', 'order', 'name')[:8]
             )
 
-        return Response(SkillSerializer(skills, many=True).data)
+        return Response(SkillSerializer(skills, many=True, context={'request': request}).data)
 
 
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):

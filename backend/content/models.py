@@ -179,7 +179,13 @@ class Skill(models.Model):
     icon = models.CharField(
         max_length=100,
         blank=True,
-        help_text='Simple Icons slug (e.g. amazonaws, githubactions, terraform, docker).',
+        help_text='Simple Icons slug (e.g. githubactions, terraform, docker). Leave blank if you upload a custom icon instead.',
+    )
+    icon_upload = models.ImageField(
+        upload_to='skills/',
+        blank=True,
+        null=True,
+        help_text='Upload a custom icon for brands not available on the CDN.',
     )
     proficiency = models.IntegerField(choices=PROFICIENCY_LEVELS, default=3)
     order = models.PositiveIntegerField(default=0)
