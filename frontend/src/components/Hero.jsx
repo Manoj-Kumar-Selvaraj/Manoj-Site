@@ -141,12 +141,10 @@ export default function Hero() {
   const heroToolsLabel = String(profile?.hero_tools_label || 'Core tools & services').trim() || 'Core tools & services'
   const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
 
-  const intro = String(profile?.bio || '')
-    .split(/\n\n+/)
+  const openingBioLines = String(profile?.bio || '')
+    .split(/\r?\n/)
     .map(s => s.trim())
     .filter(Boolean)
-  const heroIntro = intro[0] || ''
-  const shortIntro = heroIntro.length > 340 ? `${heroIntro.slice(0, 337).trimEnd()}...` : heroIntro
   const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, 12)
   const hasMoreSkills = featuredSkills.length > 12
 
@@ -226,9 +224,11 @@ export default function Hero() {
               {tagline}
             </p>
           )}
-          {shortIntro && (
+          {openingBioLines.length > 0 && (
             <div className="space-y-3 text-sm sm:text-base text-white/85 leading-relaxed">
-              <p>{shortIntro}</p>
+              {openingBioLines.map((line, index) => (
+                <p key={`bio-line-${index}`}>{line}</p>
+              ))}
             </div>
           )}
           <div className="flex flex-wrap gap-3 mt-5">
