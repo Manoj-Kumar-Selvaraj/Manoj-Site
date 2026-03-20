@@ -64,13 +64,13 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
         curated = Skill.objects.filter(show_in_hero=True).order_by('order', 'name')
 
         if curated.exists():
-            skills = list(curated[:10])
+            skills = list(curated)
         else:
             # Backward-compatible fallback so Hero still shows a concise tool strip
             # before admins curate skills in Django admin.
             skills = list(
                 Skill.objects.filter(Q(icon__gt='') | Q(icon_upload__gt=''))
-                .order_by('-proficiency', 'order', 'name')[:8]
+                .order_by('-proficiency', 'order', 'name')
             )
 
         return Response(SkillSerializer(skills, many=True, context={'request': request}).data)
