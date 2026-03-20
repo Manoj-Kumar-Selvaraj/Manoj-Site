@@ -6,9 +6,9 @@ import { getFeaturedSkills, getProfile } from '../api'
 /* ── Avatar component ───────────────────────────────────────────── */
 function Avatar({ profile, name, size = 'md', onClick }) {
   const sizeMap = {
-    sm:  'w-16 h-16',
-    md:  'w-20 h-20 sm:w-24 sm:h-24',
-    lg:  'w-40 h-40 sm:w-56 sm:h-56',
+    sm: 'w-16 h-16',
+    md: 'w-20 h-20 sm:w-24 sm:h-24',
+    lg: 'w-40 h-40 sm:w-56 sm:h-56',
   }
   return (
     <div
@@ -49,6 +49,7 @@ function StatCard({ value, label, delay = 0 }) {
   )
 }
 
+/* ── Skill helpers ─────────────────────────────────────────────── */
 function isDirectIconSource(value) {
   return /^(https?:)?\/\//.test(value) || value.startsWith('/') || value.startsWith('data:')
 }
@@ -72,13 +73,13 @@ function resolveIconSource(skill) {
   if (/python/.test(name)) return 'python'
   if (/bash/.test(name)) return 'gnubash'
   if (/terraform/.test(name)) return 'terraform'
-  if (/cloudformation/.test(name)) return 'amazonaws'
   if (/harness/.test(name)) return 'harness'
   if (/api integrations/.test(name)) return 'postman'
 
   return explicit
 }
 
+/* ── Skill chip ─────────────────────────────────────────────── */
 function SkillChip({ skill, delay = 0 }) {
   const [iconFailed, setIconFailed] = useState(false)
   const source = resolveIconSource(skill)
@@ -94,232 +95,67 @@ function SkillChip({ skill, delay = 0 }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.35, ease: 'easeOut' }}
+      transition={{ delay, duration: 0.35 }}
       className="inline-flex items-center gap-2.5 rounded-xl px-3 py-2
                  bg-white/10 backdrop-blur-md border border-white/20 text-white/90"
     >
       {iconUrl && !iconFailed ? (
-        <img
-          src={iconUrl}
-          alt={skill.name}
-          className="w-4 h-4 object-contain"
-          onError={() => setIconFailed(true)}
-        />
+        <img src={iconUrl} alt={skill.name} className="w-4 h-4" onError={() => setIconFailed(true)} />
       ) : (
         <span className="w-1.5 h-1.5 rounded-full bg-cobalt-300" />
       )}
-      <span className="text-xs sm:text-sm font-medium leading-none">{skill.name}</span>
+      <span className="text-xs sm:text-sm font-medium">{skill.name}</span>
     </motion.div>
   )
 }
 
-/* ── Hero component ─────────────────────────────────────────────── */
+/* ── Hero ─────────────────────────────────────────────── */
 export default function Hero() {
   const [profile, setProfile] = useState(null)
   const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
-  const [showAllSkills, setShowAllSkills] = useState(false)
 
   useEffect(() => {
     Promise.all([getProfile(), getFeaturedSkills()])
-      .then(([profileRes, skillsRes]) => {
-        setProfile(profileRes.data)
-        setFeaturedSkills(Array.isArray(skillsRes.data) ? skillsRes.data : [])
-      })
-      .catch(() => {
-        getProfile().then(r => setProfile(r.data)).catch(() => {})
+      .then(([p, s]) => {
+        setProfile(p.data)
+        setFeaturedSkills(s.data || [])
       })
   }, [])
 
-  useEffect(() => {
-    setShowAllSkills(false)
-  }, [featuredSkills.length])
-
-  const name    = profile?.name    || ''
-  const title   = profile?.title   || ''
-  const tagline = profile?.tagline || ''
-  const heroToolsLabel = String(profile?.hero_tools_label || 'Core tools & services').trim() || 'Core tools & services'
-  const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
-
   const openingBioLines = String(profile?.bio || '')
-    .split(/\r?\n/)
+    .split('\n')
     .map(s => s.trim())
     .filter(Boolean)
-  const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, 12)
-  const hasMoreSkills = featuredSkills.length > 12
-
-  /* Build stat cards from fixed fields + dynamic ProfileStat entries */
-  const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
-  const statCards = [
-    ...(profile?.years_experience > 0
-      ? [{ value: `${profile.years_experience}+`, label: 'Years in tech' }]
-      : []),
-    ...(profile?.projects_completed > 0
-      ? [{ value: `${profile.projects_completed}+`, label: 'Projects' }]
-      : []),
-    ...dynamicStats
-      .slice()
-      .sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0))
-      .map(s => ({ value: String(s?.value || '').trim(), label: String(s?.label || '').trim() }))
-      .filter(s => s.value && s.label),
-  ]
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-start sm:items-center overflow-hidden hero-section pt-20 pb-10 sm:pb-0"
-    >
+    <section className="min-h-screen pt-20">
 
-      {/* Decorative background accent blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-cobalt-600/20 blur-3xl animate-float-1" />
-        <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-amber-500/15 blur-3xl animate-float-2" />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-cobalt-400/10 blur-3xl animate-float-3" />
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
-
-        {/* Identity row: avatar + name / title / availability */}
-        <motion.div
-          className="flex items-center gap-4 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.6 }}
-        >
-          <Avatar
-            profile={profile}
-            name={name}
-            size="md"
-            onClick={profile?.avatar ? () => setAvatarOpen(true) : undefined}
-          />
-          <div>
-            {name && (
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white hero-text-glow leading-tight">
-                {name}
-              </h1>
-            )}
-            <div className="text-sm sm:text-base font-semibold text-white/80 mt-0.5 leading-snug">
-              {title || 'Portfolio'}
-            </div>
-            {profile?.is_available && (
-              <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-300 bg-emerald-900/40 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
-                Open to work
-              </span>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Tagline + bio glass card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.7 }}
-          className="bg-white/10 backdrop-blur-lg rounded-3xl px-6 py-5
-                     shadow-xl border border-white/20 mb-6"
-        >
-          {tagline && (
-            <p className="text-xs sm:text-sm font-semibold text-amber-300/90 mb-3 tracking-wide">
-              {tagline}
-            </p>
-          )}
-          {openingBioLines.length > 0 && (
-            <div className="space-y-3 text-sm sm:text-base text-white/85 leading-relaxed">
-              {openingBioLines.map((line, index) => (
-                <p key={`bio-line-${index}`}>{line}</p>
-              ))}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-3 mt-5">
-            <a href="/#contact" className="btn-primary">Let's Talk</a>
-            {profile?.resume && (
-              <a href={profile.resume} download className="btn-outline">Download CV</a>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Curated tools and services */}
-        {featuredSkills.length > 0 && (
-          <div id="hero-toolkit" className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Wrench size={14} className="text-white/50" />
-              <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">{heroToolsLabel}</span>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {visibleSkills.map((skill, i) => (
-                <SkillChip key={skill.id || `${skill.name}-${i}`} skill={skill} delay={0.35 + i * 0.05} />
-              ))}
-            </div>
-            {hasMoreSkills && (
-              <div className="mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAllSkills(current => !current)}
-                  className="inline-flex items-center rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/85 transition-colors duration-200 hover:bg-white/15"
-                >
-                  {showAllSkills ? 'Show less' : `Show more (${featuredSkills.length - 12})`}
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Bio Glass Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/10 backdrop-blur-xl rounded-3xl px-6 py-6
+                   shadow-2xl border border-white/20 mb-6
+                   transition-all duration-300 hover:bg-white/15"
+      >
+        {profile?.tagline && (
+          <p className="text-xs sm:text-sm font-semibold text-amber-300 mb-4 uppercase tracking-wide">
+            {profile.tagline}
+          </p>
         )}
 
-        {/* Stat cards */}
-        {statCards.length > 0 && (
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp size={14} className="text-white/50" />
-            <span className="text-xs text-white/50 uppercase tracking-widest font-semibold">{heroStatsLabel}</span>
-          </div>
-        )}
-        {statCards.length > 0 && (() => {
-          const cols = statCards.length <= 2 ? 'grid-cols-2'
-            : statCards.length === 3 ? 'grid-cols-3'
-            : 'grid-cols-2 sm:grid-cols-4'
-          return (
-            <div className={`grid gap-3 ${cols}`}>
-              {statCards.map((s, i) => (
-                <StatCard key={s.label} value={s.value} label={s.label} delay={0.4 + i * 0.1} />
-              ))}
-            </div>
-          )
-        })()}
+        <div className="max-w-3xl space-y-4 text-white/90 leading-relaxed">
+          {openingBioLines.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
 
-      </div>
-
-      {/* Avatar lightbox / expand overlay */}
-      <AnimatePresence>
-        {avatarOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setAvatarOpen(false)}
-          >
-            <motion.div
-              className="relative"
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <Avatar profile={profile} name={name} size="lg" />
-              <button
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white/30
-                           flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-                onClick={() => setAvatarOpen(false)}
-                aria-label="Close"
-              >
-                <X size={16} />
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <div className="mt-6 flex gap-3">
+          <a href="#contact" className="btn-primary">Let's Talk</a>
+        </div>
+      </motion.div>
 
     </section>
   )
 }
-
