@@ -22,7 +22,7 @@ export default function CurrentFocus() {
   if (!items.length) return null
 
   return (
-    <section id="current-focus" className="py-16 bg-surface">
+    <section id="current-focus" className="py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div {...fadeUp(0)} className="mb-8">
           <span className="section-badge mb-3">Current Focus</span>
