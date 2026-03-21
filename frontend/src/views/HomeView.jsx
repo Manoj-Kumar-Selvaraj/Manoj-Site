@@ -1,6 +1,7 @@
 import Hero from '../components/Hero'
 import Services from '../components/Services'
 import About from '../components/About'
+import ArchitectureDetails from '../components/ArchitectureDetails'
 import CurrentFocus from '../components/CurrentFocus'
 import Experience from '../components/Experience'
 import Projects from '../components/Projects'
@@ -15,6 +16,7 @@ export default function HomeView() {
       <Hero />
       <Services />
       <About />
+      <ArchitectureDetails />
       <CurrentFocus />
       <Experience />
       <Projects limit={3} />

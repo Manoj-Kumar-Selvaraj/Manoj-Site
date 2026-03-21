@@ -77,6 +77,8 @@ const api = axios.create({
 export const getProfile       = ()        => api.get('/profile/me/')
 export const getSkillsGrouped = ()        => api.get('/skills/grouped/')
 export const getFeaturedSkills= ()        => api.get('/skills/featured/')
+export const getArchitectureEntries = ()   => api.get('/architecture/')
+export const getCurrentFocusItems = ()     => api.get('/current-focus/')
 export const getProjects      = (p = {})  => api.get('/projects/', { params: p })
 export const getProject       = (slug)    => api.get(`/projects/${slug}/`)
 export const getExperiences   = ()        => api.get('/experience/')

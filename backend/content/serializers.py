@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
-    Profile, ProfileStat, Skill, Project, Experience,
-    BlogPost, Activity, Certification, ContactMessage
+    Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem,
+    Project, Experience, BlogPost, Activity, Certification, ContactMessage
 )
 
 
@@ -53,6 +53,27 @@ class SkillSerializer(serializers.ModelSerializer):
             'show_in_hero',
             'updated_at',
         ]
+
+
+class ArchitectureEntrySerializer(serializers.ModelSerializer):
+    tools_list = serializers.SerializerMethodField()
+    outcomes_list = serializers.SerializerMethodField()
+
+    def get_tools_list(self, obj):
+        return [p.strip() for p in str(obj.tools or '').split(',') if p.strip()]
+
+    def get_outcomes_list(self, obj):
+        return [line.strip() for line in str(obj.key_outcomes or '').splitlines() if line.strip()]
+
+    class Meta:
+        model = ArchitectureEntry
+        fields = '__all__'
+
+
+class CurrentFocusItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CurrentFocusItem
+        fields = '__all__'
 
 
 class ProjectSerializer(serializers.ModelSerializer):

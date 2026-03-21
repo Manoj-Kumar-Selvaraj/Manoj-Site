@@ -5,12 +5,14 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
-    Profile, Skill, Project, Experience,
+    Profile, Skill, ArchitectureEntry, CurrentFocusItem,
+    Project, Experience,
     BlogPost, Activity, Certification, ContactMessage,
     SKILL_CATEGORIES
 )
 from .serializers import (
-    ProfileSerializer, SkillSerializer, ProjectSerializer,
+    ProfileSerializer, SkillSerializer, ArchitectureEntrySerializer, CurrentFocusItemSerializer,
+    ProjectSerializer,
     ExperienceSerializer, BlogPostListSerializer, BlogPostDetailSerializer,
     ActivitySerializer, CertificationSerializer, ContactMessageSerializer
 )
@@ -84,6 +86,18 @@ class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['featured', 'status']
     search_fields = ['title', 'description']
     lookup_field = 'slug'
+
+
+class ArchitectureEntryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ArchitectureEntry.objects.filter(published=True)
+    serializer_class = ArchitectureEntrySerializer
+    permission_classes = [AllowAny]
+
+
+class CurrentFocusItemViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CurrentFocusItem.objects.filter(active=True)
+    serializer_class = CurrentFocusItemSerializer
+    permission_classes = [AllowAny]
 
 
 class ExperienceViewSet(viewsets.ReadOnlyModelViewSet):
