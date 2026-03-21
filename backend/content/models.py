@@ -220,6 +220,52 @@ class Skill(models.Model):
         return f"{self.name} ({self.get_category_display()})"
 
 
+class ArchitectureEntry(models.Model):
+    title = models.CharField(max_length=200)
+    context = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='Optional app/system context (e.g. CI/CD platform, observability stack).',
+    )
+    tools = models.CharField(
+        max_length=400,
+        blank=True,
+        help_text='Comma-separated tools/services (e.g. EKS, Jenkins, SonarQube, EC2).',
+    )
+    architecture = models.TextField(
+        help_text='Deep details on architecture, workflows, and operational design.',
+    )
+    key_outcomes = models.TextField(
+        blank=True,
+        help_text='Optional outcomes, one per line.',
+    )
+    order = models.PositiveIntegerField(default=0)
+    published = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = 'Architecture Entry'
+        verbose_name_plural = 'Architecture Entries'
+
+    def __str__(self):
+        return self.title
+
+
+class CurrentFocusItem(models.Model):
+    title = models.CharField(max_length=180)
+    note = models.CharField(max_length=300, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = 'Current Focus Item'
+        verbose_name_plural = 'Current Focus Items'
+
+    def __str__(self):
+        return self.title
+
+
 PROJECT_STATUS = [
     ('completed', 'Completed'),
     ('in_progress', 'In Progress'),

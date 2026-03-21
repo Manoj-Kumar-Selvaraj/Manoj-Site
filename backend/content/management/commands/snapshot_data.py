@@ -47,6 +47,8 @@ class Command(BaseCommand):
             'content.profile',
             'content.profilestat',
             'content.skill',
+            'content.architectureentry',
+            'content.currentfocusitem',
             'content.project',
             'content.experience',
             'content.activity',

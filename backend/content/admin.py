@@ -5,8 +5,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.utils.html import format_html
 from .models import (
-    Profile, ProfileStat, Skill, Project, Experience,
-    BlogPost, Activity, Certification, ContactMessage
+    Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem,
+    Project, Experience, BlogPost, Activity, Certification, ContactMessage
 )
 
 
@@ -110,6 +110,35 @@ class SkillAdmin(admin.ModelAdmin):
         if obj and obj.icon:
             return format_html('<code>{}</code>', obj.icon)
         return 'No icon set'
+
+
+@admin.register(ArchitectureEntry)
+class ArchitectureEntryAdmin(admin.ModelAdmin):
+    list_display = ['title', 'context', 'published', 'order']
+    list_filter = ['published']
+    list_editable = ['published', 'order']
+    search_fields = ['title', 'context', 'tools', 'architecture']
+    ordering = ['order', 'id']
+    fieldsets = (
+        ('Entry', {
+            'fields': ('title', 'context', 'tools')
+        }),
+        ('Deep Details', {
+            'fields': ('architecture', 'key_outcomes')
+        }),
+        ('Display', {
+            'fields': ('published', 'order')
+        }),
+    )
+
+
+@admin.register(CurrentFocusItem)
+class CurrentFocusItemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'active', 'order']
+    list_filter = ['active']
+    list_editable = ['active', 'order']
+    search_fields = ['title', 'note']
+    ordering = ['order', 'id']
 
 
 @admin.register(Project)
