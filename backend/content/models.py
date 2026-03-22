@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
 
@@ -237,7 +238,8 @@ class ArchitectureEntry(models.Model):
         help_text='Comma-separated tools/services (e.g. EKS, Jenkins, SonarQube, EC2).',
     )
     architecture = models.TextField(
-        help_text='Deep details on architecture, workflows, and operational design.',
+        blank=True,
+        help_text='Deep details on architecture, workflows, and operational design (optional when diagram image is uploaded).',
     )
     diagram_text = models.CharField(
         max_length=500,
@@ -277,6 +279,10 @@ class ArchitectureEntry(models.Model):
         ordering = ['order', 'id']
         verbose_name = 'Architecture Entry'
         verbose_name_plural = 'Architecture Entries'
+
+    def clean(self):
+        if not (str(self.architecture or '').strip() or self.diagram_image):
+            raise ValidationError('Provide either an architecture overview or an architecture diagram image.')
 
     def __str__(self):
         return self.title

@@ -58,12 +58,23 @@ class SkillSerializer(serializers.ModelSerializer):
 class ArchitectureEntrySerializer(serializers.ModelSerializer):
     tools_list = serializers.SerializerMethodField()
     outcomes_list = serializers.SerializerMethodField()
+    diagram_image_url = serializers.SerializerMethodField()
 
     def get_tools_list(self, obj):
         return [p.strip() for p in str(obj.tools or '').split(',') if p.strip()]
 
     def get_outcomes_list(self, obj):
         return [line.strip() for line in str(obj.key_outcomes or '').splitlines() if line.strip()]
+
+    def get_diagram_image_url(self, obj):
+        if not obj.diagram_image:
+            return ''
+
+        url = obj.diagram_image.url
+        request = self.context.get('request')
+        if request:
+            url = request.build_absolute_uri(url)
+        return url
 
     class Meta:
         model = ArchitectureEntry
