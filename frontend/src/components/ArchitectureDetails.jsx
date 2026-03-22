@@ -5,6 +5,9 @@ import {
   Layers,
   Wrench,
   CheckCircle2,
+  Sparkles,
+  Workflow,
+  Box,
   Flag,
   Gauge,
   PlugZap,
@@ -149,7 +152,7 @@ export default function ArchitectureDetails() {
           </p>
         </motion.div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {sectionCards.map((entry, index) => {
             const diagramText = entry.diagramText || buildFallbackDiagram(entry.techStack)
             const diagramImage = String(entry.diagramImageUrl || entry.diagramImage || '').trim()
@@ -159,11 +162,15 @@ export default function ArchitectureDetails() {
             <motion.article
               key={entry.id || `${entry.title}-${index}`}
               {...fadeUp(0.1 + index * 0.04)}
-              className="card rounded-2xl p-6 md:p-7"
+              className="relative overflow-hidden card rounded-2xl p-6 md:p-7 border border-cyan-100/80 shadow-card-md"
             >
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-cyan-50/35 via-transparent to-amber-50/35" />
+              <div className="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-cobalt-500 via-cyan-400 to-amber-400" />
+
+              <div className="relative">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
-                  <Network size={13} /> Application / Tool
+                  <Sparkles size={13} /> Application / Tool
                 </span>
                 {entry.purpose && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
@@ -188,9 +195,9 @@ export default function ArchitectureDetails() {
                     {entry.techStack.map((tool) => (
                       <span
                         key={tool}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-ink-100 text-ink-700"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-white/80 border border-cyan-100 text-cobalt-800"
                       >
-                        <Wrench size={12} /> {tool}
+                        <Wrench size={12} className="text-cyan-600" /> {tool}
                       </span>
                     ))}
                   </div>
@@ -198,18 +205,22 @@ export default function ArchitectureDetails() {
               )}
 
               <div className="mb-4">
-                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Architecture Overview</p>
+                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Workflow size={12} /> Architecture Overview</p>
                 <div className="text-ink-600 leading-relaxed whitespace-pre-line">{entry.architectureOverview || 'Architecture notes can be managed from admin.'}</div>
               </div>
 
               <div className="mb-4">
-                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Architecture Diagram</p>
+                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Box size={12} /> Architecture Diagram</p>
                 {diagramImage ? (
-                  <div className="border border-ink-100 rounded-xl overflow-hidden bg-white">
-                    <img src={diagramImage} alt="Architecture diagram" className="w-full h-auto object-contain" />
+                  <div className="border border-cyan-100 rounded-xl overflow-hidden bg-gradient-to-br from-white to-cyan-50/30 p-2">
+                    <img
+                      src={diagramImage}
+                      alt="Architecture diagram"
+                      className="mx-auto w-full max-h-[420px] md:max-h-[500px] h-auto object-contain rounded-lg"
+                    />
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm text-ink-700 font-mono whitespace-pre-wrap">
+                  <div className="rounded-xl border border-cyan-200 bg-cyan-50/55 px-4 py-3 text-sm text-ink-700 font-mono whitespace-pre-wrap">
                     {diagramText}
                   </div>
                 )}
@@ -232,7 +243,7 @@ export default function ArchitectureDetails() {
               {hasDetails && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {entry.challenges.length > 0 && (
-                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                    <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-4">
                       <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Flag size={12} /> Challenges &amp; Solutions</p>
                       <ul className="space-y-1.5 text-sm text-ink-700">
                         {entry.challenges.map((item) => <li key={item}>{item}</li>)}
@@ -241,7 +252,7 @@ export default function ArchitectureDetails() {
                   )}
 
                   {entry.optimizations.length > 0 && (
-                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4">
                       <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Gauge size={12} /> Performance Optimizations</p>
                       <ul className="space-y-1.5 text-sm text-ink-700">
                         {entry.optimizations.map((item) => <li key={item}>{item}</li>)}
@@ -250,7 +261,7 @@ export default function ArchitectureDetails() {
                   )}
 
                   {entry.integrations.length > 0 && (
-                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                    <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
                       <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><PlugZap size={12} /> Integration Points</p>
                       <ul className="space-y-1.5 text-sm text-ink-700">
                         {entry.integrations.map((item) => <li key={item}>{item}</li>)}
@@ -259,7 +270,7 @@ export default function ArchitectureDetails() {
                   )}
 
                   {entry.deployment.length > 0 && (
-                    <div className="rounded-xl border border-ink-100 bg-white p-4">
+                    <div className="rounded-xl border border-amber-100 bg-amber-50/45 p-4">
                       <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Rocket size={12} /> Deployment Strategy</p>
                       <ul className="space-y-1.5 text-sm text-ink-700">
                         {entry.deployment.map((item) => <li key={item}>{item}</li>)}
@@ -270,13 +281,14 @@ export default function ArchitectureDetails() {
               )}
 
               {!hasDetails && (
-                <div className="mt-4 rounded-xl border border-ink-100 bg-white p-4">
+                <div className="mt-4 rounded-xl border border-cyan-100 bg-cyan-50/35 p-4">
                   <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Blocks size={12} /> Additional Engineering Notes</p>
                   <p className="text-sm text-ink-600">
                     Add challenge/optimization/integration/deployment notes in admin to enrich this architecture card.
                   </p>
                 </div>
               )}
+              </div>
             </motion.article>
             )
           })}
