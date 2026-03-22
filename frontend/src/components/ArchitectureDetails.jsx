@@ -89,6 +89,7 @@ export default function ArchitectureDetails() {
       techStack: Array.isArray(entry?.tools_list) ? entry.tools_list : [],
       architectureOverview: String(entry?.architecture || '').trim(),
       diagramImage: String(entry?.diagram_image || '').trim(),
+      diagramImageUrl: String(entry?.diagram_image_url || '').trim(),
       diagramText: String(entry?.diagram_text || '').trim(),
       keyFeatures: Array.isArray(entry?.outcomes_list) ? entry.outcomes_list : [],
       challenges: toList(entry?.challenges_solutions),
@@ -151,6 +152,7 @@ export default function ArchitectureDetails() {
         <div className="space-y-5">
           {sectionCards.map((entry, index) => {
             const diagramText = entry.diagramText || buildFallbackDiagram(entry.techStack)
+            const diagramImage = String(entry.diagramImageUrl || entry.diagramImage || '').trim()
             const hasDetails = entry.keyFeatures.length || entry.challenges.length || entry.optimizations.length || entry.integrations.length || entry.deployment.length
 
             return (
@@ -202,9 +204,9 @@ export default function ArchitectureDetails() {
 
               <div className="mb-4">
                 <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Architecture Diagram</p>
-                {entry.diagramImage ? (
+                {diagramImage ? (
                   <div className="border border-ink-100 rounded-xl overflow-hidden bg-white">
-                    <img src={entry.diagramImage} alt="Architecture diagram" className="w-full h-auto object-contain" />
+                    <img src={diagramImage} alt="Architecture diagram" className="w-full h-auto object-contain" />
                   </div>
                 ) : (
                   <div className="rounded-xl border border-ink-200 bg-ink-50 px-4 py-3 text-sm text-ink-700 font-mono whitespace-pre-wrap">

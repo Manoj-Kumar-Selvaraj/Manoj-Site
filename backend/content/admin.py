@@ -124,6 +124,7 @@ class ArchitectureEntryAdmin(admin.ModelAdmin):
             'fields': ('title', 'purpose', 'context', 'tools')
         }),
         ('Deep Details', {
+            'description': 'Upload an architecture diagram image. Overview text is optional when an image is provided.',
             'fields': ('architecture', 'diagram_text', 'diagram_image', 'key_outcomes')
         }),
         ('Engineering Add-ons', {
