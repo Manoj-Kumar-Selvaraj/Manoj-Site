@@ -121,10 +121,18 @@ class ArchitectureEntryAdmin(admin.ModelAdmin):
     ordering = ['order', 'id']
     fieldsets = (
         ('Entry', {
-            'fields': ('title', 'context', 'tools')
+            'fields': ('title', 'purpose', 'context', 'tools')
         }),
         ('Deep Details', {
-            'fields': ('architecture', 'key_outcomes')
+            'fields': ('architecture', 'diagram_text', 'diagram_image', 'key_outcomes')
+        }),
+        ('Engineering Add-ons', {
+            'fields': (
+                'challenges_solutions',
+                'performance_optimizations',
+                'integration_points',
+                'deployment_strategy',
+            )
         }),
         ('Display', {
             'fields': ('published', 'order')
