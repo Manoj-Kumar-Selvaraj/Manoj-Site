@@ -222,6 +222,10 @@ class Skill(models.Model):
 
 class ArchitectureEntry(models.Model):
     title = models.CharField(max_length=200)
+    purpose = models.TextField(
+        blank=True,
+        help_text='What this application/tool does and its real-world use case.',
+    )
     context = models.CharField(
         max_length=200,
         blank=True,
@@ -235,9 +239,36 @@ class ArchitectureEntry(models.Model):
     architecture = models.TextField(
         help_text='Deep details on architecture, workflows, and operational design.',
     )
+    diagram_text = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text='Optional textual flow (e.g. User -> React -> Django API -> Lambda -> MySQL).',
+    )
+    diagram_image = models.ImageField(
+        upload_to='architecture/',
+        blank=True,
+        null=True,
+        help_text='Optional architecture diagram image.',
+    )
     key_outcomes = models.TextField(
         blank=True,
         help_text='Optional outcomes, one per line.',
+    )
+    challenges_solutions = models.TextField(
+        blank=True,
+        help_text='Optional challenge and solution notes. Use one line per point.',
+    )
+    performance_optimizations = models.TextField(
+        blank=True,
+        help_text='Optional optimization notes. Use one line per point.',
+    )
+    integration_points = models.TextField(
+        blank=True,
+        help_text='Optional external integrations (mainframe, AWS services, third-party APIs). One line per point.',
+    )
+    deployment_strategy = models.TextField(
+        blank=True,
+        help_text='Optional deployment strategy notes. One line per point.',
     )
     order = models.PositiveIntegerField(default=0)
     published = models.BooleanField(default=True)
