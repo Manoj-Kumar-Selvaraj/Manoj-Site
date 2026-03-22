@@ -26,6 +26,18 @@ body::before {
   background-repeat: no-repeat;
 }
 
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1000px 500px at 8% 12%, rgba(14, 165, 233, 0.18), transparent 60%),
+    radial-gradient(900px 420px at 88% 20%, rgba(245, 158, 11, 0.16), transparent 62%),
+    radial-gradient(920px 520px at 50% 92%, rgba(16, 185, 129, 0.14), transparent 60%);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -54,7 +66,7 @@ body::before {
 
   /* ── Cards ─────────────────────────────────────────────── */
   .card {
-    @apply bg-surface rounded-2xl border border-ink-200 shadow-card;
+    @apply bg-surface rounded-2xl border border-white/60 shadow-card backdrop-blur-sm;
   }
   .card-hover {
     @apply card transition-all duration-300
@@ -64,14 +76,15 @@ body::before {
   /* ── Buttons ────────────────────────────────────────────── */
   .btn-primary {
     @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-           bg-cobalt-600 text-white shadow-sm
-           transition-all duration-200 hover:bg-cobalt-500 hover:shadow-cobalt active:scale-95;
+           text-white shadow-sm
+           transition-all duration-200 hover:shadow-cobalt active:scale-95;
+    background-image: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 52%, #14b8a6 100%);
   }
   .btn-outline {
     @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-           border-2 border-cobalt-200 text-cobalt-700
-           bg-white/80 backdrop-blur-sm shadow-sm
-           transition-all duration-200 hover:bg-white hover:border-cobalt-400 hover:shadow-md
+           border-2 border-cobalt-200 text-cobalt-800
+           bg-white/75 backdrop-blur-sm shadow-sm
+           transition-all duration-200 hover:bg-white hover:border-cyan-300 hover:shadow-md
            active:scale-95;
   }
   .btn-amber {
@@ -83,8 +96,8 @@ body::before {
   /* ── Badges & tags ──────────────────────────────────────── */
   .section-badge {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
-           text-xs font-semibold uppercase tracking-wider
-           bg-cobalt-50 text-cobalt-700 border border-cobalt-200;
+           text-xs font-semibold uppercase tracking-wider text-cobalt-900 border border-cyan-200;
+    background-image: linear-gradient(120deg, rgba(219, 234, 254, 0.95) 0%, rgba(207, 250, 254, 0.95) 55%, rgba(254, 243, 199, 0.9) 100%);
   }
   .tag {
     @apply px-2.5 py-1 rounded-md text-xs font-mono font-medium
@@ -106,6 +119,7 @@ body::before {
   }
   .section-title {
     @apply text-3xl md:text-4xl font-black text-ink-900;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
   }
 
   /* ── Input fields ───────────────────────────────────────── */
