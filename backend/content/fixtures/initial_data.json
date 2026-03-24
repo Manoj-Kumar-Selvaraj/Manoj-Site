@@ -4,51 +4,23 @@
   "pk": 4,
   "fields": {
     "name": "Manoj Kumar Selvaraj",
-    "title": "Cloud Platform Engineer | DevOps Engineer",
-    "tagline": "Building and modernizing enterprise DevOps platforms on AWS with reliability-first architecture.",
-    "about_section_badge": "About Me",
-    "about_heading_prefix": "Building infrastructure that",
-    "about_heading_highlight": "teams actually rely on.",
-    "about_section_intro": "Enterprise DevOps, AWS platform engineering, and AI system evaluation in production contexts.",
-    "hero_tools_label": "Core tools & services",
-    "hero_stats_label": "Quick stats",
-    "experience_section_badge": "Work History",
-    "experience_section_title": "Experience",
-    "experience_section_intro": "Platform engineering and large-scale migrations.",
-    "projects_section_badge": "Portfolio",
-    "projects_section_title": "Projects & Initiatives",
-    "projects_section_intro": "Large-scale migrations, automation frameworks, and full-stack systems built in production.",
-    "projects_empty_text": "Projects coming soon.",
-    "projects_view_all_label": "View All Projects",
-    "blog_section_badge": "Writing",
-    "blog_section_title": "Latest Posts",
-    "blog_section_intro": "Thoughts on AI, DevOps, cloud infrastructure and engineering.",
-    "blog_view_all_label": "Read All Posts",
-    "certifications_section_badge": "Credentials",
-    "certifications_section_title": "Certifications",
-    "contact_section_badge": "Contact",
-    "contact_section_title": "Let's Work Together",
-    "contact_section_intro": "Send a message and I'll get back to you.",
-    "bio": "Cloud and DevOps engineer focused on building, scaling, and modernizing enterprise DevOps platforms on AWS.\n\nStrong expertise across Terraform, Kubernetes, CI/CD ecosystems, IAM, and cloud networking, with hands-on delivery in large migrations, Python automation frameworks, and high-availability platform operations.\n\nAlso focused on AI system evaluation, prompt engineering, and LLM agent benchmarking, combining infrastructure depth with rigorous validation of AI-driven systems.",
-    "bio_extended": "Core outcomes: platform reliability, migration safety, reusable automation, and measurable engineering velocity gains.\nThis portfolio captures architecture practices and tooling decisions used across enterprise systems.",
-    "applications_section_title": "Applications & Tooling Scope",
-    "applications_section_body": "Hands-on scope includes platform engineering for CI/CD ecosystems, Kubernetes operations, Terraform automation, cloud security hardening, and reliability engineering at enterprise scale.",
-    "infra_section_title": "Infrastructure & Architecture",
-    "infra_section_body": "Reference patterns include multi-account AWS architecture, private networking, EKS runtime platforms, policy-driven IAM, and automated delivery frameworks with observability guardrails.",
-    "infra_diagram": "",
+    "title": "Cloud Platform | DevOps | LLM Benchmarking",
+    "tagline": "Building enterprise DevOps platforms. Automating cloud infrastructure at scale.",
+    "bio": "I am a Cloud Platform and DevOps engineer focused on building reliable infrastructure that engineering teams depend on every day.\r\n\r\nMy work centers on AWS platforms, Kubernetes, Terraform, and large-scale CI/CD systems. I specialize in stabilizing complex DevOps environments, executing major migrations, and designing infrastructure that scales reliably.\r\n\r\nAt Accenture, I owned enterprise DevOps platforms including Jenkins, GitHub Enterprise, Terraform Cloud, SonarQube, and Kubernetes clusters across 30+ AWS accounts. I led migrations of 1,000+ Terraform workspaces and 15,000+ CI/CD pipelines while maintaining production stability.\r\n\r\nI also build Python automation frameworks to reduce operational effort and contribute to AI system evaluation and benchmarking, validating AI-generated code and designing adversarial tasks for coding agents.",
+    "bio_extended": "AAAAA",
     "avatar": "",
     "resume": "",
     "email": "ss.mano1998@gmail.com",
-    "phone": "+91 80984 76095",
+    "phone": "+918098476095",
     "location": "Bangalore, India",
-    "github_url": "https://github.com/Manoj-Kumar-Selvaraj",
-    "linkedin_url": "https://www.linkedin.com/in/manoj-kumar-selvaraj",
+    "github_url": "https://github.com/",
+    "linkedin_url": "https://linkedin.com/in/",
     "twitter_url": "",
     "website_url": "",
     "years_experience": 5,
     "projects_completed": 15,
     "is_available": true,
-    "updated_at": "2026-03-24T18:34:53.678Z"
+    "updated_at": "2026-03-02T14:08:04.250Z"
   }
 },
 {
@@ -58,7 +30,7 @@
     "profile": 4,
     "label": "EKS Clusters",
     "value": "50+",
-    "order": 3
+    "order": 1
   }
 },
 {
@@ -73,22 +45,22 @@
 },
 {
   "model": "content.profilestat",
-  "pk": 4,
+  "pk": 3,
   "fields": {
     "profile": 4,
-    "label": "AWS Accounts",
-    "value": "30+",
-    "order": 2
+    "label": "Terraform WS",
+    "value": "1000+",
+    "order": 0
   }
 },
 {
   "model": "content.profilestat",
-  "pk": 5,
+  "pk": 4,
   "fields": {
     "profile": 4,
-    "label": "Terraform Workspaces",
-    "value": "1000+",
-    "order": 1
+    "label": "AWS Accounts",
+    "value": "40+",
+    "order": 0
   }
 },
 {
@@ -98,11 +70,8 @@
     "category": "iac",
     "name": "Terraform",
     "icon": "terraform",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 0,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.783Z"
+    "order": 3
   }
 },
 {
@@ -112,11 +81,8 @@
     "category": "iac",
     "name": "Terraform Cloud",
     "icon": "terraform",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 4,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 4
   }
 },
 {
@@ -126,11 +92,8 @@
     "category": "iac",
     "name": "CloudFormation",
     "icon": "amazonaws",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 1,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.788Z"
+    "order": 5
   }
 },
 {
@@ -139,12 +102,9 @@
   "fields": {
     "category": "devops",
     "name": "GitHub Actions",
-    "icon": "githubactions",
-    "icon_upload": "",
+    "icon": "github",
     "proficiency": 4,
-    "order": 1,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.810Z"
+    "order": 13
   }
 },
 {
@@ -153,12 +113,9 @@
   "fields": {
     "category": "devops",
     "name": "Harness",
-    "icon": "harness",
-    "icon_upload": "",
+    "icon": "",
     "proficiency": 4,
-    "order": 2,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.815Z"
+    "order": 14
   }
 },
 {
@@ -168,11 +125,8 @@
     "category": "devops",
     "name": "SonarQube",
     "icon": "sonarqube",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 3,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.821Z"
+    "proficiency": 3,
+    "order": 15
   }
 },
 {
@@ -182,11 +136,8 @@
     "category": "devops",
     "name": "JFrog Artifactory",
     "icon": "jfrog",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 4,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.826Z"
+    "order": 16
   }
 },
 {
@@ -196,11 +147,8 @@
     "category": "devops",
     "name": "UDeploy",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 5,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.831Z"
+    "order": 17
   }
 },
 {
@@ -210,11 +158,8 @@
     "category": "containers",
     "name": "Docker",
     "icon": "docker",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 0,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.794Z"
+    "order": 9
   }
 },
 {
@@ -224,11 +169,8 @@
     "category": "containers",
     "name": "Kubernetes",
     "icon": "kubernetes",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 1,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.800Z"
+    "order": 7
   }
 },
 {
@@ -238,11 +180,8 @@
     "category": "containers",
     "name": "Helm",
     "icon": "helm",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 10,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 10
   }
 },
 {
@@ -252,11 +191,8 @@
     "category": "python",
     "name": "Python",
     "icon": "python",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 0,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.837Z"
+    "order": 18
   }
 },
 {
@@ -266,11 +202,8 @@
     "category": "cloud",
     "name": "AWS (EC2, EKS, S3, IAM, KMS, VPC, CloudFront, Route53)",
     "icon": "amazonaws",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 0,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 0
   }
 },
 {
@@ -280,11 +213,8 @@
     "category": "cloud",
     "name": "CloudWatch / EventBridge",
     "icon": "amazonaws",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 1,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 1
   }
 },
 {
@@ -294,11 +224,8 @@
     "category": "cloud",
     "name": "Multi-account architecture",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 2,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 2
   }
 },
 {
@@ -308,25 +235,19 @@
     "category": "iac",
     "name": "Infrastructure automation frameworks",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 6,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 6
   }
 },
 {
   "model": "content.skill",
   "pk": 140,
   "fields": {
-    "category": "cloud",
+    "category": "containers",
     "name": "AWS EKS",
     "icon": "amazonaws",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 1,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.720Z"
+    "order": 8
   }
 },
 {
@@ -336,11 +257,8 @@
     "category": "containers",
     "name": "GitHub Actions ARC runners",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 11,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 11
   }
 },
 {
@@ -350,11 +268,8 @@
     "category": "devops",
     "name": "Jenkins / CloudBees CI",
     "icon": "jenkins",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 12,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 12
   }
 },
 {
@@ -364,11 +279,8 @@
     "category": "python",
     "name": "Bash scripting",
     "icon": "gnubash",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 19,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 19
   }
 },
 {
@@ -378,11 +290,8 @@
     "category": "python",
     "name": "API integrations",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 20,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 20
   }
 },
 {
@@ -392,11 +301,8 @@
     "category": "python",
     "name": "Operational automation",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 21,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 21
   }
 },
 {
@@ -406,11 +312,8 @@
     "category": "ai_llm",
     "name": "Adversarial task design",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 25,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 25
   }
 },
 {
@@ -420,11 +323,8 @@
     "category": "ai_llm",
     "name": "GitHub Copilot / Cursor / AntiGravity",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 3,
-    "order": 31,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 31
   }
 },
 {
@@ -434,11 +334,8 @@
     "category": "ai_llm",
     "name": "LLM / AI evaluation",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 22,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 22
   }
 },
 {
@@ -448,11 +345,8 @@
     "category": "ai_llm",
     "name": "AI agent benchmarking",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 23,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 23
   }
 },
 {
@@ -462,11 +356,8 @@
     "category": "ai_llm",
     "name": "Prompt design and refinement",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 24,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 24
   }
 },
 {
@@ -476,11 +367,8 @@
     "category": "ai_llm",
     "name": "Code correctness evaluation",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 26,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 26
   }
 },
 {
@@ -490,11 +378,8 @@
     "category": "ai_llm",
     "name": "Multi-turn agent evaluation",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 27,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 27
   }
 },
 {
@@ -504,11 +389,8 @@
     "category": "ai_llm",
     "name": "Test environment design",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 28,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 28
   }
 },
 {
@@ -518,11 +400,8 @@
     "category": "ai_llm",
     "name": "Docker-based benchmarking environments",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 29,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
+    "order": 29
   }
 },
 {
@@ -532,314 +411,8 @@
     "category": "ai_llm",
     "name": "Structured evaluation rubrics",
     "icon": "",
-    "icon_upload": "",
     "proficiency": 4,
-    "order": 30,
-    "show_in_hero": false,
-    "updated_at": "2026-03-21T17:43:30.643Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 159,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS EC2",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 0,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.715Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 160,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS ECR",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 2,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.725Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 161,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS S3",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 3,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.731Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 162,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS RDS",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 4,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.736Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 163,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS VPC",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 5,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.741Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 164,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS IAM",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 6,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.746Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 165,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS KMS",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 7,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.751Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 166,
-  "fields": {
-    "category": "cloud",
-    "name": "AWS Lambda",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 8,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.757Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 167,
-  "fields": {
-    "category": "cloud",
-    "name": "Route 53",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 9,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.762Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 168,
-  "fields": {
-    "category": "cloud",
-    "name": "CloudWatch",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 10,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.767Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 169,
-  "fields": {
-    "category": "cloud",
-    "name": "CloudTrail",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 11,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.773Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 170,
-  "fields": {
-    "category": "cloud",
-    "name": "EventBridge",
-    "icon": "amazonaws",
-    "icon_upload": "",
-    "proficiency": 3,
-    "order": 12,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.778Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 171,
-  "fields": {
-    "category": "devops",
-    "name": "Jenkins",
-    "icon": "jenkins",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 0,
-    "show_in_hero": true,
-    "updated_at": "2026-03-24T18:34:53.804Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 172,
-  "fields": {
-    "category": "python",
-    "name": "Bash",
-    "icon": "gnubash",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 1,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.842Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 173,
-  "fields": {
-    "category": "ai_llm",
-    "name": "LLM Evaluation",
-    "icon": "",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 0,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.847Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 174,
-  "fields": {
-    "category": "ai_llm",
-    "name": "Prompt Engineering",
-    "icon": "",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 1,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.852Z"
-  }
-},
-{
-  "model": "content.skill",
-  "pk": 175,
-  "fields": {
-    "category": "ai_llm",
-    "name": "Agent Benchmarking",
-    "icon": "",
-    "icon_upload": "",
-    "proficiency": 4,
-    "order": 2,
-    "show_in_hero": false,
-    "updated_at": "2026-03-24T18:34:53.857Z"
-  }
-},
-{
-  "model": "content.toolarchitecture",
-  "pk": 1,
-  "fields": {
-    "name": "Terraform Platform Modernization (TFE -> TFC)",
-    "order": 0,
-    "role": "Infrastructure provisioning control plane for multi-account AWS environments.\nStandardized reusable modules and policy guardrails.",
-    "setup": "Terraform Cloud workspaces mapped by environment and account.\nVCS-driven runs with variable sets, workspace policies, and state governance.",
-    "usage": "Pipeline or PR change triggers plan/apply workflows.\nAutomations validate drift, deprecated resources, and workspace readiness before migration.",
-    "communication": "Integrates with GitHub Enterprise, IAM roles, and cloud APIs.\nStatus feedback loops into CI/CD and operations dashboards.",
-    "tradeoffs": "Centralized control improves consistency but requires strict workspace hygiene.\nMigration pace depends on state quality and module standardization depth."
-  }
-},
-{
-  "model": "content.toolarchitecture",
-  "pk": 2,
-  "fields": {
-    "name": "Jenkins / CloudBees CI Runtime Platform",
-    "order": 1,
-    "role": "Primary CI execution backbone for high-volume enterprise delivery pipelines.",
-    "setup": "CloudBees CI controllers with resilient storage and backup strategy.\nShared libraries and standardized agent templates for team-level consistency.",
-    "usage": "Build/test/deploy workflows execute per repository and release process.\nOperational playbooks handle runner capacity, failures, and upgrades.",
-    "communication": "Connects to GitHub Enterprise, Artifactory, SonarQube, and deployment tools.\nFeeds logs/metrics to monitoring and incident workflows.",
-    "tradeoffs": "Highly flexible platform with operational overhead at large scale.\nStandardization reduces team variance but can slow custom pipeline changes."
-  }
-},
-{
-  "model": "content.toolarchitecture",
-  "pk": 3,
-  "fields": {
-    "name": "GitHub Actions ARC on EKS",
-    "order": 2,
-    "role": "Elastic runner platform for distributed GitHub Actions workloads.",
-    "setup": "ARC runners deployed across EKS clusters in multiple AWS accounts.\nOIDC-based role assumption used for short-lived AWS access.",
-    "usage": "Workflows schedule onto ARC runners based on labels and concurrency.\nAutoscaling responds to queue load while maintaining runner isolation.",
-    "communication": "GitHub Actions control plane triggers jobs; runners access AWS services via IAM roles.\nMonitoring integrates with CloudWatch alarms and platform alerts.",
-    "tradeoffs": "Great elasticity and security posture; requires Kubernetes operational maturity.\nCross-account governance and upgrade cadence are ongoing responsibilities."
-  }
-},
-{
-  "model": "content.toolarchitecture",
-  "pk": 4,
-  "fields": {
-    "name": "Enterprise Code Quality and Artifact Flow",
-    "order": 3,
-    "role": "Quality gates and artifact governance across CI/CD pipelines.",
-    "setup": "SonarQube and JFrog integrated into Jenkins/Harness workflows.\nPlugin and runtime compatibility baselines managed during upgrades.",
-    "usage": "Builds push binaries/images after scan and policy checks pass.\nQuality metrics and failure signals block unsafe promotions.",
-    "communication": "Bi-directional integration with CI engines, scanners, and artifact repositories.\nAlerts and dashboards feed operational incident workflows.",
-    "tradeoffs": "Improves release confidence but increases pipeline dependency chain.\nVersion upgrades need pre-validation to avoid ecosystem breakage."
-  }
-},
-{
-  "model": "content.toolarchitecture",
-  "pk": 5,
-  "fields": {
-    "name": "Full Stack Business Management Platform (Personal Project)",
-    "order": 4,
-    "role": "Business workflow platform for employee, inventory, and billing operations.",
-    "setup": "React frontend on S3 + CloudFront; Django backend on EC2 behind ALB.\nProvisioned via Terraform with IAM/networking controls.",
-    "usage": "Users interact via React SPA; Django APIs process business operations.\nCI/CD automates frontend and backend deployments.",
-    "communication": "Frontend communicates with Django APIs over HTTPS.\nBackend integrates with MySQL host through secure role-based access patterns.",
-    "tradeoffs": "Simple architecture for SMB scale with clear ownership boundaries.\nRequires disciplined infra automation and release validation for long-term maintainability."
+    "order": 30
   }
 },
 {
@@ -1113,32 +686,40 @@
     "company": "Accenture Solutions Pvt Ltd",
     "role": "DevOps / Cloud Engineer",
     "location": "Bangalore, India",
-    "start_date": "2021-01-01",
+    "start_date": "2020-09-01",
     "end_date": null,
     "is_current": true,
-    "description": "Owned and modernized enterprise DevOps platforms across AWS, Kubernetes, and CI/CD ecosystems.",
+    "description": "Owned enterprise DevOps platforms and cloud infrastructure at scale, driving large migrations, CI/CD stability, and AWS multi-account operations.",
     "highlights": [
-      "Owned enterprise DevOps platforms: Jenkins, Harness, Terraform Enterprise/Cloud, GitHub Enterprise, SonarQube, JFrog, and UDeploy.",
-      "Migrated 1000+ Terraform Enterprise workspaces to Terraform Cloud with automated validation workflows.",
-      "Built Python automation reducing migration effort by ~50%.",
-      "Led Jenkins migration from CJP to CloudBees CI, moving 15000+ pipelines and ~500 GB Jenkins home data.",
-      "Implemented OIDC authentication for GitHub Actions to remove long-lived IAM credentials.",
-      "Scaled ARC runners in EKS across 5 AWS accounts to support 500+ workflows/day.",
-      "Led EKS upgrades across 30+ AWS accounts with workload validation and add-on compatibility checks."
+      "Owned and operated enterprise DevOps platforms including Jenkins, Harness, Terraform Cloud, GitHub Enterprise, SonarQube, and Artifactory supporting hundreds of engineers.",
+      "Migrated 1,000+ Terraform Enterprise workspaces to Terraform Cloud; built Python automation reducing migration effort by 50%.",
+      "Led Jenkins migration from CJP to CloudBees CI — 15,000+ pipelines and ~500 GB of Jenkins home data.",
+      "Deployed GitHub Actions ARC runners across 5 AWS accounts, enabling 500+ workflows/day with zero service interruption.",
+      "Owned and upgraded Kubernetes fleets across 50+ clusters with safe rollout/rollback and workload validation.",
+      "Led EKS version upgrades across 30+ AWS accounts, coordinating node group updates, add-on compatibility, and IAM adjustments.",
+      "Implemented OIDC-based authentication for GitHub Actions, eliminating long-lived IAM credentials.",
+      "Upgraded SonarQube from 9.x to 2025.1.4 and validated it across Jenkins (EC2 + EKS) and Harness pipelines for multiple tech stacks.",
+      "Used GitHub Copilot, Cursor, and AntiGravity for assisted prototyping and review workflows.",
+      "Implemented cost visibility and optimization practices (e.g., Harness CCM) to improve spend governance and reduce waste.",
+      "Defined reusable Terraform module patterns, guardrails, and review workflows to reduce drift and improve delivery safety.",
+      "Improved CI/CD throughput and stability for high-volume delivery (15K+ pipelines) through standardization, cleanup, and platform hardening.",
+      "Defined SLO/SLI-based CloudWatch monitoring and alerting for UDeploy and Jenkins."
     ],
     "tech_stack": [
-      "AWS",
+      "AWS EKS",
       "Terraform",
-      "Kubernetes",
       "Jenkins",
-      "CloudBees CI",
-      "GitHub Actions",
       "Harness",
-      "Python"
+      "GitHub Actions",
+      "Kubernetes",
+      "Python",
+      "SonarQube",
+      "JFrog",
+      "CloudWatch"
     ],
     "company_logo": "",
     "company_url": "",
-    "order": 0
+    "order": 2
   }
 },
 {
@@ -1217,61 +798,6 @@
     "company_logo": "",
     "company_url": "",
     "order": 1
-  }
-},
-{
-  "model": "content.experience",
-  "pk": 14,
-  "fields": {
-    "company": "Snorkel AI",
-    "role": "AI Evaluation & Agent Benchmarking",
-    "location": "Remote",
-    "start_date": "2024-01-01",
-    "end_date": null,
-    "is_current": true,
-    "description": "Evaluated and benchmarked LLM systems and coding agents through adversarial tasks and reproducible validation environments.",
-    "highlights": [
-      "Reviewed and rated LLM outputs for correctness, reasoning quality, and instruction adherence.",
-      "Designed prompts and adversarial coding tasks to test edge-case handling and tool use.",
-      "Built validation test suites and reference fixes to assess completion accuracy."
-    ],
-    "tech_stack": [
-      "LLM Evaluation",
-      "Prompt Engineering",
-      "Agent Benchmarking",
-      "Python"
-    ],
-    "company_logo": "",
-    "company_url": "",
-    "order": 1
-  }
-},
-{
-  "model": "content.experience",
-  "pk": 15,
-  "fields": {
-    "company": "Enterprise Mainframe Program",
-    "role": "Mainframe Support Engineer",
-    "location": "Bangalore, India",
-    "start_date": "2019-01-01",
-    "end_date": "2020-12-31",
-    "is_current": false,
-    "description": "Supported mission-critical mainframe disbursement systems and drove scheduler migration automation.",
-    "highlights": [
-      "Maintained 99.99% SLA for business-critical mainframe systems.",
-      "Developed Python automation to migrate 3000 jobs from ESP to StoneBranch with validation checks.",
-      "Integrated batch processes with AWS-based monitoring and file transfer automation."
-    ],
-    "tech_stack": [
-      "JCL",
-      "COBOL",
-      "Python",
-      "StoneBranch",
-      "AWS Monitoring"
-    ],
-    "company_logo": "",
-    "company_url": "",
-    "order": 2
   }
 }
 ]
