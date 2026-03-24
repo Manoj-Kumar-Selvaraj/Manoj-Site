@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem,
+    Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem, ToolArchitecture,
     Project, Experience, BlogPost, Activity, Certification, ContactMessage
 )
 
@@ -84,6 +84,12 @@ class ArchitectureEntrySerializer(serializers.ModelSerializer):
 class CurrentFocusItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CurrentFocusItem
+        fields = '__all__'
+
+
+class ToolArchitectureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ToolArchitecture
         fields = '__all__'
 
 

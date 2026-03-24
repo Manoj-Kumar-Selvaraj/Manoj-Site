@@ -49,6 +49,7 @@ class Command(BaseCommand):
             'content.skill',
             'content.architectureentry',
             'content.currentfocusitem',
+            'content.toolarchitecture',
             'content.project',
             'content.experience',
             'content.activity',
