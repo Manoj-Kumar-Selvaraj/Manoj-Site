@@ -13,7 +13,7 @@ Usage:
 
 from django.core.management.base import BaseCommand
 
-from content.models import Activity, ArchitectureEntry, CurrentFocusItem, Experience, Profile, Project, Skill
+from content.models import Activity, ArchitectureEntry, CurrentFocusItem, Experience, Profile, Project, Skill, ToolArchitecture
 
 
 class Command(BaseCommand):
@@ -27,6 +27,7 @@ class Command(BaseCommand):
             Activity.objects.all().delete()
             ArchitectureEntry.objects.all().delete()
             CurrentFocusItem.objects.all().delete()
+            ToolArchitecture.objects.all().delete()
             Experience.objects.all().delete()
             Project.objects.all().delete()
             Skill.objects.all().delete()

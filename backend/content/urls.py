@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ProfileViewSet, SkillViewSet, ArchitectureEntryViewSet, CurrentFocusItemViewSet, ProjectViewSet,
+    ProfileViewSet, SkillViewSet, ArchitectureEntryViewSet, CurrentFocusItemViewSet, ToolArchitectureViewSet, ProjectViewSet,
     ExperienceViewSet, BlogPostViewSet, ActivityViewSet,
     CertificationViewSet, ContactMessageViewSet
 )
@@ -11,6 +11,7 @@ router.register('profile', ProfileViewSet)
 router.register('skills', SkillViewSet)
 router.register('architecture', ArchitectureEntryViewSet)
 router.register('current-focus', CurrentFocusItemViewSet)
+router.register('tool-architecture', ToolArchitectureViewSet)
 router.register('projects', ProjectViewSet)
 router.register('experience', ExperienceViewSet)
 router.register('blog', BlogPostViewSet)

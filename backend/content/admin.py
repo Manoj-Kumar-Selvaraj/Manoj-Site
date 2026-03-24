@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.utils.html import format_html
 from .models import (
     Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem,
+    ToolArchitecture,
     Project, Experience, BlogPost, Activity, Certification, ContactMessage
 )
 
@@ -148,6 +149,34 @@ class CurrentFocusItemAdmin(admin.ModelAdmin):
     list_editable = ['active', 'order']
     search_fields = ['title', 'note']
     ordering = ['order', 'id']
+
+
+@admin.register(ToolArchitecture)
+class ToolArchitectureAdmin(admin.ModelAdmin):
+    list_display = ['name', 'order']
+    list_editable = ['order']
+    search_fields = ['name', 'role', 'setup', 'usage', 'communication', 'tradeoffs']
+    ordering = ['order', 'id']
+    fieldsets = (
+        ('Tool', {
+            'fields': ('name', 'order')
+        }),
+        ('Role in System', {
+            'fields': ('role',)
+        }),
+        ('Typical Setup', {
+            'fields': ('setup',)
+        }),
+        ('How It Works', {
+            'fields': ('usage',)
+        }),
+        ('Communication / Integration', {
+            'fields': ('communication',)
+        }),
+        ('Design Decisions / Trade-offs', {
+            'fields': ('tradeoffs',)
+        }),
+    )
 
 
 @admin.register(Project)

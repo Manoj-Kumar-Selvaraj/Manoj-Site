@@ -1,20 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Network,
-  Layers,
-  Wrench,
-  CheckCircle2,
-  Sparkles,
-  Workflow,
-  Box,
-  Flag,
-  Gauge,
-  PlugZap,
-  Rocket,
-  Blocks,
-} from 'lucide-react'
-import { getArchitectureEntries, getProfile } from '../api'
+import { getToolArchitectures } from '../api'
+import ToolArchitectureCard from './ToolArchitectureCard'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -24,274 +11,68 @@ const fadeUp = (delay = 0) => ({
 })
 
 export default function ArchitectureDetails() {
-  const [entries, setEntries] = useState([])
-  const [profile, setProfile] = useState(null)
+  const [tools, setTools] = useState([])
 
   useEffect(() => {
-    Promise.all([getArchitectureEntries(), getProfile()])
-      .then(([entriesRes, profileRes]) => {
-        const entryPayload = Array.isArray(entriesRes?.data)
-          ? entriesRes.data
-          : Array.isArray(entriesRes?.data?.results)
-            ? entriesRes.data.results
+    getToolArchitectures()
+      .then((res) => {
+        const payload = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.data?.results)
+            ? res.data.results
             : []
-        setEntries(entryPayload)
-        setProfile(profileRes?.data || null)
+        setTools(payload)
       })
       .catch(() => {})
   }, [])
 
-  const applicationsTitle = String(profile?.applications_section_title || 'Applications').trim() || 'Applications'
-  const applicationsBody = String(profile?.applications_section_body || '').trim()
-  const infraTitle = String(profile?.infra_section_title || 'Infrastructure & Architecture').trim() || 'Infrastructure & Architecture'
-  const infraBody = String(profile?.infra_section_body || '').trim()
-  const infraDiagram = String(profile?.infra_diagram || '').trim()
-  const hasFallbackContent = Boolean(applicationsBody || infraBody || infraDiagram)
-
-  const toList = (value) => {
-    const text = String(value || '').trim()
-    if (!text) return []
-    return text
-      .split(/\r?\n|,/)
-      .map((item) => item.trim())
-      .filter(Boolean)
-  }
-
-  const buildFallbackDiagram = (tools) => {
-    if (!tools.length) {
-      return 'User -> React Frontend -> API (Django) -> Cloud Runtime -> Data Store'
-    }
-
-    const [first, second, third, fourth] = tools
-    const runtime = third || 'Cloud Runtime'
-    const data = fourth || 'Data Store'
-    return `User -> React Frontend -> API (Django) -> ${runtime} -> ${data}${first ? ` (${first}${second ? `, ${second}` : ''})` : ''}`
-  }
-
-  const sectionCards = [
-    ...(applicationsBody
-      ? [{
-        id: 'applications-profile',
-        title: applicationsTitle,
-        purpose: applicationsBody,
-        techStack: [],
-        architectureOverview: infraBody || applicationsBody,
-        diagramImage: infraDiagram,
-        diagramText: '',
-        keyFeatures: toList(profile?.bio_extended),
-        challenges: [],
-        optimizations: [],
-        integrations: [],
-        deployment: [],
-      }]
-      : []),
-    ...entries.map((entry) => ({
-      id: entry.id,
-      title: String(entry?.title || '').trim() || 'Application / Tool',
-      purpose: String(entry?.context || '').trim(),
-      techStack: Array.isArray(entry?.tools_list) ? entry.tools_list : [],
-      architectureOverview: String(entry?.architecture || '').trim(),
-      diagramImage: String(entry?.diagram_image || '').trim(),
-      diagramImageUrl: String(entry?.diagram_image_url || '').trim(),
-      diagramText: String(entry?.diagram_text || '').trim(),
-      keyFeatures: Array.isArray(entry?.outcomes_list) ? entry.outcomes_list : [],
-      challenges: toList(entry?.challenges_solutions),
-      optimizations: toList(entry?.performance_optimizations),
-      integrations: toList(entry?.integration_points),
-      deployment: toList(entry?.deployment_strategy),
-    })),
-    ...(!applicationsBody && (infraBody || infraDiagram)
-      ? [{
-        id: 'infra-profile',
-        title: infraTitle,
-        purpose: infraBody,
-        techStack: [],
-        architectureOverview: infraBody,
-        diagramImage: infraDiagram,
-        diagramText: '',
-        keyFeatures: [],
-        challenges: [],
-        optimizations: [],
-        integrations: [],
-        deployment: [],
-      }]
-      : []),
-  ]
-
-  if (!entries.length && !hasFallbackContent) {
-    return (
-      <section id="architecture" className="py-20 bg-canvas">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp(0)} className="mb-12">
-            <span className="section-badge mb-4">Architecture Deep Dives</span>
-            <h2 className="section-title mt-3">
-                Applications &amp; Tools<br />
-                <span className="text-cobalt-600">technical implementation and architecture.</span>
-            </h2>
-            <p className="mt-3 text-ink-500 max-w-3xl">
-              Add architecture entries in Django Admin to publish detailed stack, diagrams, and design notes.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section id="architecture" className="py-20 bg-canvas">
+    <section id="architecture" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div {...fadeUp(0)} className="mb-12">
-          <span className="section-badge mb-4">Applications &amp; Tools</span>
-          <h2 className="section-title mt-3">
-            Application systems and engineering tools,<br />
-            <span className="text-cobalt-600">from stack details to architecture decisions.</span>
-          </h2>
-          <p className="mt-3 text-ink-500 max-w-3xl">
-            Deep technical snapshots of the platforms and applications I build, including tech stacks,
-            architecture flow, deployment patterns, and operational trade-offs.
-          </p>
+        <motion.div {...fadeUp(0)} className="mb-8 max-w-3xl">
+          <h2 className="text-lg sm:text-xl font-semibold text-white">Platform Architecture &amp; Tooling in Practice</h2>
         </motion.div>
 
-        <div className="space-y-6">
-          {sectionCards.map((entry, index) => {
-            const diagramText = entry.diagramText || buildFallbackDiagram(entry.techStack)
-            const diagramImage = String(entry.diagramImageUrl || entry.diagramImage || '').trim()
-            const hasDetails = entry.keyFeatures.length || entry.challenges.length || entry.optimizations.length || entry.integrations.length || entry.deployment.length
+        <motion.div
+          {...fadeUp(0.04)}
+          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 ease-out hover:bg-white/15 hover:border-white/30 hover:-translate-y-0.5 px-5 py-4 md:px-6 md:py-5 mb-4"
+        >
+          <div className="space-y-4 max-w-3xl">
+            <h3 className="text-base sm:text-lg font-semibold text-white">System Overview</h3>
+            <p className="text-sm sm:text-base text-white/85 leading-relaxed">
+              Placeholder overview describing how platform components are structured and how tooling supports
+              delivery, observability, and runtime operations.
+            </p>
+            <div className="h-40 rounded-xl border border-dashed border-white/20 flex items-center justify-center text-white/40 text-sm">
+              Architecture diagram placeholder
+            </div>
+          </div>
+        </motion.div>
 
-            return (
-            <motion.article
-              key={entry.id || `${entry.title}-${index}`}
-              {...fadeUp(0.1 + index * 0.04)}
-              className="relative overflow-hidden card rounded-2xl p-6 md:p-7 border border-cyan-100/80 shadow-card-md"
-            >
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-cyan-50/35 via-transparent to-amber-50/35" />
-              <div className="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-cobalt-500 via-cyan-400 to-amber-400" />
+        <div className="flex flex-col gap-4">
+          {tools.map((tool, index) => (
+            <motion.div key={tool.id || `${tool.name}-${index}`} {...fadeUp(0.08 + index * 0.03)}>
+              <ToolArchitectureCard
+                title={tool.name}
+                role={tool.role}
+                setup={tool.setup}
+                usage={tool.usage}
+                communication={tool.communication}
+                tradeoffs={tool.tradeoffs}
+              />
+            </motion.div>
+          ))}
 
-              <div className="relative">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
-                  <Sparkles size={13} /> Application / Tool
-                </span>
-                {entry.purpose && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                    <Layers size={13} /> Context
-                  </span>
-                )}
+          {tools.length === 0 && (
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl px-5 py-4 md:px-6 md:py-5">
+              <div className="max-w-3xl space-y-2">
+                <h3 className="text-base sm:text-lg font-semibold text-white">ToolArchitecture entries required</h3>
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                  Add Tool Architecture records in admin to populate this section.
+                </p>
               </div>
-
-              <h3 className="text-xl sm:text-2xl font-bold text-ink-900 mb-3">{entry.title}</h3>
-
-              {entry.purpose && (
-                <div className="mb-4">
-                  <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Description / Purpose</p>
-                  <p className="text-ink-600 leading-relaxed whitespace-pre-line">{entry.purpose}</p>
-                </div>
-              )}
-
-              {entry.techStack?.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Tech Stack</p>
-                  <div className="flex flex-wrap gap-2">
-                    {entry.techStack.map((tool) => (
-                      <span
-                        key={tool}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-white/80 border border-cyan-100 text-cobalt-800"
-                      >
-                        <Wrench size={12} className="text-cyan-600" /> {tool}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-4">
-                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Workflow size={12} /> Architecture Overview</p>
-                <div className="text-ink-600 leading-relaxed whitespace-pre-line">{entry.architectureOverview || 'Architecture notes can be managed from admin.'}</div>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Box size={12} /> Architecture Diagram</p>
-                {diagramImage ? (
-                  <div className="border border-cyan-100 rounded-xl overflow-hidden bg-gradient-to-br from-white to-cyan-50/30 p-2">
-                    <img
-                      src={diagramImage}
-                      alt="Architecture diagram"
-                      className="mx-auto w-full max-h-[420px] md:max-h-[500px] h-auto object-contain rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-cyan-200 bg-cyan-50/55 px-4 py-3 text-sm text-ink-700 font-mono whitespace-pre-wrap">
-                    {diagramText}
-                  </div>
-                )}
-              </div>
-
-              {entry.keyFeatures.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-ink-100">
-                  <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2">Key Features</p>
-                  <ul className="space-y-1.5 text-sm text-ink-700">
-                    {entry.keyFeatures.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <CheckCircle2 size={14} className="mt-0.5 text-emerald-600 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {hasDetails && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  {entry.challenges.length > 0 && (
-                    <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-4">
-                      <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Flag size={12} /> Challenges &amp; Solutions</p>
-                      <ul className="space-y-1.5 text-sm text-ink-700">
-                        {entry.challenges.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  )}
-
-                  {entry.optimizations.length > 0 && (
-                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4">
-                      <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Gauge size={12} /> Performance Optimizations</p>
-                      <ul className="space-y-1.5 text-sm text-ink-700">
-                        {entry.optimizations.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  )}
-
-                  {entry.integrations.length > 0 && (
-                    <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
-                      <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><PlugZap size={12} /> Integration Points</p>
-                      <ul className="space-y-1.5 text-sm text-ink-700">
-                        {entry.integrations.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  )}
-
-                  {entry.deployment.length > 0 && (
-                    <div className="rounded-xl border border-amber-100 bg-amber-50/45 p-4">
-                      <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Rocket size={12} /> Deployment Strategy</p>
-                      <ul className="space-y-1.5 text-sm text-ink-700">
-                        {entry.deployment.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!hasDetails && (
-                <div className="mt-4 rounded-xl border border-cyan-100 bg-cyan-50/35 p-4">
-                  <p className="text-xs uppercase tracking-widest text-ink-400 font-semibold mb-2 inline-flex items-center gap-1.5"><Blocks size={12} /> Additional Engineering Notes</p>
-                  <p className="text-sm text-ink-600">
-                    Add challenge/optimization/integration/deployment notes in admin to enrich this architecture card.
-                  </p>
-                </div>
-              )}
-              </div>
-            </motion.article>
-            )
-          })}
+            </div>
+          )}
         </div>
       </div>
     </section>

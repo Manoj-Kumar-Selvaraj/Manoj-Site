@@ -5,13 +5,13 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
-    Profile, Skill, ArchitectureEntry, CurrentFocusItem,
+    Profile, Skill, ArchitectureEntry, CurrentFocusItem, ToolArchitecture,
     Project, Experience,
     BlogPost, Activity, Certification, ContactMessage,
     SKILL_CATEGORIES
 )
 from .serializers import (
-    ProfileSerializer, SkillSerializer, ArchitectureEntrySerializer, CurrentFocusItemSerializer,
+    ProfileSerializer, SkillSerializer, ArchitectureEntrySerializer, CurrentFocusItemSerializer, ToolArchitectureSerializer,
     ProjectSerializer,
     ExperienceSerializer, BlogPostListSerializer, BlogPostDetailSerializer,
     ActivitySerializer, CertificationSerializer, ContactMessageSerializer
@@ -97,6 +97,12 @@ class ArchitectureEntryViewSet(viewsets.ReadOnlyModelViewSet):
 class CurrentFocusItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CurrentFocusItem.objects.filter(active=True)
     serializer_class = CurrentFocusItemSerializer
+    permission_classes = [AllowAny]
+
+
+class ToolArchitectureViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ToolArchitecture.objects.all().order_by('order', 'id')
+    serializer_class = ToolArchitectureSerializer
     permission_classes = [AllowAny]
 
 

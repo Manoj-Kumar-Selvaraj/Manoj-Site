@@ -303,6 +303,24 @@ class CurrentFocusItem(models.Model):
         return self.title
 
 
+class ToolArchitecture(models.Model):
+    name = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=0)
+    role = models.TextField(blank=True, default='')
+    setup = models.TextField(blank=True, default='')
+    usage = models.TextField(blank=True, default='')
+    communication = models.TextField(blank=True, default='')
+    tradeoffs = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = 'Tool Architecture'
+        verbose_name_plural = 'Tool Architectures'
+
+    def __str__(self):
+        return self.name
+
+
 PROJECT_STATUS = [
     ('completed', 'Completed'),
     ('in_progress', 'In Progress'),
