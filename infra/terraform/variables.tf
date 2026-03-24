@@ -66,9 +66,9 @@ variable "media_bucket_name" {
 
 # ── CloudFront ───────────────────────────────────────────────────────────────
 variable "cloudfront_price_class" {
-  description = "CloudFront price class (PriceClass_200 includes Asia; recommended for India latency)"
+  description = "CloudFront price class (PriceClass_100 = US/EU only, cheapest)"
   type        = string
-  default     = "PriceClass_200"
+  default     = "PriceClass_100"
 
   validation {
     condition     = contains(["PriceClass_All", "PriceClass_200", "PriceClass_100"], var.cloudfront_price_class)
