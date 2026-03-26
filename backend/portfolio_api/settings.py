@@ -332,3 +332,8 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no
 
 # Recipient for portfolio contact form emails.
 CONTACT_NOTIFICATION_EMAIL = os.environ.get('CONTACT_NOTIFICATION_EMAIL', EMAIL_HOST_USER)
+
+# Contact anti-bot timing: require users to spend at least this many
+# milliseconds on the form before submitting.
+CONTACT_MIN_FORM_FILL_MS = int(os.environ.get('CONTACT_MIN_FORM_FILL_MS', '2500'))
+CONTACT_REQUIRE_FORM_TIMING = os.environ.get('CONTACT_REQUIRE_FORM_TIMING', 'True') == 'True'

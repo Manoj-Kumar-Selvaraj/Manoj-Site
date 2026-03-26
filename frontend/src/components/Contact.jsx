@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Send, CheckCircle, AlertCircle, MapPin } from 'lucide-react'
 import { getProfile, sendContact } from '../api'
@@ -8,6 +8,7 @@ export default function Contact() {
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.')
   const [profile, setProfile] = useState(null)
+  const formLoadedAtRef = useRef(Date.now())
 
   useEffect(() => {
     getProfile().then(r => setProfile(r.data)).catch(() => {})
@@ -27,12 +28,21 @@ export default function Contact() {
     setStatus('loading')
     setErrorMessage('Something went wrong. Please try again.')
     try {
-      await sendContact(form)
+      await sendContact({
+        ...form,
+        form_loaded_at: formLoadedAtRef.current,
+      })
       setStatus('success')
       setForm({ name: '', email: '', subject: '', message: '', website: '' })
+      formLoadedAtRef.current = Date.now()
     } catch (err) {
       if (err?.response?.status === 429) {
         setErrorMessage('Too many messages in a short time. Please try again later.')
+      } else if (err?.response?.status === 400) {
+        const raw = JSON.stringify(err?.response?.data || {}).toLowerCase()
+        if (raw.includes('please wait a moment before sending')) {
+          setErrorMessage('Please wait a moment before sending your message.')
+        }
       }
       setStatus('error')
     }
