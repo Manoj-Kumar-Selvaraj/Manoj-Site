@@ -66,9 +66,9 @@ variable "media_bucket_name" {
 
 # ── CloudFront ───────────────────────────────────────────────────────────────
 variable "cloudfront_price_class" {
-  description = "CloudFront price class (PriceClass_100 = US/EU only, cheapest)"
+  description = "CloudFront price class (PriceClass_200 recommended for India/Asia audiences)"
   type        = string
-  default     = "PriceClass_100"
+  default     = "PriceClass_200"
 
   validation {
     condition     = contains(["PriceClass_All", "PriceClass_200", "PriceClass_100"], var.cloudfront_price_class)

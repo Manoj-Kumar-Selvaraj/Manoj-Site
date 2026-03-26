@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, X, TrendingUp, Wrench } from 'lucide-react'
 import { getFeaturedSkills, getProfile } from '../api'
+import { HeroSkeleton } from './ui/Skeleton'
 
 /* ── Avatar component ───────────────────────────────────────────── */
 function Avatar({ profile, name, size = 'md', onClick }) {
@@ -115,6 +116,7 @@ export default function Hero() {
   const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [showAllSkills, setShowAllSkills] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([getProfile(), getFeaturedSkills()])
@@ -122,7 +124,11 @@ export default function Hero() {
         setProfile(p.data)
         setFeaturedSkills(s.data || [])
       })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  if (loading) return <HeroSkeleton />
 
   const name = profile?.name || ''
   const title = profile?.title || ''

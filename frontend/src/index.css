@@ -169,6 +169,36 @@ body::after {
   }
 }
 
+/* ── Skeleton shimmer loading animation ─────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton-block {
+  display: block;
+  background-size: 600px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Light variant — for canvas/surface sections */
+.skeleton-light {
+  background-image: linear-gradient(
+    90deg,
+    #e7e5e4 25%, #d0cdc9 50%, #e7e5e4 75%
+  );
+}
+
+/* Dark variant — for hero / dark-bg sections */
+.skeleton-dark {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.07) 25%,
+    rgba(255,255,255,0.20) 50%,
+    rgba(255,255,255,0.07) 75%
+  );
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
