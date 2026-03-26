@@ -132,6 +132,18 @@ class CertificationSerializer(serializers.ModelSerializer):
 
 
 class ContactMessageSerializer(serializers.ModelSerializer):
+    # Honeypot field: hidden on UI, but often filled by bots.
+    website = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
+    def validate_website(self, value):
+        if str(value or '').strip():
+            raise serializers.ValidationError('Invalid submission.')
+        return ''
+
+    def create(self, validated_data):
+        validated_data.pop('website', None)
+        return super().create(validated_data)
+
     class Meta:
         model = ContactMessage
-        fields = ['name', 'email', 'subject', 'message']
+        fields = ['name', 'email', 'subject', 'message', 'website']

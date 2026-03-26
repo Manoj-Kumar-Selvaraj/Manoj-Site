@@ -4,7 +4,7 @@ import { Mail, Send, CheckCircle, AlertCircle, MapPin } from 'lucide-react'
 import { getProfile, sendContact } from '../api'
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.')
   const [profile, setProfile] = useState(null)
@@ -29,7 +29,7 @@ export default function Contact() {
     try {
       await sendContact(form)
       setStatus('success')
-      setForm({ name: '', email: '', subject: '', message: '' })
+      setForm({ name: '', email: '', subject: '', message: '', website: '' })
     } catch (err) {
       if (err?.response?.status === 429) {
         setErrorMessage('Too many messages in a short time. Please try again later.')
@@ -105,6 +105,20 @@ export default function Contact() {
             className="lg:col-span-3"
           >
             <form onSubmit={handleSubmit} className="card rounded-2xl p-6 md:p-8 space-y-5">
+              {/* Honeypot field for basic bot filtering */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  type="text"
+                  name="website"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  value={form.website}
+                  onChange={handleChange}
+                />
+              </div>
+
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs text-ink-400 uppercase tracking-wide font-medium mb-1.5">Name</label>
