@@ -178,6 +178,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_THROTTLE_RATES': {
+        # Anti-spam guard for public contact form endpoint.
+        'contact_submit': os.environ.get('CONTACT_SUBMIT_RATE', '3/hour'),
+    },
 }
 
 # Jazzmin Admin Theme

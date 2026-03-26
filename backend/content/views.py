@@ -18,6 +18,7 @@ from .serializers import (
     ExperienceSerializer, BlogPostListSerializer, BlogPostDetailSerializer,
     ActivitySerializer, CertificationSerializer, ContactMessageSerializer
 )
+from .throttles import ContactSubmitRateThrottle
 
 
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
@@ -165,6 +166,7 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ContactSubmitRateThrottle]
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):

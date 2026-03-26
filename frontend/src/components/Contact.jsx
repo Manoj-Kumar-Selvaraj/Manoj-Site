@@ -6,6 +6,7 @@ import { getProfile, sendContact } from '../api'
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.')
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
@@ -24,11 +25,15 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
+    setErrorMessage('Something went wrong. Please try again.')
     try {
       await sendContact(form)
       setStatus('success')
       setForm({ name: '', email: '', subject: '', message: '' })
-    } catch {
+    } catch (err) {
+      if (err?.response?.status === 429) {
+        setErrorMessage('Too many messages in a short time. Please try again later.')
+      }
       setStatus('error')
     }
   }
@@ -162,7 +167,7 @@ export default function Contact() {
               {status === 'error' && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                   <AlertCircle size={16} className="flex-shrink-0" />
-                  Something went wrong. Please try again.
+                  {errorMessage}
                 </div>
               )}
 
