@@ -2,6 +2,8 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
@@ -168,7 +170,34 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        message_obj = serializer.save()
+
+        to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
+        from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
+
+        if to_email:
+            subject = f"[Portfolio Contact] {message_obj.subject}"
+            body = (
+                "A new contact form message was submitted.\n\n"
+                f"Name: {message_obj.name}\n"
+                f"Email: {message_obj.email}\n"
+                f"Subject: {message_obj.subject}\n"
+                f"Message:\n{message_obj.message}\n"
+            )
+
+            # Do not fail the API call if SMTP is temporarily unavailable;
+            # the message remains stored in admin for manual follow-up.
+            try:
+                send_mail(
+                    subject=subject,
+                    message=body,
+                    from_email=from_email,
+                    recipient_list=[to_email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+
         return Response(
             {'message': 'Your message has been sent. I will get back to you soon!'},
             status=status.HTTP_201_CREATED
