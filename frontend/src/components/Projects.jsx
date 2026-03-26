@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Github, ExternalLink, ArrowRight } from 'lucide-react'
 import { getProfile, getProjects } from '../api'
+import { SectionHeaderSkeleton, CardsGridSkeleton } from './ui/Skeleton'
 
 function normalizeTitle(title) {
   return String(title || '').toLowerCase().replace(/\s+/g, ' ').trim()
@@ -35,6 +36,7 @@ const ACCENT_COLORS = [
 export default function Projects({ limit, showAll = false }) {
   const [projects, setProjects] = useState([])
   const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
@@ -45,7 +47,17 @@ export default function Projects({ limit, showAll = false }) {
         setProfile(profileRes.data)
       })
       .catch(() => setProjects([]))
+      .finally(() => setLoading(false))
   }, [limit])
+
+  if (loading) return (
+    <section id="projects" className="py-24 bg-canvas">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeaderSkeleton />
+        <CardsGridSkeleton count={limit || 3} />
+      </div>
+    </section>
+  )
 
   const filtered = limit ? projects.filter(p => p.featured) : projects
   const list = showAll ? filtered : filtered.slice(0, limit || 6)

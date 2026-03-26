@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { getProfile } from '../api'
+import { SectionHeaderSkeleton, TextBlockSkeleton } from './ui/Skeleton'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 30 },
@@ -11,10 +12,23 @@ const fadeUp = (delay = 0) => ({
 
 export default function About() {
   const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getProfile().then(r => setProfile(r.data)).catch(() => {})
+    getProfile()
+      .then(r => setProfile(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  if (loading) return (
+    <section id="about" className="py-20 bg-surface">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeaderSkeleton />
+        <TextBlockSkeleton lines={7} />
+      </div>
+    </section>
+  )
 
   if (!profile) return null
 

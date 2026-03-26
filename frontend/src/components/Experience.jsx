@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getExperiences, getProfile } from '../api'
+import { SectionHeaderSkeleton, ExpCardSkeleton } from './ui/Skeleton'
 
 function ExpCard({ exp, index }) {
   const [open, setOpen] = useState(index === 0)
@@ -76,6 +77,7 @@ function ExpCard({ exp, index }) {
 export default function Experience() {
   const [experiences, setExperiences] = useState([])
   const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([getExperiences(), getProfile()])
@@ -85,7 +87,19 @@ export default function Experience() {
         setProfile(profileRes.data)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  if (loading) return (
+    <section id="experience" className="py-24 bg-surface">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeaderSkeleton />
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <ExpCardSkeleton key={i} />)}
+        </div>
+      </div>
+    </section>
+  )
 
   if (!experiences.length) return null
 

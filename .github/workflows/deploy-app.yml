@@ -21,12 +21,44 @@ permissions:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
+  # Detect which parts of the codebase changed so downstream jobs can be
+  # skipped entirely and invalidations stay targeted (cheaper + faster).
+  # ──────────────────────────────────────────────────────────────────────────
+  detect-changes:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend:  ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # need parent commit to diff against
+
+      - name: Filter changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+              - 'infra/nginx.conf'
+              - 'infra/portfolio-gunicorn.service'
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Build & deploy React to S3 → invalidate CloudFront
+  # Skipped automatically when only backend files changed.
   # ──────────────────────────────────────────────────────────────────────────
   deploy-frontend:
     name: Frontend → S3 + CloudFront
     runs-on: ubuntu-latest
     environment: production
+    needs: [detect-changes]
+    # Always run on manual dispatch; otherwise only when frontend files changed.
+    if: needs.detect-changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,11 +102,15 @@ jobs:
             --cache-control "no-cache, no-store, must-revalidate" \
             --content-type "text/html; charset=utf-8"
 
-      - name: Invalidate CloudFront cache
+      # index.html is the only uncached file in the SPA shell; Vite hashes
+      # all /assets/* filenames so they get new URLs automatically and don't
+      # need invalidation. Targeting just these two paths keeps costs low
+      # (first 1000 paths/month are free; /* counts as 1 but forces full purge).
+      - name: Invalidate CloudFront SPA shell
         run: |
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*" \
+            --paths "/" "/index.html" \
             --query 'Invalidation.Id' \
             --output text)
           echo "Invalidation ID: $INVALIDATION_ID"
@@ -86,6 +122,9 @@ jobs:
     name: Backend → EC2
     runs-on: ubuntu-latest
     environment: production
+    needs: [detect-changes]
+    # Always run on manual dispatch; otherwise only when backend files changed.
+    if: needs.detect-changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -321,7 +360,10 @@ jobs:
   health-check:
     name: Health Check
     runs-on: ubuntu-latest
-    needs: [deploy-frontend, deploy-backend]
+    needs: [detect-changes, deploy-frontend, deploy-backend]
+    # Run if at least one deploy job succeeded; 'always()' ensures we still
+    # evaluate even when a job was skipped (skipped ≠ failed).
+    if: always() && (needs.deploy-frontend.result == 'success' || needs.deploy-backend.result == 'success')
     steps:
       - name: Wait for services to stabilize
         run: sleep 20

@@ -3,10 +3,12 @@ import { motion } from 'framer-motion'
 import { Calendar, Clock, Tag, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getBlogPosts, getProfile } from '../api'
+import { SectionHeaderSkeleton, CardsGridSkeleton } from './ui/Skeleton'
 
 export default function Blog({ limit }) {
   const [posts, setPosts] = useState([])
   const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([getBlogPosts(), getProfile()])
@@ -16,7 +18,17 @@ export default function Blog({ limit }) {
         setProfile(profileRes.data)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [limit])
+
+  if (loading) return (
+    <section id="blog" className="relative py-24 bg-canvas">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeaderSkeleton center />
+        <CardsGridSkeleton count={limit || 3} />
+      </div>
+    </section>
+  )
 
   if (!posts.length) return null
 
