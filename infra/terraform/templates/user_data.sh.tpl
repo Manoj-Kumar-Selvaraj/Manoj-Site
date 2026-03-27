@@ -39,6 +39,13 @@ DEBUG=False
 ALLOWED_HOSTS=${django_allowed_hosts}
 AWS_STORAGE_BUCKET_NAME=${s3_bucket_media}
 AWS_S3_REGION_NAME=${aws_region}
+DB_ENGINE=postgres
+DB_NAME=${db_name}
+DB_USER=${db_user}
+DB_PASSWORD=${db_password}
+DB_HOST=${db_host}
+DB_PORT=${db_port}
+DB_SSLMODE=prefer
 # AWS credentials are provided automatically via the EC2 instance profile.
 # boto3 / django-storages will pick them up from the instance metadata service.
 ENVEOF

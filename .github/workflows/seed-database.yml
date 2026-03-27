@@ -61,6 +61,7 @@ jobs:
       - name: Seed database via SSH
         uses: appleboy/ssh-action@v1
         env:
+          DEPLOY_REF_NAME: ${{ github.ref_name }}
           CREATE_SUPERUSER: ${{ github.event.inputs.create_superuser }}
           SUPERUSER_USERNAME: ${{ github.event.inputs.superuser_username }}
           SUPERUSER_EMAIL: ${{ github.event.inputs.superuser_email }}
@@ -70,15 +71,16 @@ jobs:
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  120s
-          envs:     CREATE_SUPERUSER,SUPERUSER_USERNAME,SUPERUSER_EMAIL,SUPERUSER_PASSWORD
+          envs:     DEPLOY_REF_NAME,CREATE_SUPERUSER,SUPERUSER_USERNAME,SUPERUSER_EMAIL,SUPERUSER_PASSWORD
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
             source backend/venv/bin/activate
 
-            echo "→ Pulling latest code (ensures fixture is up to date)..."
-            git fetch origin main
-            git reset --hard origin/main
+            DEPLOY_REF_NAME=${DEPLOY_REF_NAME:-main}
+            echo "→ Pulling latest code from ${DEPLOY_REF_NAME} (ensures fixture is up to date)..."
+            git fetch origin "${DEPLOY_REF_NAME}"
+            git reset --hard "origin/${DEPLOY_REF_NAME}"
 
             echo "→ Loading fixture data..."
             python backend/manage.py loaddata \

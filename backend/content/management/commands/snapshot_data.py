@@ -55,6 +55,8 @@ class Command(BaseCommand):
             'content.activity',
             'content.certification',
             'content.blogpost',
+            'content.opensourcecontribution',
+            'content.contactmessage',
         ]
 
         buffer = io.StringIO()

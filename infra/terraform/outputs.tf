@@ -43,6 +43,26 @@ output "media_bucket_name" {
   value       = aws_s3_bucket.media.bucket
 }
 
+output "db_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = aws_db_instance.portfolio.address
+}
+
+output "db_port" {
+  description = "RDS PostgreSQL port"
+  value       = aws_db_instance.portfolio.port
+}
+
+output "db_name" {
+  description = "RDS PostgreSQL database name"
+  value       = aws_db_instance.portfolio.db_name
+}
+
+output "db_username" {
+  description = "RDS PostgreSQL username"
+  value       = aws_db_instance.portfolio.username
+}
+
 output "budget_check_role_arn" {
   description = "IAM Role ARN for budget-check PR workflow — set as AWS_BUDGET_ROLE_ARN in GitHub Secrets"
   value       = aws_iam_role.budget_check.arn
@@ -77,9 +97,14 @@ output "github_secrets_summary" {
     │  CLOUDFRONT_DISTRIBUTION_ID          │  ${aws_cloudfront_distribution.frontend.id}
     │  CLOUDFRONT_DOMAIN                   │  ${local.dns_enabled ? var.domain_name : aws_cloudfront_distribution.frontend.domain_name}
     │  EC2_HOST                            │  ${aws_eip.portfolio.public_ip}
+    │  DB_HOST                             │  ${aws_db_instance.portfolio.address}
+    │  DB_PORT                             │  ${aws_db_instance.portfolio.port}
+    │  DB_NAME                             │  ${aws_db_instance.portfolio.db_name}
+    │  DB_USER                             │  ${aws_db_instance.portfolio.username}
     │  API_BASE_URL (optional debug only)  │  ${local.dns_enabled ? "https://${var.domain_name}/api" : "https://${aws_cloudfront_distribution.frontend.domain_name}/api"}
     │  (EC2_SSH_KEY            — your private key, never stored in TF)
     │  (DJANGO_SECRET_KEY      — your Django secret key)
+    │  (DB_PASSWORD            — your RDS password)
     │  (TF_API_TOKEN           — Terraform Cloud token)
     └─────────────────────────────────────────────────────────────────────┘
   EOT

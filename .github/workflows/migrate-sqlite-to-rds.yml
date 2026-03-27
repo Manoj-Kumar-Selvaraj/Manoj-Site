@@ -1,0 +1,147 @@
+name: Migrate SQLite To RDS
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: "Git ref to deploy before migration"
+        required: false
+        default: "main"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  migrate:
+    name: Export SQLite and import into RDS
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-migrate-db
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Temporarily allow SSH from this runner
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RUNNER_IP=$(curl -fsS https://api.ipify.org || true)
+          if [ -z "${RUNNER_IP}" ]; then
+            RUNNER_IP=$(curl -fsS https://checkip.amazonaws.com | tr -d '\n')
+          fi
+          echo "RUNNER_IP=${RUNNER_IP}" >> "$GITHUB_ENV"
+
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:Name,Values=portfolio-sg" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+          echo "SG_ID=${SG_ID}" >> "$GITHUB_ENV"
+
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Ingress rule already exists (continuing)"
+
+      - name: Migrate SQLite to RDS via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_REF_NAME: ${{ github.event.inputs.deploy_ref }}
+          DB_ENGINE: ${{ secrets.DB_ENGINE }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 180s
+          envs: DEPLOY_REF_NAME,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/portfolio
+            source backend/venv/bin/activate
+
+            DEPLOY_REF_NAME=${DEPLOY_REF_NAME:-main}
+            echo "→ Pulling latest code from ${DEPLOY_REF_NAME}..."
+            git fetch origin "${DEPLOY_REF_NAME}"
+            git reset --hard "origin/${DEPLOY_REF_NAME}"
+
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            SNAPSHOT_PATH="snapshots/rds_migration_${TIMESTAMP}.json"
+            ENV_BACKUP="backend/.env.sqlite-backup.${TIMESTAMP}"
+
+            echo "→ Backing up current environment file to ${ENV_BACKUP}..."
+            cp backend/.env "${ENV_BACKUP}"
+
+            echo "→ Exporting current SQLite content snapshot..."
+            python backend/manage.py snapshot_data --output "${SNAPSHOT_PATH}"
+
+            echo "→ Writing PostgreSQL connection settings..."
+            python3 - <<'PY'
+            import os
+            import re
+            from pathlib import Path
+
+            env_path = Path('backend/.env')
+            text = env_path.read_text(encoding='utf-8') if env_path.exists() else ''
+
+            def upsert_env(content: str, key: str, value: str) -> str:
+                value = str(value or '').strip()
+                if not value:
+                    return content
+                line = f"{key}={value}"
+                pattern = rf"^{re.escape(key)}=.*$"
+                if re.search(pattern, content, flags=re.M):
+                    return re.sub(pattern, line, content, flags=re.M)
+                if content and not content.endswith('\n'):
+                    content += '\n'
+                return content + line + '\n'
+
+            updates = {
+                'DB_ENGINE': os.getenv('DB_ENGINE', 'postgres') or 'postgres',
+                'DB_NAME': os.getenv('DB_NAME', ''),
+                'DB_USER': os.getenv('DB_USER', ''),
+                'DB_PASSWORD': os.getenv('DB_PASSWORD', ''),
+                'DB_HOST': os.getenv('DB_HOST', ''),
+                'DB_PORT': os.getenv('DB_PORT', '5432') or '5432',
+                'DB_SSLMODE': os.getenv('DB_SSLMODE', 'prefer') or 'prefer',
+            }
+
+            for key, value in updates.items():
+                text = upsert_env(text, key, value)
+
+            env_path.write_text(text, encoding='utf-8')
+            PY
+
+            echo "→ Running PostgreSQL migrations..."
+            cd backend
+            python manage.py migrate --noinput
+
+            echo "→ Importing snapshot into PostgreSQL..."
+            python manage.py loaddata "../${SNAPSHOT_PATH}" --ignorenonexistent
+
+            echo "→ Restarting Gunicorn..."
+            sudo systemctl restart portfolio-gunicorn
+            echo "✓ SQLite to RDS migration complete"
+
+      - name: Revoke temporary SSH rule
+        if: always()
+        shell: bash
+        run: |
+          if [ -z "${SG_ID:-}" ] || [ -z "${RUNNER_IP:-}" ]; then exit 0; fi
+          aws ec2 revoke-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${RUNNER_IP}/32" \
+            2>/dev/null || echo "Rule already revoked"

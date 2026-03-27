@@ -57,6 +57,14 @@ def _host_variants(host: str) -> list[str]:
     return deduped
 
 
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, str(default))
+    try:
+        return int(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 ALLOWED_HOSTS = _split_hosts(os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 INSTALLED_APPS = [
@@ -106,24 +114,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'portfolio_api.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+_db_engine = os.environ.get('DB_ENGINE', '').strip().lower()
+_use_postgres = _db_engine in {'postgres', 'postgresql'} or bool(os.environ.get('DB_HOST', '').strip())
 
-# PostgreSQL (uncomment for production)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('DB_NAME', 'portfolio'),
-#         'USER': os.environ.get('DB_USER', 'postgres'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-#         'HOST': os.environ.get('DB_HOST', 'localhost'),
-#         'PORT': os.environ.get('DB_PORT', '5432'),
-#     }
-# }
+if _use_postgres:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'portfolio'),
+            'USER': os.environ.get('DB_USER', 'portfolio'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': _env_int('DB_PORT', 5432),
+            'CONN_MAX_AGE': _env_int('DB_CONN_MAX_AGE', 60),
+            'OPTIONS': {
+                'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
+            },
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -318,14 +333,6 @@ for _domain in _host_variants(_cf_domain):
 
 
 # ── Email (Contact Form Notifications) ─────────────────────────────────────
-def _env_int(name: str, default: int) -> int:
-    raw = os.environ.get(name, str(default))
-    try:
-        return int(str(raw).strip())
-    except (TypeError, ValueError):
-        return default
-
-
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
     'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'

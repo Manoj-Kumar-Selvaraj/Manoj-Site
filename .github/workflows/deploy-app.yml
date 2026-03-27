@@ -190,7 +190,15 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
+          DEPLOY_REF_NAME: ${{ github.ref_name }}
           CLOUDFRONT_DOMAIN: ${{ secrets.CLOUDFRONT_DOMAIN }}
+          DB_ENGINE: ${{ secrets.DB_ENGINE }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
@@ -205,14 +213,15 @@ jobs:
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  180s
-          envs:     CLOUDFRONT_DOMAIN,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
+          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
 
-            echo "→ Pulling latest code from main..."
-            git fetch origin main
-            git reset --hard origin/main
+            DEPLOY_REF_NAME=${DEPLOY_REF_NAME:-main}
+            echo "→ Pulling latest code from ${DEPLOY_REF_NAME}..."
+            git fetch origin "${DEPLOY_REF_NAME}"
+            git reset --hard "origin/${DEPLOY_REF_NAME}"
 
             echo "→ Setting up Python virtual environment..."
             if [ ! -d "backend/venv" ]; then
@@ -355,6 +364,13 @@ jobs:
                 return content + line + '\n'
 
             updates = {
+                'DB_ENGINE': os.getenv('DB_ENGINE', 'postgres') or 'postgres',
+                'DB_NAME': os.getenv('DB_NAME', ''),
+                'DB_USER': os.getenv('DB_USER', ''),
+                'DB_PASSWORD': os.getenv('DB_PASSWORD', ''),
+                'DB_HOST': os.getenv('DB_HOST', ''),
+                'DB_PORT': os.getenv('DB_PORT', '5432') or '5432',
+                'DB_SSLMODE': os.getenv('DB_SSLMODE', 'prefer') or 'prefer',
                 'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
                 'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
                 'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
@@ -362,8 +378,8 @@ jobs:
                 'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', ''),
                 'DEFAULT_FROM_EMAIL': os.getenv('DEFAULT_FROM_EMAIL', ''),
                 'CONTACT_NOTIFICATION_EMAIL': os.getenv('CONTACT_NOTIFICATION_EMAIL', ''),
-              'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', '3/hour') or '3/hour',
-              'CONTACT_MIN_FORM_FILL_MS': os.getenv('CONTACT_MIN_FORM_FILL_MS', '2500') or '2500',
+                'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', '3/hour') or '3/hour',
+                'CONTACT_MIN_FORM_FILL_MS': os.getenv('CONTACT_MIN_FORM_FILL_MS', '2500') or '2500',
             }
 
             for key, value in updates.items():
