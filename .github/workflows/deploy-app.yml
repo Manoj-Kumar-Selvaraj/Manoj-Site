@@ -190,6 +190,7 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:
+          DEPLOY_REF_NAME: ${{ github.ref_name }}
           CLOUDFRONT_DOMAIN: ${{ secrets.CLOUDFRONT_DOMAIN }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
@@ -205,14 +206,15 @@ jobs:
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  180s
-          envs:     CLOUDFRONT_DOMAIN,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
+          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
 
-            echo "→ Pulling latest code from main..."
-            git fetch origin main
-            git reset --hard origin/main
+            DEPLOY_REF_NAME=${DEPLOY_REF_NAME:-main}
+            echo "→ Pulling latest code from ${DEPLOY_REF_NAME}..."
+            git fetch origin "${DEPLOY_REF_NAME}"
+            git reset --hard "origin/${DEPLOY_REF_NAME}"
 
             echo "→ Setting up Python virtual environment..."
             if [ ! -d "backend/venv" ]; then
