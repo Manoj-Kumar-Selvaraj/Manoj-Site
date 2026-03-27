@@ -13,7 +13,7 @@ on:
       force_deploy:
         description: "Force deploy regardless of change detection"
         required: false
-        default: false
+        default: true
         type: boolean
       deploy_frontend:
         description: "Deploy frontend to S3 and invalidate CloudFront shell"
