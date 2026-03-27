@@ -24,6 +24,12 @@ body::before {
   background-size: cover;
   background-position: center 85%;
   background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+body.bg-ready::before {
+  opacity: 1;
 }
 
 body::after {
