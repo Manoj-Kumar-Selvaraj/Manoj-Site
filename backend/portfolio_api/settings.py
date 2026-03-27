@@ -178,6 +178,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_THROTTLE_RATES': {
+        # Anti-spam guard for public contact form endpoint.
+        'contact_submit': os.environ.get('CONTACT_SUBMIT_RATE', '3/hour'),
+    },
 }
 
 # Jazzmin Admin Theme
@@ -311,3 +315,25 @@ for _domain in _host_variants(_cf_domain):
         CORS_ALLOWED_ORIGINS.append(_origin)
     if _origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(_origin)
+
+
+# ── Email (Contact Form Notifications) ─────────────────────────────────────
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@portfolio.local')
+
+# Recipient for portfolio contact form emails.
+CONTACT_NOTIFICATION_EMAIL = os.environ.get('CONTACT_NOTIFICATION_EMAIL', EMAIL_HOST_USER)
+
+# Contact anti-bot timing: require users to spend at least this many
+# milliseconds on the form before submitting.
+CONTACT_MIN_FORM_FILL_MS = int(os.environ.get('CONTACT_MIN_FORM_FILL_MS', '2500'))
+CONTACT_REQUIRE_FORM_TIMING = os.environ.get('CONTACT_REQUIRE_FORM_TIMING', 'True') == 'True'

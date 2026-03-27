@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Send, CheckCircle, AlertCircle, MapPin } from 'lucide-react'
 import { getProfile, sendContact } from '../api'
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' })
   const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.')
   const [profile, setProfile] = useState(null)
+  const formLoadedAtRef = useRef(Date.now())
 
   useEffect(() => {
     getProfile().then(r => setProfile(r.data)).catch(() => {})
@@ -24,11 +26,24 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
+    setErrorMessage('Something went wrong. Please try again.')
     try {
-      await sendContact(form)
+      await sendContact({
+        ...form,
+        form_loaded_at: formLoadedAtRef.current,
+      })
       setStatus('success')
-      setForm({ name: '', email: '', subject: '', message: '' })
-    } catch {
+      setForm({ name: '', email: '', subject: '', message: '', website: '' })
+      formLoadedAtRef.current = Date.now()
+    } catch (err) {
+      if (err?.response?.status === 429) {
+        setErrorMessage('Too many messages in a short time. Please try again later.')
+      } else if (err?.response?.status === 400) {
+        const raw = JSON.stringify(err?.response?.data || {}).toLowerCase()
+        if (raw.includes('please wait a moment before sending')) {
+          setErrorMessage('Please wait a moment before sending your message.')
+        }
+      }
       setStatus('error')
     }
   }
@@ -100,6 +115,20 @@ export default function Contact() {
             className="lg:col-span-3"
           >
             <form onSubmit={handleSubmit} className="card rounded-2xl p-6 md:p-8 space-y-5">
+              {/* Honeypot field for basic bot filtering */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  type="text"
+                  name="website"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  value={form.website}
+                  onChange={handleChange}
+                />
+              </div>
+
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs text-ink-400 uppercase tracking-wide font-medium mb-1.5">Name</label>
@@ -162,7 +191,7 @@ export default function Contact() {
               {status === 'error' && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                   <AlertCircle size={16} className="flex-shrink-0" />
-                  Something went wrong. Please try again.
+                  {errorMessage}
                 </div>
               )}
 

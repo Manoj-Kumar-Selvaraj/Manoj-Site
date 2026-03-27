@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProfileViewSet, SkillViewSet, ArchitectureEntryViewSet, CurrentFocusItemViewSet, ToolArchitectureViewSet, ProjectViewSet,
     ExperienceViewSet, BlogPostViewSet, ActivityViewSet,
-    CertificationViewSet, ContactMessageViewSet
+    CertificationViewSet, OpenSourceContributionViewSet, ContactMessageViewSet
 )
 
 router = DefaultRouter()
@@ -17,6 +17,7 @@ router.register('experience', ExperienceViewSet)
 router.register('blog', BlogPostViewSet)
 router.register('activities', ActivityViewSet)
 router.register('certifications', CertificationViewSet)
+router.register('open-source', OpenSourceContributionViewSet)
 router.register('contact', ContactMessageViewSet)
 
 urlpatterns = [

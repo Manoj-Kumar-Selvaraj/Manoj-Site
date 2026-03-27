@@ -1,134 +1,270 @@
+# Manoj Portfolio Platform
 
-# Portfolio (React + Django + Terraform + AWS)
+![React](https://img.shields.io/badge/Frontend-React%2018-61dafb?logo=react&logoColor=white)
+![Django](https://img.shields.io/badge/Backend-Django%204.2-092E20?logo=django&logoColor=white)
+![DRF](https://img.shields.io/badge/API-Django%20REST%20Framework-red)
+![Terraform](https://img.shields.io/badge/IaC-Terraform%201.6-844FBA?logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/Cloud-AWS-232F3E?logo=amazonaws&logoColor=white)
+![License](https://img.shields.io/badge/License-Personal%20Use-blue)
 
-A full-stack personal portfolio site with a CMS-style admin panel.
+<p align="center">
+  <img src="frontend/public/bg_hero.png" alt="Portfolio visual" width="100%" />
+</p>
 
-- **Frontend:** React (Vite) deployed to **S3** and served via **CloudFront**
-- **Backend:** Django + DRF served by **Gunicorn** behind **Nginx** on **EC2**
-- **Infrastructure:** Terraform (remote runs in Terraform Cloud)
-- **CI/CD:** GitHub Actions with PR gates (lint/fmt, cost checks, security scans) and automated deploys
+Production-ready portfolio platform with:
 
-This repo is designed for a **solo developer workflow**: no reviewer requirements, but strong automated checks before merge.
+- React + Vite frontend
+- Django + DRF backend
+- Admin-driven content management (Jazzmin)
+- AWS deployment (S3 + CloudFront + EC2 + Nginx + Gunicorn)
+- Terraform-managed infrastructure and GitHub repository rules
+- CI/CD via GitHub Actions with cost + security checks
 
----
+This repository is admin-first: most site content and section labels are editable from Django Admin without frontend code changes.
 
-## Quick start (production)
+## Table Of Contents
 
-Use this checklist when setting up a new environment or when something looks “deployed but empty”.
+1. [System Overview](#system-overview)
+2. [Request Flow](#request-flow)
+3. [Repository Layout](#repository-layout)
+4. [Features](#features)
+5. [Data Model Summary](#data-model-summary)
+6. [API Surface](#api-surface)
+7. [Environment Variables](#environment-variables)
+8. [Local Development](#local-development)
+9. [Content Operations](#content-operations)
+10. [CI/CD And Quality Gates](#cicd-and-quality-gates)
+11. [Deployment Summary](#deployment-summary)
+12. [Issue Triage Matrix](#issue-triage-matrix)
+13. [Troubleshooting](#troubleshooting)
+14. [Newcomer Checklist](#newcomer-checklist)
 
-### 1) Provision / update infra (Terraform Cloud)
-- Run **Plan + Apply** in Terraform Cloud for the `portfolio` workspace.
-
-### 2) Configure GitHub Secrets (Actions)
-Minimum set to deploy:
-- `AWS_ROLE_ARN`, `AWS_REGION`
-- `EC2_HOST`, `EC2_SSH_KEY`
-- `S3_BUCKET_FRONTEND`, `CLOUDFRONT_DISTRIBUTION_ID`, `CLOUDFRONT_DOMAIN`
-
-Minimum set for PR gates:
-- `TF_API_TOKEN`, `INFRACOST_API_KEY`, `AWS_BUDGET_ROLE_ARN`
-
-### 3) Merge to main
-- Open PR → wait for required checks to pass → merge.
-
-### 4) Seed content (one-time per new server)
-- Run the manual workflow **Seed Database** (`seed-database.yml`) to load the fixture into EC2.
-- Or SSH to EC2 and run `python manage.py loaddata ...`.
-
-### 5) Validate
-- Frontend: open `https://<cloudfront-domain>/`
-- API: `https://<cloudfront-domain>/api/`
-- Admin: `https://<cloudfront-domain>/admin/`
-
----
-
-## What this project does
-
-### End-user site
-- Landing page with about/skills/experience/projects/blog/contact sections
-- Pages for Projects and Blog
-- Contact form posting into the backend
-
-### Admin (CMS)
-- Django Admin (Jazzmin theme)
-- Create/update:
-	- Profile
-	- Skills (grouped)
-	- Experience
-	- Projects
-	- Blog posts
-	- Activities
-	- Certifications
-	- Contact messages (inbox)
-
-### API
-- Django REST Framework endpoints under `/api/`
-- JWT endpoints under `/api/token/` and `/api/token/refresh/`
-
----
-
-## Architecture
+## System Overview
 
 ```mermaid
-flowchart LR
-	U[Browser] -->|HTTPS| CF[CloudFront]
-	CF -->|SPA assets| S3[S3 frontend bucket]
-	CF -->|/api/* /admin/* /static/*| EC2[EC2: Nginx -> Gunicorn -> Django]
-	EC2 --> DB[(SQLite db.sqlite3)]
-	EC2 -->|uploads| S3M[S3 media bucket]
+flowchart TB
+  %% Viewer edge
+  subgraph EDGE[Edge Layer]
+    U([End User Browser])
+    CF[CloudFront Distribution]
+    U -->|HTTPS + HTTP/2| CF
+  end
+
+  %% Frontend delivery plane
+  subgraph FRONTEND[Frontend Delivery Plane]
+    S3FE[(S3 Frontend Bucket)]
+    SPA[React + Vite SPA]
+    CF -->|Route /| S3FE
+    S3FE -->|Serve index + hashed assets| SPA
+  end
+
+  %% App/API plane
+  subgraph APP[Application Plane]
+    EC2[EC2 Ubuntu]
+    NGINX[Nginx Reverse Proxy]
+    GUNI[Gunicorn Workers]
+    DJ[Django + DRF API]
+    CF -->|Route /api /admin /static| EC2
+    EC2 --> NGINX --> GUNI --> DJ
+  end
+
+  %% Data plane
+  subgraph DATA[Data and Media Plane]
+    DB[(SQLite)]
+    S3M[(S3 Media Bucket)]
+    DJ -->|Relational content| DB
+    DJ -->|Uploaded files| S3M
+  end
+
+  %% Styling
+  classDef edge fill:#e6f0ff,stroke:#3b82f6,stroke-width:2px,color:#0f172a;
+  classDef frontend fill:#e8fff4,stroke:#10b981,stroke-width:2px,color:#052e16;
+  classDef app fill:#fff7e8,stroke:#f59e0b,stroke-width:2px,color:#451a03;
+  classDef data fill:#ffeef2,stroke:#ef4444,stroke-width:2px,color:#4c0519;
+  classDef actor fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+  class U actor;
+  class CF edge;
+  class S3FE,SPA frontend;
+  class EC2,NGINX,GUNI,DJ app;
+  class DB,S3M data;
 ```
 
-Notes:
-- CloudFront terminates TLS for viewers.
-- The backend origin runs HTTP internally (Nginx proxies to Gunicorn on `127.0.0.1:8000`).
-- In production (`DEBUG=False`) media uploads are stored in S3 via `django-storages`.
+Core architecture decisions:
 
----
+- Frontend and API share the same public domain via CloudFront path behaviors.
+- CloudFront default behavior serves SPA from S3 with long-lived caching for hashed assets.
+- API/Admin/Static are routed to EC2 origin with no cache for dynamic routes.
+- Media uploads are served from S3 in production (`DEBUG=False`).
 
-## Repo layout
+## Request Flow
 
-- `frontend/` — React app (Vite)
-- `backend/` — Django project + DRF API
-- `infra/terraform/` — Terraform for AWS + GitHub rulesets
-- `infra/nginx.conf` — Nginx site config for EC2
-- `infra/portfolio-gunicorn.service` — systemd unit for Gunicorn
-- `.github/workflows/` — CI/CD workflows
+### Frontend
 
----
+1. Browser requests root URL.
+2. CloudFront serves `index.html` and static assets from S3.
+3. React app calls same-origin `/api/*` (via Axios base URL normalization).
 
-## Local development
+### Backend API
+
+1. CloudFront forwards `/api/*` to EC2 origin.
+2. Nginx proxies to Gunicorn (`127.0.0.1:8000`).
+3. Django/DRF returns JSON.
+
+### Contact Form
+
+1. React submits `/api/contact/`.
+2. Backend validates:
+   - honeypot field
+   - minimum form fill time
+   - rate limit throttle by IP
+3. Message is stored in DB.
+4. Email notification is attempted (SMTP, fail-safe).
+
+## Repository Layout
+
+- `frontend/`: React application (sections, routes, API client).
+- `backend/`: Django project, content app, API, admin, migrations.
+- `infra/`: Nginx config, Gunicorn service, Terraform templates/modules.
+- `.github/workflows/`: deploy pipelines, PR checks, budget gate, seeding.
+- `DEPLOY.md`: detailed production deployment runbook.
+
+## Features
+
+### Content-Managed Sections
+
+- Hero, About, Architecture, Current Focus
+- Experience, Projects, Blog, Certifications
+- Open Source Contributions, Contact
+
+### Admin-Driven CMS
+
+Managed from Django Admin:
+
+- Profile and section copy fields
+- Profile stats
+- Skills with custom icon upload support
+- Projects with architecture diagrams and notes
+- Architecture entries and tool architecture cards
+- Experiences, activities, blog posts, certifications
+- Open source contribution entries
+- Contact inbox
+
+### Frontend UX Enhancements
+
+- Section skeleton loaders
+- Background image preload loader
+- Avatar image loader with spinner/fallback
+- Expandable architecture/project details
+- Diagram modal preview for architecture images
+- Placeholder rendering for empty sections (certifications/open source)
+
+## Data Model Summary
+
+Primary content models in `content` app:
+
+- `Profile`: global site/profile copy and metadata.
+- `ProfileStat`: hero statistics.
+- `Skill`: categorized skills + optional custom icon upload.
+- `Project`: project details, links, stack, architecture diagram + notes.
+- `ArchitectureEntry`, `ToolArchitecture`: architecture storytelling.
+- `CurrentFocusItem`: active focus list.
+- `Experience`, `BlogPost`, `Activity`, `Certification`.
+- `OpenSourceContribution`: open source section data.
+- `ContactMessage`: inbound contact submissions.
+
+## API Surface
+
+Base path: `/api/`
+
+Read endpoints:
+
+- `/profile/me/`
+- `/skills/`, `/skills/grouped/`, `/skills/featured/`
+- `/architecture/`, `/tool-architecture/`, `/current-focus/`
+- `/projects/`, `/projects/<slug>/`
+- `/experience/`
+- `/blog/`, `/blog/<slug>/`
+- `/activities/`
+- `/certifications/`
+- `/open-source/`
+
+Write endpoint:
+
+- `/contact/` (POST only)
+
+Auth endpoints:
+
+- `/api/token/`
+- `/api/token/refresh/`
+
+## Environment Variables
+
+### Backend Core
+
+- `SECRET_KEY`
+- `DEBUG`
+- `ALLOWED_HOSTS`
+- `CLOUDFRONT_DOMAIN`
+
+### S3 Media
+
+- `AWS_STORAGE_BUCKET_NAME`
+- `AWS_S3_REGION_NAME`
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (optional when using EC2 instance profile)
+
+### Contact Email
+
+- `EMAIL_BACKEND`
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+- `EMAIL_HOST_USER`
+- `EMAIL_HOST_PASSWORD`
+- `EMAIL_USE_TLS`
+- `EMAIL_USE_SSL`
+- `DEFAULT_FROM_EMAIL`
+- `CONTACT_NOTIFICATION_EMAIL`
+
+### Contact Anti-Spam
+
+- `CONTACT_SUBMIT_RATE` (example `3/hour`)
+- `CONTACT_MIN_FORM_FILL_MS` (default `2500`)
+- `CONTACT_REQUIRE_FORM_TIMING` (`True`/`False`)
+
+## Local Development
 
 ### Prerequisites
-- Node.js 20+
+
 - Python 3.11+
+- Node.js 20+
 
-### Quick setup
-
-From the repo root:
+### One-command Setup
 
 ```bash
 ./setup.sh
 ```
 
-This will:
-- create a Python venv
-- install backend deps
-- create `backend/.env` from `backend/.env.example`
-- migrate DB
-- prompt you to create a Django superuser
-- install frontend deps
+What `setup.sh` does:
 
-### Run locally
+1. Creates Python virtualenv (`backend/venv`).
+2. Installs backend dependencies.
+3. Copies `backend/.env.example` to `backend/.env` if missing.
+4. Runs migrations.
+5. Prompts for Django superuser creation.
+6. Runs `collectstatic`.
+7. Installs frontend dependencies.
+
+### Run Locally
 
 Backend:
 
 ```bash
 cd backend
-source venv/bin/activate  # Windows: venv\\Scripts\\activate
+source venv/bin/activate
 python manage.py runserver
 ```
 
-Frontend (dev server with proxy `/api` -> Django):
+Frontend:
 
 ```bash
 cd frontend
@@ -136,192 +272,127 @@ npm run dev
 ```
 
 Local URLs:
-- Frontend: `http://localhost:5173/`
+
+- Frontend: `http://localhost:5173`
 - Admin: `http://localhost:8000/admin/`
 - API: `http://localhost:8000/api/`
 
----
+## Content Operations
 
-## Content seeding / exporting
-
-The site content is stored in the backend DB. For convenience, this repo also supports a fixture-based workflow.
-
-### Export content from local DB
+### Clear Data (development only)
 
 ```bash
 cd backend
-export PYTHONUTF8=1  # PowerShell: $env:PYTHONUTF8="1"
-python manage.py dumpdata content \
-	--natural-foreign --natural-primary --indent 2 \
-	-o content/fixtures/initial_data.json
+python manage.py seed_data --clear
 ```
 
-### Load content on EC2
+### Snapshot Current Content
 
-On the EC2 instance:
+```bash
+cd backend
+python manage.py snapshot_data
+```
+
+Custom output path:
+
+```bash
+python manage.py snapshot_data --output snapshots/portfolio_snapshot.json
+```
+
+### Restore Data
+
+```bash
+python manage.py loaddata backend/content/fixtures/initial_data.json
+```
+
+## CI/CD And Quality Gates
+
+### Main Workflows
+
+- `pr-checks.yml`: lint/validate/security/cost checks.
+- `budget-check.yml`: monthly AWS cost threshold gate.
+- `deploy-app.yml`: frontend + backend deploy.
+- `seed-database.yml`: manual fixture load to EC2.
+
+### Required Checks (branch ruleset)
+
+- Secret Scan (Gitleaks)
+- Terraform Checks
+- App Build Check
+- App Health Check
+- Infracost Cost Estimate
+- Security Scan (Trivy)
+- Monthly AWS Cost Check
+
+## Deployment Summary
+
+For full details see `DEPLOY.md`.
+
+High-level flow:
+
+1. Terraform provisions infrastructure and IAM/OIDC wiring.
+2. GitHub Actions assumes AWS roles via OIDC.
+3. Frontend deploy job publishes to S3 and invalidates CloudFront shell paths.
+4. Backend deploy job SSHes to EC2, updates code, migrates, collects static, restarts services.
+5. Health check validates API and frontend availability.
+
+## Issue Triage Matrix
+
+Use this quick map to jump to the right diagnostic path:
+
+| Symptom | Likely Scope | First Checks | Primary Reference |
+|---|---|---|---|
+| Frontend blank/old UI | S3/CloudFront/frontend deploy | latest deploy run, S3 object upload, CloudFront invalidation | [DEPLOY.md](DEPLOY.md#step-5-first-deploy-path) |
+| `/api/*` returns HTML | CloudFront behavior routing | `/api/*` behavior origin, Terraform drift | [DEPLOY.md](DEPLOY.md#1-api-path-returns-html) |
+| Contact saved but no email | SMTP/runtime env sync | email secrets, EC2 `.env`, provider auth | [DEPLOY.md](DEPLOY.md#2-contact-form-does-not-send-email) |
+| `DisallowedHost` or 400 | Django env hosts config | `ALLOWED_HOSTS`, deploy env patching | [DEPLOY.md](DEPLOY.md#3-400-disallowedhost-on-backend) |
+| Admin styles missing | collectstatic/publish step | staticfiles dir, permissions, collectstatic rerun | [DEPLOY.md](DEPLOY.md#4-admin-static-styling-broken) |
+| Deploy failed mid-run | service/runtime health | Gunicorn status, Nginx reload, journal logs | [DEPLOY.md](DEPLOY.md#runbook-commands-ec2) |
+| PR blocked unexpectedly | quality gates | failed required check, budget threshold, security scan | [README.md](README.md#cicd-and-quality-gates) |
+
+## Troubleshooting
+
+### Contact form saved but no email received
+
+Check:
+
+1. SMTP secrets/`.env` values.
+2. `CONTACT_NOTIFICATION_EMAIL` is set.
+3. Mail provider spam/junk folder.
+
+### API returns HTML instead of JSON
+
+CloudFront behavior misroute likely points `/api/*` to S3. Verify `cloudfront.tf` behavior and apply Terraform.
+
+### Admin static broken
+
+Run on EC2:
 
 ```bash
 cd /home/ubuntu/portfolio/backend
 source venv/bin/activate
-python manage.py loaddata content/fixtures/initial_data.json
-```
-
----
-
-## Infrastructure (Terraform)
-
-Terraform lives in `infra/terraform/` and is designed to run via **Terraform Cloud**.
-
-### What Terraform provisions
-- S3 bucket for frontend assets
-- CloudFront distribution
-- EC2 instance (Ubuntu) running Nginx + Gunicorn + Django
-- S3 bucket for media uploads
-- IAM roles/policies for GitHub Actions OIDC
-- GitHub repository rulesets (required checks gate on PRs)
-
-### Terraform Cloud (TFC)
-- Remote execution is expected
-- Apply is done in TFC
-
-See comments in `infra/terraform/versions.tf` for the expected workspace setup.
-
----
-
-## CI/CD
-
-### PR gates (required before merge)
-Workflow: `.github/workflows/pr-checks.yml`
-
-Checks enforced via GitHub ruleset:
-- Secret scanning (Gitleaks)
-- Terraform formatting, linting, validate, and a speculative plan
-- Frontend build + backend Django deploy checks
-- Infracost cost estimate and diff on PR
-- Trivy filesystem scan (HIGH/CRITICAL)
-
-### Budget gate
-Workflow: `.github/workflows/budget-check.yml`
-
-- Uses AWS Cost Explorer to fetch month-to-date spend
-- Fails the PR if current spend exceeds the budget threshold
-- Threshold is controlled via repo variable `BUDGET_THRESHOLD_USD` (defaults to 10)
-
-### Deploy
-Workflow: `.github/workflows/deploy-app.yml`
-
-Triggers on push to `main` when changes touch:
-- `frontend/**`
-- `backend/**`
-- `infra/**`
-- `.github/workflows/deploy-app.yml`
-
-Deploy steps:
-- Frontend: build -> sync to S3 -> CloudFront invalidation
-- Backend: SSH to EC2 -> install deps -> migrate -> collectstatic -> restart Gunicorn
-
-The backend deploy contains guardrails learned from production troubleshooting:
-- auto-install systemd unit if missing
-- check for `.env`
-- patch `ALLOWED_HOSTS` and `CLOUDFRONT_DOMAIN` at deploy time
-- ensure Gunicorn log files exist and are writable
-- print `systemctl status` and `journalctl` on failure
-
-### Seed EC2 DB
-Workflow: `.github/workflows/seed-database.yml` (manual `workflow_dispatch`)
-
-- Loads `backend/content/fixtures/initial_data.json` into EC2
-- Optionally creates a superuser
-
----
-
-## GitHub ruleset (solo dev friendly)
-
-Terraform config: `infra/terraform/github.tf`
-
-Key behavior:
-- **No approver requirement** (`required_approving_review_count = 0`)
-- Merge is gated by required checks only
-- **Signed commits** can be enforced by enabling “Require signed commits” in the ruleset
-
-If you enforce signed commits, you must configure local GPG signing before merging.
-
----
-
-## Required GitHub Secrets / Variables
-
-### Secrets (Actions)
-
-| Secret | Used by | Purpose |
-|---|---|---|
-| `AWS_ROLE_ARN` | Deploy | OIDC role for deploy to AWS (S3/CloudFront/EC2 SG rule) |
-| `AWS_BUDGET_ROLE_ARN` | Budget Gate | OIDC role with Cost Explorer read |
-| `AWS_REGION` | All | AWS region |
-| `EC2_HOST` | Deploy | EC2 public IP/DNS for SSH |
-| `EC2_SSH_KEY` | Deploy | Private SSH key for EC2 |
-| `S3_BUCKET_FRONTEND` | Deploy | Frontend S3 bucket name |
-| `CLOUDFRONT_DISTRIBUTION_ID` | Deploy | CloudFront distribution id |
-| `CLOUDFRONT_DOMAIN` | Deploy/Health | CloudFront domain name (e.g. `d123...cloudfront.net`) |
-| `TF_API_TOKEN` | PR Checks | Terraform Cloud API token for speculative plan |
-| `INFRACOST_API_KEY` | PR Checks | Infracost API key |
-| `DJANGO_SUPERUSER_PASSWORD` | Seed DB | Password for automatic superuser creation |
-
-### Variables
-
-| Variable | Where | Purpose |
-|---|---|---|
-| `BUDGET_THRESHOLD_USD` | Repo variable | Monthly spend threshold (default 10) |
-
----
-
-## Troubleshooting
-
-### CloudFront `/api/*` returns HTML (React app) instead of JSON
-Cause: CloudFront behavior for `/api/*` is still pointing to S3 (SPA origin).
-
-Fix:
-- Apply the Terraform change that adds EC2 as an origin and routes `/api/*` to it.
-
-Quick test:
-
-```bash
-curl -I https://<cloudfront-domain>/api/
-```
-
-If the response is `text/html`, the behavior is still on S3.
-
-### EC2 returns `400 Bad Request`
-Cause: Django `DisallowedHost` (missing `ALLOWED_HOSTS`).
-
-Fix:
-- Ensure EC2 public IP/DNS and CloudFront domain are in `backend/.env`.
-
-### Nginx routes missing (`/api` and `/admin` 404 on EC2)
-Cause: Nginx site config not installed or not enabled.
-
-Fix:
-
-```bash
-sudo cp /home/ubuntu/portfolio/infra/nginx.conf /etc/nginx/sites-available/portfolio
-sudo ln -sf /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-### Gunicorn won’t start due to log permissions
-Cause: `/var/log/gunicorn-*.log` not writable.
-
-Fix:
-
-```bash
-sudo touch /var/log/gunicorn-access.log /var/log/gunicorn-error.log
-sudo chown ubuntu:ubuntu /var/log/gunicorn-access.log /var/log/gunicorn-error.log
+python manage.py collectstatic --noinput
 sudo systemctl restart portfolio-gunicorn
+sudo systemctl reload nginx
 ```
 
----
+### Gunicorn failed after deploy
+
+```bash
+sudo systemctl status portfolio-gunicorn --no-pager -l
+sudo journalctl -u portfolio-gunicorn -n 100 --no-pager
+```
+
+## Newcomer Checklist
+
+1. Read this README and `DEPLOY.md`.
+2. Run local setup with `./setup.sh`.
+3. Open admin and inspect content models.
+4. Review API client in `frontend/src/api/index.js`.
+5. Review workflows in `.github/workflows/`.
+6. Review Terraform variables/outputs before infra changes.
 
 ## License
 
-This repository is intended for personal portfolio use. Add a license if you plan to open-source it.
+Personal portfolio codebase. Add an explicit OSS license if you plan to publish/reuse openly.
 

@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from .models import (
     Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem,
     ToolArchitecture,
-    Project, Experience, BlogPost, Activity, Certification, ContactMessage
+    Project, Experience, BlogPost, Activity, Certification, OpenSourceContribution, ContactMessage
 )
 
 
@@ -62,6 +62,7 @@ class ProfileAdmin(admin.ModelAdmin):
                 'projects_section_badge', 'projects_section_title', 'projects_section_intro', 'projects_empty_text', 'projects_view_all_label',
                 'blog_section_badge', 'blog_section_title', 'blog_section_intro', 'blog_view_all_label',
                 'certifications_section_badge', 'certifications_section_title',
+                'open_source_section_badge', 'open_source_section_title', 'open_source_section_intro',
                 'contact_section_badge', 'contact_section_title', 'contact_section_intro',
             ),
             'classes': ('collapse',),
@@ -190,6 +191,9 @@ class ProjectAdmin(admin.ModelAdmin):
         ('Basic Info', {
             'fields': ('title', 'slug', 'description', 'long_description', 'image')
         }),
+        ('Architecture Details', {
+            'fields': ('architecture_diagram', 'architecture_caption', 'architecture_notes')
+        }),
         ('Links', {
             'fields': ('github_url', 'live_url')
         }),
@@ -286,6 +290,26 @@ class CertificationAdmin(admin.ModelAdmin):
     list_display = ['name', 'issuer', 'issue_date', 'expiry_date']
     ordering = ['-issue_date']
     search_fields = ['name', 'issuer']
+
+
+@admin.register(OpenSourceContribution)
+class OpenSourceContributionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'repository', 'contribution_type', 'contribution_date', 'published', 'order']
+    list_filter = ['published', 'contribution_type']
+    list_editable = ['published', 'order']
+    search_fields = ['title', 'repository', 'summary', 'contribution_type']
+    ordering = ['order', '-contribution_date', 'id']
+    fieldsets = (
+        ('Contribution', {
+            'fields': ('title', 'repository', 'summary', 'contribution_type')
+        }),
+        ('Links & Meta', {
+            'fields': ('contribution_url', 'contribution_date', 'tags')
+        }),
+        ('Display', {
+            'fields': ('published', 'order')
+        }),
+    )
 
 
 @admin.register(ContactMessage)

@@ -87,6 +87,7 @@ export const getBlogPosts     = (p = {})  => api.get('/blog/', { params: p })
 export const getBlogPost      = (slug)    => api.get(`/blog/${slug}/`)
 export const getActivities    = (p = {})  => api.get('/activities/', { params: p })
 export const getCertifications= ()        => api.get('/certifications/')
+export const getOpenSourceContributions = () => api.get('/open-source/')
 export const sendContact      = (data)    => api.post('/contact/', data)
 
 export default api

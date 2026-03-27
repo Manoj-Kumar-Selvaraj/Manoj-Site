@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from django.conf import settings
+import time
 from .models import (
     Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem, ToolArchitecture,
-    Project, Experience, BlogPost, Activity, Certification, ContactMessage
+    Project, Experience, BlogPost, Activity, Certification, OpenSourceContribution, ContactMessage
 )
 
 
@@ -131,7 +133,44 @@ class CertificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OpenSourceContributionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpenSourceContribution
+        fields = '__all__'
+
+
 class ContactMessageSerializer(serializers.ModelSerializer):
+    # Honeypot field: hidden on UI, but often filled by bots.
+    website = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    # Epoch milliseconds captured when the form first rendered in browser.
+    form_loaded_at = serializers.IntegerField(required=False, write_only=True)
+
+    def validate(self, attrs):
+        require_timing = str(getattr(settings, 'CONTACT_REQUIRE_FORM_TIMING', True)).lower() not in {'0', 'false', 'no'}
+        min_fill_ms = int(getattr(settings, 'CONTACT_MIN_FORM_FILL_MS', 2500) or 2500)
+
+        submitted_at = attrs.get('form_loaded_at')
+        if require_timing and submitted_at is None:
+            raise serializers.ValidationError({'non_field_errors': ['Please wait a moment before sending.']})
+
+        if submitted_at is not None:
+            now_ms = int(time.time() * 1000)
+            elapsed_ms = now_ms - int(submitted_at)
+            if elapsed_ms < min_fill_ms:
+                raise serializers.ValidationError({'non_field_errors': ['Please wait a moment before sending.']})
+
+        return attrs
+
+    def validate_website(self, value):
+        if str(value or '').strip():
+            raise serializers.ValidationError('Invalid submission.')
+        return ''
+
+    def create(self, validated_data):
+        validated_data.pop('website', None)
+        validated_data.pop('form_loaded_at', None)
+        return super().create(validated_data)
+
     class Meta:
         model = ContactMessage
-        fields = ['name', 'email', 'subject', 'message']
+        fields = ['name', 'email', 'subject', 'message', 'website', 'form_loaded_at']

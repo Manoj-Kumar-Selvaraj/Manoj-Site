@@ -32,14 +32,16 @@ export default function Footer() {
       .catch(() => {})
   }, [])
 
-  const title = profile?.title || ''
+  const title = String(profile?.title || 'Cloud Platform Engineer | AWS | Kubernetes | CI/CD at Scale').trim()
   const github = normalizeExternalUrl(profile?.github_url)
   const linkedin = normalizeExternalUrl(profile?.linkedin_url)
-  const email = profile?.email || ''
-  const location = profile?.location || ''
+  const email = String(profile?.email || 'ss.mano1998@gmail.com').trim()
+  const location = String(profile?.location || 'Bangalore, India').trim()
   const isAvailable = Boolean(profile?.is_available)
   const name = profile?.name || ''
-  const stackSummary = featuredSkills.slice(0, 5).map(s => s.name).join(' · ')
+  const stackSummary = featuredSkills.length > 0
+    ? featuredSkills.map(s => s.name).join(' · ')
+    : 'AWS (EC2, EKS, RDS, ASG, ALB, Lambda, S3, IAM, KMS, VPC, CloudFront, Route53, ECR) · GitHub · Terraform · Kubernetes · Docker'
 
   return (
     <footer className="bg-ink-900 text-ink-400">
@@ -57,7 +59,7 @@ export default function Footer() {
                 Manoj<span className="text-cobalt-400">.</span>dev
               </span>
             </div>
-            <p className="text-sm text-ink-500 leading-relaxed max-w-xs">
+            <p className="text-sm text-ink-500 leading-relaxed max-w-sm">
               {title}
             </p>
             <div className="flex items-center gap-3 mt-5">

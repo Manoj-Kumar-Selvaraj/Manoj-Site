@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Github, ExternalLink, ArrowRight } from 'lucide-react'
+import { Github, ExternalLink, ArrowRight, ChevronDown, ChevronUp, Maximize2, X } from 'lucide-react'
 import { getProfile, getProjects } from '../api'
 import { SectionHeaderSkeleton, CardsGridSkeleton } from './ui/Skeleton'
 
@@ -37,6 +37,8 @@ export default function Projects({ limit, showAll = false }) {
   const [projects, setProjects] = useState([])
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [expandedProjectIds, setExpandedProjectIds] = useState([])
+  const [diagramPreview, setDiagramPreview] = useState(null)
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
@@ -66,6 +68,22 @@ export default function Projects({ limit, showAll = false }) {
   const sectionIntro = String(profile?.projects_section_intro || 'Large-scale migrations, automation frameworks, and full-stack systems built in production.').trim()
   const emptyText = String(profile?.projects_empty_text || 'Projects coming soon.').trim() || 'Projects coming soon.'
   const viewAllLabel = String(profile?.projects_view_all_label || 'View All Projects').trim() || 'View All Projects'
+
+  const toggleExpanded = (projectId) => {
+    setExpandedProjectIds((current) => {
+      if (current.includes(projectId)) {
+        return current.filter((id) => id !== projectId)
+      }
+      return [...current, projectId]
+    })
+  }
+
+  const renderParagraphs = (text) => {
+    return String(text || '')
+      .split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+  }
 
   return (
     <section id="projects" className="py-24 bg-canvas">
@@ -99,6 +117,30 @@ export default function Projects({ limit, showAll = false }) {
               >
                 {/* Colored accent bar + project number */}
                 <div className={`h-1.5 ${ACCENT_COLORS[i % ACCENT_COLORS.length]}`} />
+
+                {(project.architecture_diagram || project.image) && (
+                  <div className="relative bg-ink-900/5 border-b border-ink-100">
+                    <img
+                      src={project.architecture_diagram || project.image}
+                      alt={`${project.title} architecture`}
+                      className="w-full h-44 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setDiagramPreview({
+                        src: project.architecture_diagram || project.image,
+                        title: project.title,
+                        caption: project.architecture_caption || '',
+                      })}
+                      className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                                 bg-white/90 text-ink-700 border border-white shadow-sm text-xs font-semibold
+                                 hover:bg-white"
+                    >
+                      <Maximize2 size={12} />
+                      Diagram
+                    </button>
+                  </div>
+                )}
 
                 <div className="p-5 flex flex-col flex-1">
                   {/* Title row */}
@@ -135,6 +177,51 @@ export default function Projects({ limit, showAll = false }) {
                       ))}
                       {project.tech_stack.length > 5 && (
                         <span className="tag">+{project.tech_stack.length - 5}</span>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(project.id)}
+                    className="mt-auto mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-cobalt-700 hover:text-cobalt-600"
+                  >
+                    {expandedProjectIds.includes(project.id) ? (
+                      <>
+                        Less details
+                        <ChevronUp size={14} />
+                      </>
+                    ) : (
+                      <>
+                        More details
+                        <ChevronDown size={14} />
+                      </>
+                    )}
+                  </button>
+
+                  {expandedProjectIds.includes(project.id) && (
+                    <div className="mb-4 rounded-xl border border-ink-200 bg-ink-50/60 p-4 space-y-3">
+                      {renderParagraphs(project.long_description).length > 0 ? (
+                        <div className="space-y-2 text-sm text-ink-600 leading-relaxed">
+                          {renderParagraphs(project.long_description).map((para, idx) => (
+                            <p key={`${project.id}-desc-${idx}`}>{para}</p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-ink-500 leading-relaxed">
+                          Add long description in admin to show implementation highlights, architecture decisions, and outcomes.
+                        </p>
+                      )}
+
+                      {project.architecture_notes && (
+                        <div className="pt-2 border-t border-ink-200">
+                          <p className="text-xs uppercase tracking-wide text-ink-500 font-semibold mb-1.5">Architecture Notes</p>
+                          <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{project.architecture_notes}</p>
+                        </div>
+                      )}
+
+                      {project.architecture_caption && (
+                        <p className="text-xs text-ink-500 italic">{project.architecture_caption}</p>
                       )}
                     </div>
                   )}
@@ -176,6 +263,37 @@ export default function Projects({ limit, showAll = false }) {
           </motion.div>
         )}
       </div>
+
+      {diagramPreview && (
+        <div className="fixed inset-0 z-[70] bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-5xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-white/30">
+            <button
+              type="button"
+              onClick={() => setDiagramPreview(null)}
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-white/90 text-ink-700 border border-ink-200
+                         flex items-center justify-center hover:bg-white"
+              aria-label="Close diagram preview"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="px-5 py-4 border-b border-ink-200 bg-ink-50/70">
+              <h3 className="text-base sm:text-lg font-bold text-ink-900">{diagramPreview.title} - Architecture Diagram</h3>
+              {diagramPreview.caption && (
+                <p className="text-sm text-ink-500 mt-1">{diagramPreview.caption}</p>
+              )}
+            </div>
+
+            <div className="bg-ink-900/5 p-3 sm:p-5">
+              <img
+                src={diagramPreview.src}
+                alt={`${diagramPreview.title} architecture diagram`}
+                className="w-full max-h-[72vh] object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

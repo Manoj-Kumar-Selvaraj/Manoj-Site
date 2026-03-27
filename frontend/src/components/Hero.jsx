@@ -2,10 +2,18 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, X, TrendingUp, Wrench } from 'lucide-react'
 import { getFeaturedSkills, getProfile } from '../api'
-import { HeroSkeleton } from './ui/Skeleton'
+import { HeroSkeleton, Spinner } from './ui/Skeleton'
 
 /* ── Avatar component ───────────────────────────────────────────── */
 function Avatar({ profile, name, size = 'md', onClick }) {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageFailed, setImageFailed] = useState(false)
+
+  useEffect(() => {
+    setImageLoaded(false)
+    setImageFailed(false)
+  }, [profile?.avatar])
+
   const sizeMap = {
     sm: 'w-16 h-16',
     md: 'w-20 h-20 sm:w-24 sm:h-24',
@@ -13,14 +21,27 @@ function Avatar({ profile, name, size = 'md', onClick }) {
   }
   return (
     <div
-      className={`${sizeMap[size]} rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center
+      className={`${sizeMap[size]} relative rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center
                   border-2 border-white/60 shadow-xl bg-cobalt-700/80 backdrop-blur-sm
                   ${onClick ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''}`}
       onClick={onClick}
       title={onClick ? 'Click to enlarge' : undefined}
     >
-      {profile?.avatar ? (
-        <img src={profile.avatar} alt={name} className="w-full h-full object-cover" />
+      {profile?.avatar && !imageFailed ? (
+        <>
+          {!imageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-cobalt-700/70">
+              <Spinner size="sm" className="opacity-90" />
+            </div>
+          )}
+          <img
+            src={profile.avatar}
+            alt={name}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageFailed(true)}
+          />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center gap-1 text-white/70 px-2 text-center">
           <Camera size={size === 'lg' ? 36 : 20} />
@@ -112,6 +133,7 @@ function SkillChip({ skill, delay = 0 }) {
 
 /* ── Hero ─────────────────────────────────────────────── */
 export default function Hero() {
+  const defaultVisibleToolCount = 16
   const [profile, setProfile] = useState(null)
   const [featuredSkills, setFeaturedSkills] = useState([])
   const [avatarOpen, setAvatarOpen] = useState(false)
@@ -139,8 +161,8 @@ export default function Hero() {
     .map(s => s.trim())
     .filter(Boolean)
   const heroStatsLabel = String(profile?.hero_stats_label || 'Quick stats').trim() || 'Quick stats'
-  const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, 12)
-  const hiddenSkillCount = Math.max(featuredSkills.length - 12, 0)
+  const visibleSkills = showAllSkills ? featuredSkills : featuredSkills.slice(0, defaultVisibleToolCount)
+  const hiddenSkillCount = Math.max(featuredSkills.length - defaultVisibleToolCount, 0)
 
   /* Build stat cards from fixed fields + dynamic ProfileStat entries */
   const dynamicStats = Array.isArray(profile?.stats) ? profile.stats : []
@@ -241,7 +263,7 @@ export default function Hero() {
                 Show {hiddenSkillCount} more
               </button>
             )}
-            {showAllSkills && featuredSkills.length > 12 && (
+            {showAllSkills && featuredSkills.length > defaultVisibleToolCount && (
               <button
                 type="button"
                 onClick={() => setShowAllSkills(false)}
