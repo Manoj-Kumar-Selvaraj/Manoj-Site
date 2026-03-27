@@ -69,6 +69,13 @@ class Profile(models.Model):
     blog_view_all_label = models.CharField(max_length=80, blank=True, default='Read All Posts')
     certifications_section_badge = models.CharField(max_length=80, blank=True, default='Credentials')
     certifications_section_title = models.CharField(max_length=200, blank=True, default='Certifications')
+    open_source_section_badge = models.CharField(max_length=80, blank=True, default='Open Source')
+    open_source_section_title = models.CharField(max_length=200, blank=True, default='Open Source Contributions')
+    open_source_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='Projects, fixes, and tooling contributions shared with the community.',
+    )
     contact_section_badge = models.CharField(max_length=80, blank=True, default='Contact')
     contact_section_title = models.CharField(max_length=200, blank=True, default="Let's Work Together")
     contact_section_intro = models.CharField(
@@ -454,6 +461,27 @@ class Certification(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.issuer}"
+
+
+class OpenSourceContribution(models.Model):
+    title = models.CharField(max_length=300)
+    repository = models.CharField(max_length=200, blank=True)
+    summary = models.TextField()
+    contribution_type = models.CharField(max_length=120, blank=True, help_text='e.g. Feature, Bug Fix, Docs, Tooling')
+    contribution_date = models.DateField(blank=True, null=True)
+    contribution_url = models.URLField(blank=True)
+    tags = models.JSONField(default=list, help_text='List of tag strings')
+    order = models.PositiveIntegerField(default=0)
+    published = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', '-contribution_date', 'id']
+        verbose_name = 'Open Source Contribution'
+        verbose_name_plural = 'Open Source Contributions'
+
+    def __str__(self):
+        repo = f" ({self.repository})" if self.repository else ''
+        return f"{self.title}{repo}"
 
 
 class ContactMessage(models.Model):

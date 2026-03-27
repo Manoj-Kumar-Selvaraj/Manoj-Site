@@ -6,8 +6,9 @@ import { getProfile } from '../api'
 
 const navLinks = [
   { label: 'About',      href: '/#about' },
-  { label: 'Toolkit',    href: '/#hero-toolkit' },
   { label: 'Experience', href: '/#experience' },
+  { label: 'Certifications', href: '/#certifications' },
+  { label: 'Open Source', href: '/#open-source' },
   { label: 'Projects',   href: '/projects' },
   { label: 'Blog',       href: '/blog' },
   { label: 'Activities', href: '/activities' },
@@ -163,9 +164,6 @@ export default function Navbar() {
                 </Link>
               )
             ))}
-            <a href="/#contact" className="ml-2 btn-primary text-xs py-1.5 px-4">
-              Hire Me
-            </a>
           </nav>
 
           {/* Mobile toggle */}
@@ -215,14 +213,6 @@ export default function Navbar() {
                   </Link>
                 )
               ))}
-              <a
-                href="/#contact"
-                className="block px-3 py-2 rounded-xl font-semibold text-center
-                           bg-cobalt-600 text-white hover:bg-cobalt-500 transition-all"
-                onClick={() => setOpen(false)}
-              >
-                Hire Me
-              </a>
             </div>
           </motion.div>
         )}

@@ -3,7 +3,7 @@ from django.conf import settings
 import time
 from .models import (
     Profile, ProfileStat, Skill, ArchitectureEntry, CurrentFocusItem, ToolArchitecture,
-    Project, Experience, BlogPost, Activity, Certification, ContactMessage
+    Project, Experience, BlogPost, Activity, Certification, OpenSourceContribution, ContactMessage
 )
 
 
@@ -130,6 +130,12 @@ class ActivitySerializer(serializers.ModelSerializer):
 class CertificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certification
+        fields = '__all__'
+
+
+class OpenSourceContributionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpenSourceContribution
         fields = '__all__'
 
 

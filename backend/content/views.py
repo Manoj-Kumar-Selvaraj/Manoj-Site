@@ -9,14 +9,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
     Profile, Skill, ArchitectureEntry, CurrentFocusItem, ToolArchitecture,
     Project, Experience,
-    BlogPost, Activity, Certification, ContactMessage,
+    BlogPost, Activity, Certification, OpenSourceContribution, ContactMessage,
     SKILL_CATEGORIES
 )
 from .serializers import (
     ProfileSerializer, SkillSerializer, ArchitectureEntrySerializer, CurrentFocusItemSerializer, ToolArchitectureSerializer,
     ProjectSerializer,
     ExperienceSerializer, BlogPostListSerializer, BlogPostDetailSerializer,
-    ActivitySerializer, CertificationSerializer, ContactMessageSerializer
+    ActivitySerializer, CertificationSerializer, OpenSourceContributionSerializer, ContactMessageSerializer
 )
 from .throttles import ContactSubmitRateThrottle
 
@@ -159,6 +159,12 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
 class CertificationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Certification.objects.all()
     serializer_class = CertificationSerializer
+    permission_classes = [AllowAny]
+
+
+class OpenSourceContributionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = OpenSourceContribution.objects.filter(published=True)
+    serializer_class = OpenSourceContributionSerializer
     permission_classes = [AllowAny]
 
 

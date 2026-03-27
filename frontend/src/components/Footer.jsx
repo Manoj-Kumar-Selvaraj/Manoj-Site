@@ -4,8 +4,9 @@ import { getFeaturedSkills, getProfile } from '../api'
 
 const NAV_LINKS = [
   { label: 'About',      href: '/#about' },
-  { label: 'Toolkit',    href: '/#hero-toolkit' },
   { label: 'Experience', href: '/#experience' },
+  { label: 'Certifications', href: '/#certifications' },
+  { label: 'Open Source', href: '/#open-source' },
   { label: 'Projects',   href: '/projects' },
   { label: 'Blog',       href: '/blog' },
   { label: 'Contact',    href: '/#contact' },
