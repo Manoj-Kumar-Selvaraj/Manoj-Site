@@ -9,6 +9,19 @@ on:
       - "infra/**"
       - ".github/workflows/deploy-app.yml"
   workflow_dispatch:
+    inputs:
+      deploy_frontend:
+        description: "Deploy frontend to S3 and invalidate CloudFront shell"
+        required: false
+        default: true
+        type: boolean
+      deploy_backend:
+        description: "Deploy backend to EC2 and refresh static/admin cache"
+        required: false
+        default: true
+        type: boolean
+  repository_dispatch:
+    types: [deploy]
 
 concurrency:
   group: deploy-app
@@ -57,8 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [detect-changes]
-    # Always run on manual dispatch; otherwise only when frontend files changed.
-    if: needs.detect-changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    # Run on changed frontend files, repository dispatch, or manual dispatch when enabled.
+    if: needs.detect-changes.outputs.frontend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_frontend != 'false')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -123,8 +136,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [detect-changes]
-    # Always run on manual dispatch; otherwise only when backend files changed.
-    if: needs.detect-changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch'
+    # Run on changed backend files, repository dispatch, or manual dispatch when enabled.
+    if: needs.detect-changes.outputs.backend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend != 'false')
     steps:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
