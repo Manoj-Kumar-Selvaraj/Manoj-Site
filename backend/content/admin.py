@@ -191,6 +191,9 @@ class ProjectAdmin(admin.ModelAdmin):
         ('Basic Info', {
             'fields': ('title', 'slug', 'description', 'long_description', 'image')
         }),
+        ('Architecture Details', {
+            'fields': ('architecture_diagram', 'architecture_caption', 'architecture_notes')
+        }),
         ('Links', {
             'fields': ('github_url', 'live_url')
         }),

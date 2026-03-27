@@ -344,6 +344,21 @@ class Project(models.Model):
     github_url = models.URLField(blank=True)
     live_url = models.URLField(blank=True)
     image = models.ImageField(upload_to='projects/', blank=True, null=True)
+    architecture_diagram = models.ImageField(
+        upload_to='projects/architecture/',
+        blank=True,
+        null=True,
+        help_text='Optional architecture/system diagram image for this project.',
+    )
+    architecture_caption = models.CharField(
+        max_length=240,
+        blank=True,
+        help_text='Short caption shown under the architecture diagram.',
+    )
+    architecture_notes = models.TextField(
+        blank=True,
+        help_text='Detailed architecture explanation (components, flow, scaling, reliability).',
+    )
     status = models.CharField(max_length=20, choices=PROJECT_STATUS, default='completed')
     featured = models.BooleanField(default=False, help_text="Show in home page featured section")
     order = models.PositiveIntegerField(default=0)
