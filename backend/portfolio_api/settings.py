@@ -65,6 +65,12 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _db_sslmode(default: str = 'prefer') -> str:
+    allowed = {'disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'}
+    raw = str(os.environ.get('DB_SSLMODE', default) or default).strip().strip('"\'').lower()
+    return raw if raw in allowed else default
+
+
 ALLOWED_HOSTS = _split_hosts(os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 INSTALLED_APPS = [
@@ -128,7 +134,7 @@ if _use_postgres:
             'PORT': _env_int('DB_PORT', 5432),
             'CONN_MAX_AGE': _env_int('DB_CONN_MAX_AGE', 60),
             'OPTIONS': {
-                'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
+                'sslmode': _db_sslmode(),
             },
         }
     }
