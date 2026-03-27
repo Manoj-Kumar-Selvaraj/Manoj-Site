@@ -348,6 +348,11 @@ jobs:
             env_path = Path('backend/.env')
             text = env_path.read_text(encoding='utf-8') if env_path.exists() else ''
 
+            def normalize_db_sslmode(value: str) -> str:
+              allowed = {'disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'}
+              normalized = str(value or 'prefer').strip().strip('"\'').lower()
+              return normalized if normalized in allowed else 'prefer'
+
             def upsert_env(content: str, key: str, value: str) -> str:
                 if value is None:
                     return content
@@ -370,7 +375,7 @@ jobs:
                 'DB_PASSWORD': os.getenv('DB_PASSWORD', ''),
                 'DB_HOST': os.getenv('DB_HOST', ''),
                 'DB_PORT': os.getenv('DB_PORT', '5432') or '5432',
-                'DB_SSLMODE': os.getenv('DB_SSLMODE', 'prefer') or 'prefer',
+                'DB_SSLMODE': normalize_db_sslmode(os.getenv('DB_SSLMODE', 'prefer')),
                 'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
                 'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
                 'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
