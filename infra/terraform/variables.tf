@@ -87,6 +87,15 @@ variable "db_password" {
   description = "Master password for the portfolio PostgreSQL instance"
   type        = string
   sensitive   = true
+
+  validation {
+    condition = (
+      length(var.db_password) >= 8 &&
+      length(var.db_password) <= 128 &&
+      length(regexall("[\"/@ ]", var.db_password)) == 0
+    )
+    error_message = "db_password must be 8-128 characters and must not contain space, slash (/), at-sign (@), or double quote (\")."
+  }
 }
 
 variable "db_port" {
