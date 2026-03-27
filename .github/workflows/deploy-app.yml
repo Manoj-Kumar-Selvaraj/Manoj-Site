@@ -442,7 +442,7 @@ jobs:
       - name: Check API health
         run: |
           for i in 1 2 3; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+            STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
               "https://${{ secrets.CLOUDFRONT_DOMAIN }}/api/profile/me/" 2>/dev/null || echo "000")
             # 200 = profile exists, 404 = Django up but no profile yet — both mean API is healthy.
             # 400 must fail because it usually indicates DisallowedHost / bad proxy host handling.
@@ -458,7 +458,7 @@ jobs:
 
       - name: Check CloudFront distribution
         run: |
-          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" \
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
             "https://${{ secrets.CLOUDFRONT_DOMAIN }}" 2>/dev/null || echo "000")
           if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
             echo "✓ Frontend healthy (HTTP $STATUS)"
