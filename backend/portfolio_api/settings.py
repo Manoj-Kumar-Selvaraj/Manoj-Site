@@ -318,12 +318,20 @@ for _domain in _host_variants(_cf_domain):
 
 
 # ── Email (Contact Form Notifications) ─────────────────────────────────────
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, str(default))
+    try:
+        return int(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
     'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_PORT = _env_int('EMAIL_PORT', 587)
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
@@ -335,5 +343,5 @@ CONTACT_NOTIFICATION_EMAIL = os.environ.get('CONTACT_NOTIFICATION_EMAIL', EMAIL_
 
 # Contact anti-bot timing: require users to spend at least this many
 # milliseconds on the form before submitting.
-CONTACT_MIN_FORM_FILL_MS = int(os.environ.get('CONTACT_MIN_FORM_FILL_MS', '2500'))
+CONTACT_MIN_FORM_FILL_MS = _env_int('CONTACT_MIN_FORM_FILL_MS', 2500)
 CONTACT_REQUIRE_FORM_TIMING = os.environ.get('CONTACT_REQUIRE_FORM_TIMING', 'True') == 'True'
