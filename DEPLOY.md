@@ -140,6 +140,13 @@ Core deploy/runtime:
 - `S3_BUCKET_FRONTEND`
 - `CLOUDFRONT_DISTRIBUTION_ID`
 - `CLOUDFRONT_DOMAIN`
+- `DB_ENGINE`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_SSLMODE`
 
 PR checks:
 
@@ -219,6 +226,18 @@ Features:
 1. Loads `backend/content/fixtures/initial_data.json` into EC2 database.
 2. Optional superuser creation from workflow inputs.
 3. Uses OIDC and temporary SSH ingress rule.
+
+## SQLite To RDS Migration
+
+Use the manual workflow `migrate-sqlite-to-rds.yml` after RDS is provisioned and secrets are configured.
+
+Flow:
+
+1. Snapshot current SQLite-backed content on EC2.
+2. Update backend `.env` with PostgreSQL connection settings.
+3. Run Django migrations against RDS.
+4. Import the snapshot into RDS.
+5. Restart Gunicorn.
 
 ## Runbook Commands (EC2)
 

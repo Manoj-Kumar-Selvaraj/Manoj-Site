@@ -207,6 +207,16 @@ Auth endpoints:
 - `ALLOWED_HOSTS`
 - `CLOUDFRONT_DOMAIN`
 
+### PostgreSQL / RDS
+
+- `DB_ENGINE`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_SSLMODE`
+
 ### S3 Media
 
 - `AWS_STORAGE_BUCKET_NAME`

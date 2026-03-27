@@ -70,6 +70,61 @@ variable "media_bucket_name" {
   type        = string
 }
 
+# ── Database (RDS PostgreSQL) ───────────────────────────────────────────────
+variable "db_name" {
+  description = "Database name for the portfolio PostgreSQL instance"
+  type        = string
+  default     = "portfolio"
+}
+
+variable "db_username" {
+  description = "Master username for the portfolio PostgreSQL instance"
+  type        = string
+  default     = "portfolio"
+}
+
+variable "db_password" {
+  description = "Master password for the portfolio PostgreSQL instance"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_port" {
+  description = "Port for the portfolio PostgreSQL instance"
+  type        = number
+  default     = 5432
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class for PostgreSQL"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_allocated_storage" {
+  description = "Allocated storage in GiB for PostgreSQL"
+  type        = number
+  default     = 20
+}
+
+variable "db_max_allocated_storage" {
+  description = "Maximum autoscaled storage in GiB for PostgreSQL"
+  type        = number
+  default     = 100
+}
+
+variable "db_backup_retention_days" {
+  description = "Backup retention period for PostgreSQL"
+  type        = number
+  default     = 1
+}
+
+variable "db_skip_final_snapshot" {
+  description = "Skip final snapshot when destroying the PostgreSQL instance"
+  type        = bool
+  default     = true
+}
+
 # ── CloudFront ───────────────────────────────────────────────────────────────
 variable "cloudfront_price_class" {
   description = "CloudFront price class (PriceClass_200 recommended for India/Asia audiences)"

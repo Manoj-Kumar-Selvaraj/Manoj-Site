@@ -42,6 +42,11 @@ resource "aws_instance" "portfolio" {
     django_allowed_hosts = var.django_allowed_hosts
     s3_bucket_media      = aws_s3_bucket.media.bucket
     aws_region           = var.aws_region
+    db_name              = aws_db_instance.portfolio.db_name
+    db_user              = aws_db_instance.portfolio.username
+    db_password          = var.db_password
+    db_host              = aws_db_instance.portfolio.address
+    db_port              = aws_db_instance.portfolio.port
     # AWS credentials are supplied automatically via the EC2 instance profile —
     # no long-lived keys needed here.
   }))
