@@ -324,45 +324,45 @@ jobs:
 
             echo "→ Patching .env with email/contact settings..."
             python3 - <<'PY'
-      import os
-      import re
-      from pathlib import Path
+            import os
+            import re
+            from pathlib import Path
 
-      env_path = Path('backend/.env')
-      text = env_path.read_text(encoding='utf-8') if env_path.exists() else ''
+            env_path = Path('backend/.env')
+            text = env_path.read_text(encoding='utf-8') if env_path.exists() else ''
 
-      def upsert_env(content: str, key: str, value: str) -> str:
-        if value is None:
-          return content
-        value = str(value).strip()
-        if not value:
-          return content
+            def upsert_env(content: str, key: str, value: str) -> str:
+                if value is None:
+                    return content
+                value = str(value).strip()
+                if not value:
+                    return content
 
-        line = f"{key}={value}"
-        pattern = rf"^{re.escape(key)}=.*$"
-        if re.search(pattern, content, flags=re.M):
-          return re.sub(pattern, line, content, flags=re.M)
-        if content and not content.endswith('\n'):
-          content += '\n'
-        return content + line + '\n'
+                line = f"{key}={value}"
+                pattern = rf"^{re.escape(key)}=.*$"
+                if re.search(pattern, content, flags=re.M):
+                    return re.sub(pattern, line, content, flags=re.M)
+                if content and not content.endswith('\n'):
+                    content += '\n'
+                return content + line + '\n'
 
-      updates = {
-        'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
-        'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
-        'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
-        'EMAIL_HOST_PASSWORD': os.getenv('EMAIL_HOST_PASSWORD', ''),
-        'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', ''),
-        'DEFAULT_FROM_EMAIL': os.getenv('DEFAULT_FROM_EMAIL', ''),
-        'CONTACT_NOTIFICATION_EMAIL': os.getenv('CONTACT_NOTIFICATION_EMAIL', ''),
-        'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', ''),
-        'CONTACT_MIN_FORM_FILL_MS': os.getenv('CONTACT_MIN_FORM_FILL_MS', ''),
-      }
+            updates = {
+                'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
+                'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
+                'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
+                'EMAIL_HOST_PASSWORD': os.getenv('EMAIL_HOST_PASSWORD', ''),
+                'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', ''),
+                'DEFAULT_FROM_EMAIL': os.getenv('DEFAULT_FROM_EMAIL', ''),
+                'CONTACT_NOTIFICATION_EMAIL': os.getenv('CONTACT_NOTIFICATION_EMAIL', ''),
+                'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', ''),
+                'CONTACT_MIN_FORM_FILL_MS': os.getenv('CONTACT_MIN_FORM_FILL_MS', ''),
+            }
 
-      for key, value in updates.items():
-        text = upsert_env(text, key, value)
+            for key, value in updates.items():
+                text = upsert_env(text, key, value)
 
-      env_path.write_text(text, encoding='utf-8')
-      PY
+            env_path.write_text(text, encoding='utf-8')
+            PY
             echo "  ALLOWED_HOSTS → ${NEW_HOSTS}"
 
             echo "→ Verifying venv/gunicorn binary..."
