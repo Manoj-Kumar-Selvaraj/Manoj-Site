@@ -9,7 +9,7 @@ echo "=== Portfolio EC2 Bootstrap ==="
 # ── System updates ────────────────────────────────────────────────────────────
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y python3.11 python3.11-venv python3-pip git nginx certbot python3-certbot-nginx curl unzip
+apt-get install -y python3 python3-venv python3-pip git nginx certbot python3-certbot-nginx curl unzip
 
 # AWS CLI v2
 curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
@@ -26,7 +26,7 @@ chown -R ubuntu:ubuntu "$REPO_DIR"
 
 # ── Python virtualenv ─────────────────────────────────────────────────────────
 cd "$REPO_DIR/backend"
-sudo -u ubuntu python3.11 -m venv venv
+sudo -u ubuntu python3 -m venv venv
 sudo -u ubuntu venv/bin/pip install --upgrade pip -q
 sudo -u ubuntu venv/bin/pip install -r requirements.txt -q
 
@@ -53,6 +53,9 @@ sudo -u ubuntu venv/bin/python manage.py collectstatic --noinput -v 0
 
 # ── Gunicorn systemd service ──────────────────────────────────────────────────
 cp "$REPO_DIR/infra/portfolio-gunicorn.service" /etc/systemd/system/portfolio-gunicorn.service
+# Ensure log files exist and are writable before first service start
+touch /var/log/gunicorn-access.log /var/log/gunicorn-error.log
+chown ubuntu:ubuntu /var/log/gunicorn-access.log /var/log/gunicorn-error.log
 systemctl daemon-reload
 systemctl enable portfolio-gunicorn
 systemctl start portfolio-gunicorn

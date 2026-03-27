@@ -1,20 +1,7 @@
 # trivy:ignore:AVD-AWS-0029  -- EC2 detailed monitoring intentionally disabled:
 #                               CloudWatch detailed monitoring costs ~$3.50/mo
 #                               per instance, which exceeds the budget for this
-#                               personal portfolio. Basic monitoring is sufficient.# ── Latest Ubuntu 22.04 AMI ───────────────────────────────────────────────────
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
+#                               personal portfolio. Basic monitoring is sufficient.
 
 # ── SSH Key Pair ──────────────────────────────────────────────────────────────
 resource "aws_key_pair" "portfolio" {
@@ -24,7 +11,9 @@ resource "aws_key_pair" "portfolio" {
 
 # ── EC2 Instance ──────────────────────────────────────────────────────────────
 resource "aws_instance" "portfolio" {
-  ami                    = data.aws_ami.ubuntu.id
+  # Pinned AMI prevents surprise replacement during routine apply operations.
+  # Update var.ec2_ami_id intentionally when you want to roll to a newer image.
+  ami                    = var.ec2_ami_id
   instance_type          = var.ec2_instance_type
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance.name
   key_name               = aws_key_pair.portfolio.key_name
