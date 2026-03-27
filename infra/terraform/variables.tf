@@ -24,6 +24,12 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
+variable "ec2_ami_id" {
+  description = "Pinned AMI ID for EC2 instance. Change intentionally to roll instance image."
+  type        = string
+  default     = "ami-00de3875b03809ec5"
+}
+
 variable "ec2_public_key" {
   description = "SSH public key content to provision on EC2 (paste the .pub contents)"
   type        = string
