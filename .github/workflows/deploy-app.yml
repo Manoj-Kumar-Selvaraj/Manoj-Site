@@ -289,8 +289,9 @@ jobs:
             echo "→ Updating nginx config and reloading..."
             sudo cp /home/ubuntu/portfolio/infra/nginx.conf /etc/nginx/sites-available/portfolio
             sudo ln -sf /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
-            sudo nginx -t && sudo systemctl reload nginx
-            echo "  nginx reloaded ✓"
+            sudo rm -f /etc/nginx/sites-enabled/default
+            sudo nginx -t && sudo systemctl restart nginx
+            echo "  nginx restarted with portfolio site as active config ✓"
 
             echo "→ Pre-flight checks..."
             if [ ! -f /home/ubuntu/portfolio/backend/.env ]; then
@@ -397,6 +398,15 @@ jobs:
               sudo journalctl -u portfolio-gunicorn -n 30 --no-pager
               exit 1
             }
+            API_STATUS=$(curl -sS -o /tmp/portfolio-api-health.txt -w "%{http_code}" http://127.0.0.1/api/profile/me/ || echo "000")
+            if [ "$API_STATUS" != "200" ] && [ "$API_STATUS" != "404" ]; then
+              echo "ERROR: Local API probe failed with HTTP $API_STATUS"
+              cat /tmp/portfolio-api-health.txt || true
+              sudo systemctl status nginx --no-pager -l || true
+              sudo systemctl status portfolio-gunicorn --no-pager -l || true
+              exit 1
+            fi
+            echo "  Local API probe returned HTTP $API_STATUS ✓"
             echo "✓ Deployment complete"
 
       - name: Invalidate CloudFront static/admin cache
