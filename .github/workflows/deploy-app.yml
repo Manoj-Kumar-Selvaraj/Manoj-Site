@@ -10,6 +10,11 @@ on:
       - ".github/workflows/deploy-app.yml"
   workflow_dispatch:
     inputs:
+      force_deploy:
+        description: "Force deploy regardless of change detection"
+        required: false
+        default: true
+        type: boolean
       deploy_frontend:
         description: "Deploy frontend to S3 and invalidate CloudFront shell"
         required: false
@@ -70,8 +75,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [detect-changes]
-    # Run on changed frontend files, repository dispatch, or manual dispatch when enabled.
-    if: needs.detect-changes.outputs.frontend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_frontend != 'false')
+    # Run on changed frontend files, repository dispatch, or manual dispatch.
+    # `force_deploy` lets you run even when path detection reports no changes.
+    if: needs.detect-changes.outputs.frontend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.force_deploy == 'true' || github.event.inputs.deploy_frontend != 'false'))
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -136,8 +142,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [detect-changes]
-    # Run on changed backend files, repository dispatch, or manual dispatch when enabled.
-    if: needs.detect-changes.outputs.backend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend != 'false')
+    # Run on changed backend files, repository dispatch, or manual dispatch.
+    # `force_deploy` lets you run even when path detection reports no changes.
+    if: needs.detect-changes.outputs.backend == 'true' || github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.force_deploy == 'true' || github.event.inputs.deploy_backend != 'false'))
     steps:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
