@@ -67,14 +67,6 @@ class ProfileAdmin(admin.ModelAdmin):
             ),
             'classes': ('collapse',),
         }),
-        ('Applications', {
-            'description': 'Add details about the applications you have built or maintain. This will appear as a placeholder section on the site.',
-            'fields': ('applications_section_title', 'applications_section_body'),
-        }),
-        ('Infrastructure & Architecture', {
-            'description': 'Describe your infrastructure design. You can also upload a diagram image.',
-            'fields': ('infra_section_title', 'infra_section_body', 'infra_diagram'),
-        }),
         ('Social Links', {
             'fields': ('github_url', 'linkedin_url', 'twitter_url', 'website_url'),
             'classes': ('collapse',)
