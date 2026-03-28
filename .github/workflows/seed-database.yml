@@ -114,33 +114,7 @@ jobs:
               SUPERUSER_USERNAME="${SUPERUSER_USERNAME}" \
               SUPERUSER_EMAIL="${SUPERUSER_EMAIL}" \
               SUPERUSER_PASSWORD="${SUPERUSER_PASSWORD}" \
-              python backend/manage.py shell <<'PY'
-              import os
-              from django.contrib.auth import get_user_model
-
-              User = get_user_model()
-              username = os.environ['SUPERUSER_USERNAME']
-              email = os.environ.get('SUPERUSER_EMAIL', '')
-              password = os.environ['SUPERUSER_PASSWORD']
-
-              user, created = User.objects.get_or_create(
-                  username=username,
-                  defaults={
-                      'email': email,
-                      'is_staff': True,
-                      'is_superuser': True,
-                  },
-              )
-
-              user.email = email
-              user.is_staff = True
-              user.is_superuser = True
-              user.is_active = True
-              user.set_password(password)
-              user.save()
-
-              print('created' if created else 'updated')
-              PY
+              python backend/manage.py shell -c "import os; from django.contrib.auth import get_user_model; User = get_user_model(); username = os.environ['SUPERUSER_USERNAME']; email = os.environ.get('SUPERUSER_EMAIL', ''); password = os.environ['SUPERUSER_PASSWORD']; user, created = User.objects.get_or_create(username=username, defaults={'email': email, 'is_staff': True, 'is_superuser': True}); user.email = email; user.is_staff = True; user.is_superuser = True; user.is_active = True; user.set_password(password); user.save(); print('created' if created else 'updated')"
               echo "✓ Superuser credentials applied"
             fi
 
