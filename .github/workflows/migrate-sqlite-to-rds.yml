@@ -84,6 +84,13 @@ jobs:
             cp backend/.env "${ENV_BACKUP}"
 
             echo "→ Exporting current SQLite content snapshot..."
+            DB_ENGINE=sqlite \
+            DB_HOST= \
+            DB_NAME= \
+            DB_USER= \
+            DB_PASSWORD= \
+            DB_PORT= \
+            DB_SSLMODE= \
             python backend/manage.py snapshot_data --output "${SNAPSHOT_PATH}"
 
             echo "→ Writing PostgreSQL connection settings..."
