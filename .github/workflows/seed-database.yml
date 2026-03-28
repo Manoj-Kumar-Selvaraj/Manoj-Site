@@ -82,9 +82,30 @@ jobs:
             git fetch origin "${DEPLOY_REF_NAME}"
             git reset --hard "origin/${DEPLOY_REF_NAME}"
 
+            FIXTURE_PATH="backend/content/fixtures/initial_data.json"
+            SANITIZED_FIXTURE_PATH="/tmp/portfolio_initial_data.seed.json"
+
+            echo "→ Normalizing fixture for required timestamps..."
+            python3 - <<'PY'
+            import json
+            from datetime import datetime, timezone
+            from pathlib import Path
+
+            fixture_path = Path('backend/content/fixtures/initial_data.json')
+            output_path = Path('/tmp/portfolio_initial_data.seed.json')
+            now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+            items = json.loads(fixture_path.read_text(encoding='utf-8'))
+            for item in items:
+                fields = item.setdefault('fields', {})
+                fields.setdefault('updated_at', now)
+
+            output_path.write_text(json.dumps(items, indent=2), encoding='utf-8')
+            PY
+
             echo "→ Loading fixture data..."
             python backend/manage.py loaddata \
-              backend/content/fixtures/initial_data.json \
+              "${SANITIZED_FIXTURE_PATH}" \
               --ignorenonexistent
             echo "✓ Fixture loaded"
 
