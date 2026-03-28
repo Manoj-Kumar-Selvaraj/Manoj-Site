@@ -110,14 +110,38 @@ jobs:
             echo "✓ Fixture loaded"
 
             if [ "${CREATE_SUPERUSER:-no}" = "yes" ]; then
-              echo "→ Creating superuser '${SUPERUSER_USERNAME}'..."
-              DJANGO_SUPERUSER_PASSWORD="${SUPERUSER_PASSWORD}" \
-              python backend/manage.py createsuperuser \
-                --noinput \
-                --username "${SUPERUSER_USERNAME}" \
-                --email "${SUPERUSER_EMAIL}" \
-              && echo "✓ Superuser created" \
-              || echo "⚠ Superuser already exists — skipping"
+              echo "→ Creating or updating superuser '${SUPERUSER_USERNAME}'..."
+              SUPERUSER_USERNAME="${SUPERUSER_USERNAME}" \
+              SUPERUSER_EMAIL="${SUPERUSER_EMAIL}" \
+              SUPERUSER_PASSWORD="${SUPERUSER_PASSWORD}" \
+              python backend/manage.py shell <<'PY'
+              import os
+              from django.contrib.auth import get_user_model
+
+              User = get_user_model()
+              username = os.environ['SUPERUSER_USERNAME']
+              email = os.environ.get('SUPERUSER_EMAIL', '')
+              password = os.environ['SUPERUSER_PASSWORD']
+
+              user, created = User.objects.get_or_create(
+                  username=username,
+                  defaults={
+                      'email': email,
+                      'is_staff': True,
+                      'is_superuser': True,
+                  },
+              )
+
+              user.email = email
+              user.is_staff = True
+              user.is_superuser = True
+              user.is_active = True
+              user.set_password(password)
+              user.save()
+
+              print('created' if created else 'updated')
+              PY
+              echo "✓ Superuser credentials applied"
             fi
 
             echo "→ Reloading gunicorn to clear any cached state..."
