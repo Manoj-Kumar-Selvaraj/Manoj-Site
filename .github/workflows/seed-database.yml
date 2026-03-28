@@ -94,11 +94,25 @@ jobs:
             fixture_path = Path('backend/content/fixtures/initial_data.json')
             output_path = Path('/tmp/portfolio_initial_data.seed.json')
             now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            media_fields = {
+              'avatar',
+              'resume',
+              'infra_diagram',
+              'icon_upload',
+              'diagram_image',
+              'image',
+              'architecture_diagram',
+              'company_logo',
+              'cover_image',
+            }
 
             items = json.loads(fixture_path.read_text(encoding='utf-8'))
             for item in items:
                 fields = item.setdefault('fields', {})
                 fields.setdefault('updated_at', now)
+              for field_name in tuple(fields.keys()):
+                if field_name in media_fields and fields.get(field_name) == '':
+                  fields.pop(field_name, None)
 
             output_path.write_text(json.dumps(items, indent=2), encoding='utf-8')
             PY

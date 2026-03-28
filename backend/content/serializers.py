@@ -18,7 +18,50 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'title',
+            'tagline',
+            'about_section_badge',
+            'about_heading_prefix',
+            'about_heading_highlight',
+            'about_section_intro',
+            'hero_stats_label',
+            'experience_section_badge',
+            'experience_section_title',
+            'experience_section_intro',
+            'projects_section_badge',
+            'projects_section_title',
+            'projects_section_intro',
+            'projects_empty_text',
+            'projects_view_all_label',
+            'blog_section_badge',
+            'blog_section_title',
+            'blog_section_intro',
+            'blog_view_all_label',
+            'certifications_section_badge',
+            'certifications_section_title',
+            'open_source_section_badge',
+            'open_source_section_title',
+            'open_source_section_intro',
+            'contact_section_badge',
+            'contact_section_title',
+            'contact_section_intro',
+            'bio',
+            'bio_extended',
+            'avatar',
+            'resume',
+            'email',
+            'phone',
+            'location',
+            'github_url',
+            'linkedin_url',
+            'years_experience',
+            'projects_completed',
+            'is_available',
+            'stats',
+        ]
 
 
 class SkillSerializer(serializers.ModelSerializer):
