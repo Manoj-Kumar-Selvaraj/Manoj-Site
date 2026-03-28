@@ -123,43 +123,109 @@ class ArchitectureEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ArchitectureEntry
-        fields = '__all__'
+        fields = [
+            'id',
+            'title',
+            'purpose',
+            'context',
+            'tools',
+            'architecture',
+            'diagram_text',
+            'diagram_image',
+            'key_outcomes',
+            'challenges_solutions',
+            'performance_optimizations',
+            'integration_points',
+            'deployment_strategy',
+            'tools_list',
+            'outcomes_list',
+            'diagram_image_url',
+        ]
 
 
 class CurrentFocusItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CurrentFocusItem
-        fields = '__all__'
+        fields = ['id', 'title', 'note']
 
 
 class ToolArchitectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = ToolArchitecture
-        fields = '__all__'
+        fields = ['id', 'name', 'role', 'setup', 'usage', 'communication', 'tradeoffs']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = [
+            'id',
+            'slug',
+            'title',
+            'description',
+            'long_description',
+            'tech_stack',
+            'github_url',
+            'live_url',
+            'image',
+            'architecture_diagram',
+            'architecture_caption',
+            'architecture_notes',
+            'status',
+            'featured',
+        ]
 
 
 class ExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Experience
-        fields = '__all__'
+        fields = [
+            'id',
+            'company',
+            'role',
+            'location',
+            'start_date',
+            'end_date',
+            'is_current',
+            'description',
+            'highlights',
+            'tech_stack',
+            'company_logo',
+            'company_url',
+        ]
 
 
 class BlogPostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
-        exclude = ['content']
+        fields = [
+            'id',
+            'slug',
+            'title',
+            'summary',
+            'cover_image',
+            'tags',
+            'featured',
+            'views',
+            'created_at',
+        ]
 
 
 class BlogPostDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
-        fields = '__all__'
+        fields = [
+            'id',
+            'slug',
+            'title',
+            'summary',
+            'content',
+            'cover_image',
+            'tags',
+            'featured',
+            'views',
+            'created_at',
+        ]
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -167,19 +233,46 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Activity
-        fields = '__all__'
+        fields = [
+            'id',
+            'title',
+            'description',
+            'activity_type',
+            'activity_type_display',
+            'date',
+            'link',
+            'tags',
+        ]
 
 
 class CertificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certification
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'issuer',
+            'issue_date',
+            'expiry_date',
+            'credential_id',
+            'credential_url',
+            'image',
+        ]
 
 
 class OpenSourceContributionSerializer(serializers.ModelSerializer):
     class Meta:
         model = OpenSourceContribution
-        fields = '__all__'
+        fields = [
+            'id',
+            'title',
+            'repository',
+            'summary',
+            'contribution_type',
+            'contribution_date',
+            'contribution_url',
+            'tags',
+        ]
 
 
 class ContactMessageSerializer(serializers.ModelSerializer):
