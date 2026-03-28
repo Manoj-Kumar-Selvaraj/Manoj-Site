@@ -1,38 +1,31 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
-function toBulletItems(value) {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item || '').trim()).filter(Boolean)
-  }
+/* Render text as paragraphs — preserves line breaks within paragraphs,
+   splits on double-newlines for separate <p> blocks. */
+function TextBlock({ text, className = '' }) {
+  const content = String(text || '').trim()
+  if (!content) return null
 
-  const text = String(value || '').trim()
-  if (!text) return []
-
-  return text
-    .split(/\r?\n|\u2022|\-|,/)
-    .map((item) => item.trim())
-    .filter(Boolean)
+  const paras = content.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+  return (
+    <div className={`space-y-2 ${className}`}>
+      {paras.map((p, i) => (
+        <p key={i} className="text-sm sm:text-base text-ink-700 leading-relaxed whitespace-pre-line">{p}</p>
+      ))}
+    </div>
+  )
 }
 
-function SectionList({ heading, value }) {
-  const bullets = useMemo(() => toBulletItems(value), [value])
+function SectionBlock({ heading, value }) {
+  const content = String(value || '').trim()
+  if (!content) return null
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <h4 className="text-xs uppercase tracking-wide text-ink-500 font-semibold">{heading}</h4>
-      {bullets.length > 0 ? (
-        <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base text-ink-700 leading-relaxed">
-          {bullets.map((item, index) => (
-            <li key={`${heading}-${index}`}>{item}</li>
-          ))}
-        </ul>
-      ) : (
-        <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base text-ink-500 leading-relaxed">
-          <li>Placeholder</li>
-        </ul>
-      )}
+      <TextBlock text={content} />
     </div>
   )
 }
@@ -77,11 +70,11 @@ export default function ToolArchitectureCard({
           >
             <div className="px-5 pb-4 md:px-6 md:pb-5 border-t border-ink-200">
               <div className="pt-4 space-y-4 max-w-3xl">
-                <SectionList heading="Role in System" value={role} />
-                <SectionList heading="Typical Setup" value={setup} />
-                <SectionList heading="How It Works" value={usage} />
-                <SectionList heading="Communication / Integration" value={communication} />
-                <SectionList heading="Design Decisions / Trade-offs" value={tradeoffs} />
+                <SectionBlock heading="Role in System" value={role} />
+                <SectionBlock heading="Typical Setup" value={setup} />
+                <SectionBlock heading="How It Works" value={usage} />
+                <SectionBlock heading="Communication / Integration" value={communication} />
+                <SectionBlock heading="Design Decisions / Trade-offs" value={tradeoffs} />
               </div>
             </div>
           </motion.div>
