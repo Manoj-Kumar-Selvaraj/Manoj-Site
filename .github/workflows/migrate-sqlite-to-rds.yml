@@ -96,15 +96,20 @@ jobs:
             text = env_path.read_text(encoding='utf-8') if env_path.exists() else ''
 
             def normalize_db_sslmode(value: str) -> str:
-              allowed = {'disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'}
-              normalized = str(value or 'prefer').strip().strip('"\'').lower()
-              return normalized if normalized in allowed else 'prefer'
+                allowed = {'disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'}
+                normalized = str(value or 'prefer').strip().strip('"\'').lower()
+                return normalized if normalized in allowed else 'prefer'
+
+            def format_env_value(value: str) -> str:
+                raw = str(value)
+                escaped = raw.replace('\\', '\\\\').replace('"', '\\"')
+                return f'"{escaped}"'
 
             def upsert_env(content: str, key: str, value: str) -> str:
                 value = str(value or '').strip()
                 if not value:
                     return content
-                line = f"{key}={value}"
+                line = f"{key}={format_env_value(value)}"
                 pattern = rf"^{re.escape(key)}=.*$"
                 if re.search(pattern, content, flags=re.M):
                     return re.sub(pattern, line, content, flags=re.M)
