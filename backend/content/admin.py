@@ -10,6 +10,10 @@ from .models import (
     Project, Experience, BlogPost, Activity, Certification, OpenSourceContribution, ContactMessage
 )
 
+admin.site.site_header = 'Portfolio Admin'
+admin.site.site_title = 'Portfolio Admin'
+admin.site.index_title = 'Content Management'
+
 
 class ProfileStatInline(admin.TabularInline):
     model = ProfileStat
@@ -57,7 +61,7 @@ class ProfileAdmin(admin.ModelAdmin):
         ('Homepage Section Copy', {
             'description': 'Text labels/headings used by Hero, Experience, Projects, Blog, Certifications, and Contact sections.',
             'fields': (
-                'hero_tools_label', 'hero_stats_label',
+                'hero_stats_label',
                 'experience_section_badge', 'experience_section_title', 'experience_section_intro',
                 'projects_section_badge', 'projects_section_title', 'projects_section_intro', 'projects_empty_text', 'projects_view_all_label',
                 'blog_section_badge', 'blog_section_title', 'blog_section_intro', 'blog_view_all_label',
@@ -68,8 +72,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
         ('Social Links', {
-            'fields': ('github_url', 'linkedin_url', 'twitter_url', 'website_url'),
-            'classes': ('collapse',)
+            'fields': ('github_url', 'linkedin_url'),
         }),
     )
 
@@ -242,6 +245,17 @@ class ActivityAdmin(admin.ModelAdmin):
     list_editable = ['published']
     search_fields = ['title', 'description']
     ordering = ['-date']
+    fieldsets = (
+        ('Activity', {
+            'fields': ('title', 'activity_type', 'date', 'description')
+        }),
+        ('Links & Tags', {
+            'fields': ('link', 'tags')
+        }),
+        ('Display', {
+            'fields': ('published',)
+        }),
+    )
 
     actions = ['export_as_csv']
 
@@ -279,9 +293,21 @@ class ActivityAdmin(admin.ModelAdmin):
 
 @admin.register(Certification)
 class CertificationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'issuer', 'issue_date', 'expiry_date']
+    list_display = ['name', 'issuer', 'issue_date', 'expiry_date', 'order']
+    list_editable = ['order']
     ordering = ['-issue_date']
     search_fields = ['name', 'issuer']
+    fieldsets = (
+        ('Certification', {
+            'fields': ('name', 'issuer', 'image')
+        }),
+        ('Dates & Verification', {
+            'fields': ('issue_date', 'expiry_date', 'credential_id', 'credential_url')
+        }),
+        ('Display', {
+            'fields': ('order',)
+        }),
+    )
 
 
 @admin.register(OpenSourceContribution)
