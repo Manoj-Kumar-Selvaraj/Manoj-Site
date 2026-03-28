@@ -337,7 +337,7 @@ PROJECT_STATUS = [
 
 class Project(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True, max_length=120)
     description = models.TextField()
     long_description = models.TextField(blank=True)
     tech_stack = models.JSONField(default=list, help_text='List of tech strings e.g. ["Python", "Docker", "AWS"]')
