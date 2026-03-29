@@ -226,6 +226,7 @@ export default function ArchitectureDetails() {
   const [loading, setLoading] = useState(true)
   const [showAllCards, setShowAllCards] = useState(false)
   const [diagramPreview, setDiagramPreview] = useState(null)
+  const [diagramPreviewLoaded, setDiagramPreviewLoaded] = useState(false)
 
   useEffect(() => {
     Promise.all([getToolArchitectures(), getArchitectureEntries()])
@@ -236,6 +237,10 @@ export default function ArchitectureDetails() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    setDiagramPreviewLoaded(false)
+  }, [diagramPreview?.src])
 
   if (loading) {
     return (
@@ -326,7 +331,7 @@ export default function ArchitectureDetails() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink-900/88 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-2 sm:p-3"
             onClick={() => setDiagramPreview(null)}
           >
             <motion.div
@@ -334,26 +339,37 @@ export default function ArchitectureDetails() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-6xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-white/20"
+              className="relative w-full max-w-[92vw] rounded-2xl overflow-hidden bg-black/20 shadow-2xl border border-white/10"
               onClick={e => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={() => setDiagramPreview(null)}
-                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-xl bg-white/92 text-ink-700 border border-ink-200 flex items-center justify-center hover:bg-white"
+                className="absolute top-3 right-3 z-20 w-10 h-10 rounded-xl bg-white/88 text-ink-800 border border-white/40 flex items-center justify-center hover:bg-white"
                 aria-label="Close"
               >
                 <X size={16} />
               </button>
-              <div className="px-5 sm:px-6 py-3.5 border-b border-ink-200 bg-white">
-                <h3 className="text-base sm:text-lg font-bold text-ink-900 pr-14">{diagramPreview.title} — Architecture</h3>
-                {diagramPreview.caption && <p className="text-sm text-ink-500 mt-1 pr-14">{diagramPreview.caption}</p>}
+              <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/55 to-transparent px-4 sm:px-5 py-4 pr-16 pointer-events-none">
+                <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-sm">{diagramPreview.title} — Architecture</h3>
+                {diagramPreview.caption && <p className="text-sm text-white/80 mt-1 drop-shadow-sm">{diagramPreview.caption}</p>}
               </div>
-              <div className="bg-ink-100/70 p-2 sm:p-3 md:p-4 flex items-center justify-center">
+              <div className="flex items-center justify-center min-h-[80vh] relative">
+                {!diagramPreviewLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <div className="rounded-xl border border-white/15 bg-black/35 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
+                      Loading diagram...
+                    </div>
+                  </div>
+                )}
                 <img
                   src={diagramPreview.src}
                   alt={`${diagramPreview.title} architecture diagram`}
-                  className="w-full max-h-[82vh] object-contain rounded-lg"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  onLoad={() => setDiagramPreviewLoaded(true)}
+                  className={`w-auto max-w-full max-h-[88vh] object-contain transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
               </div>
             </motion.div>

@@ -415,6 +415,7 @@ export default function Projects({ limit, showAll = false }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [diagramPreview, setDiagramPreview] = useState(null)
+  const [diagramPreviewLoaded, setDiagramPreviewLoaded] = useState(false)
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
@@ -427,6 +428,10 @@ export default function Projects({ limit, showAll = false }) {
       .catch(() => setProjects([]))
       .finally(() => setLoading(false))
   }, [limit])
+
+  useEffect(() => {
+    setDiagramPreviewLoaded(false)
+  }, [diagramPreview?.src])
 
   if (loading) return (
     <section id="projects" className="py-24 bg-canvas">
@@ -529,11 +534,22 @@ export default function Projects({ limit, showAll = false }) {
                 )}
               </div>
 
-              <div className="flex items-center justify-center min-h-[80vh]">
+              <div className="flex items-center justify-center min-h-[80vh] relative">
+                {!diagramPreviewLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <div className="rounded-xl border border-white/15 bg-black/35 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
+                      Loading diagram...
+                    </div>
+                  </div>
+                )}
                 <img
                   src={diagramPreview.src}
                   alt={`${diagramPreview.title} architecture diagram`}
-                  className="w-auto max-w-full max-h-[88vh] object-contain"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  onLoad={() => setDiagramPreviewLoaded(true)}
+                  className={`w-auto max-w-full max-h-[88vh] object-contain transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
               </div>
             </motion.div>
