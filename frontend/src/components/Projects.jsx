@@ -144,29 +144,15 @@ function ProjectDiagram({ src, alt, onExpand, onLoadComplete }) {
 
   useEffect(() => {
     setLoaded(false)
-    if (!src) return
-
-    const image = new Image()
-    image.src = src
-
-    if (image.complete) {
-      setLoaded(true)
-      onLoadComplete?.()
-      return
-    }
-
-    image.onload = () => {
-      setLoaded(true)
-      onLoadComplete?.()
-    }
-    return () => {
-      image.onload = null
-    }
-  }, [src, onLoadComplete])
+  }, [src])
 
   return (
     <div className="rounded-xl overflow-hidden border border-ink-200 bg-white relative">
-      {!loaded && <div className="absolute inset-0 animate-pulse bg-ink-100/80" />}
+      {!loaded && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/75">
+          <span className="h-7 w-7 rounded-full border-2 border-ink-300 border-t-cobalt-600 animate-spin" />
+        </div>
+      )}
       <img
         src={src}
         alt={alt}
@@ -177,7 +163,7 @@ function ProjectDiagram({ src, alt, onExpand, onLoadComplete }) {
           setLoaded(true)
           onLoadComplete?.()
         }}
-        className={`w-full h-auto max-h-[340px] object-contain p-2 transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-auto max-h-[340px] object-contain p-2 transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
       <button
         type="button"
@@ -445,13 +431,10 @@ export default function Projects({ limit, showAll = false }) {
   const [loading, setLoading] = useState(true)
   const [diagramPreview, setDiagramPreview] = useState(null)
   const [diagramPreviewLoaded, setDiagramPreviewLoaded] = useState(false)
-  const [loadedDiagramUrls, setLoadedDiagramUrls] = useState([])
 
-  const rememberLoadedDiagram = (src) => {
-    const url = String(src || '').trim()
-    if (!url) return
-    setLoadedDiagramUrls((current) => (current.includes(url) ? current : [...current, url]))
-  }
+  useEffect(() => {
+    setDiagramPreviewLoaded(false)
+  }, [diagramPreview?.src])
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
@@ -464,11 +447,6 @@ export default function Projects({ limit, showAll = false }) {
       .catch(() => setProjects([]))
       .finally(() => setLoading(false))
   }, [limit])
-
-  useEffect(() => {
-    const src = String(diagramPreview?.src || '').trim()
-    setDiagramPreviewLoaded(Boolean(src) && loadedDiagramUrls.includes(src))
-  }, [diagramPreview?.src, loadedDiagramUrls])
 
   if (loading) return (
     <section id="projects" className="py-24 bg-canvas">
@@ -516,7 +494,7 @@ export default function Projects({ limit, showAll = false }) {
                 project={project}
                 index={i}
                 onDiagramPreview={setDiagramPreview}
-                onDiagramLoaded={rememberLoadedDiagram}
+                onDiagramLoaded={() => {}}
               />
             ))}
           </div>
@@ -574,10 +552,8 @@ export default function Projects({ limit, showAll = false }) {
 
               <div className="flex items-center justify-center min-h-[80vh] relative">
                 {!diagramPreviewLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <div className="rounded-xl border border-white/15 bg-black/35 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-                      Loading diagram...
-                    </div>
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/20">
+                    <span className="h-10 w-10 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                   </div>
                 )}
                 <img
@@ -586,11 +562,8 @@ export default function Projects({ limit, showAll = false }) {
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
-                  onLoad={() => {
-                    setDiagramPreviewLoaded(true)
-                    rememberLoadedDiagram(diagramPreview.src)
-                  }}
-                  className={`w-auto max-w-full max-h-[92vh] object-contain rounded-lg border border-white/20 shadow-2xl transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => setDiagramPreviewLoaded(true)}
+                  className={`w-auto max-w-full max-h-[92vh] object-contain rounded-lg border border-white/20 shadow-2xl transition-opacity duration-200 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
               </div>
             </motion.div>
