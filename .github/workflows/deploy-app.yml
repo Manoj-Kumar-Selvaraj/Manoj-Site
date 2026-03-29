@@ -338,6 +338,12 @@ jobs:
             else
               echo "CLOUDFRONT_DOMAIN=${CLOUDFRONT_APEX_DOMAIN}" >> backend/.env
             fi
+            # Route media URLs through the primary CloudFront/domain distribution.
+            if grep -q '^USE_PRIMARY_CDN_FOR_MEDIA=' backend/.env; then
+              sed -i "s|^USE_PRIMARY_CDN_FOR_MEDIA=.*|USE_PRIMARY_CDN_FOR_MEDIA=True|" backend/.env
+            else
+              echo "USE_PRIMARY_CDN_FOR_MEDIA=True" >> backend/.env
+            fi
 
             echo "→ Patching .env with email/contact settings..."
             python3 - <<'PY'
