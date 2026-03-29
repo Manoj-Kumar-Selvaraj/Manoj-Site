@@ -31,6 +31,24 @@ function Paragraphs({ text, className = '' }) {
 function DiagramImage({ src, alt, className = '', onClick, showExpand = false }) {
   const [loaded, setLoaded] = useState(false)
 
+  useEffect(() => {
+    setLoaded(false)
+    if (!src) return
+
+    const image = new Image()
+    image.src = src
+
+    if (image.complete) {
+      setLoaded(true)
+      return
+    }
+
+    image.onload = () => setLoaded(true)
+    return () => {
+      image.onload = null
+    }
+  }, [src])
+
   return (
     <div className={`relative rounded-xl border border-ink-200 bg-white overflow-hidden ${className}`}>
       {!loaded && (
@@ -39,9 +57,9 @@ function DiagramImage({ src, alt, className = '', onClick, showExpand = false })
       <img
         src={src}
         alt={alt}
-        loading="lazy"
+        loading="eager"
         decoding="async"
-        fetchPriority="low"
+        fetchPriority="high"
         onLoad={() => setLoaded(true)}
         className={`w-full h-auto object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
@@ -308,7 +326,7 @@ export default function ArchitectureDetails() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[70] bg-ink-900/88 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
             onClick={() => setDiagramPreview(null)}
           >
             <motion.div
@@ -316,26 +334,26 @@ export default function ArchitectureDetails() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-5xl rounded-2xl overflow-hidden bg-white shadow-2xl"
+              className="relative w-full max-w-6xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-white/20"
               onClick={e => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={() => setDiagramPreview(null)}
-                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-white/90 text-ink-700 border border-ink-200 flex items-center justify-center hover:bg-white"
+                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-xl bg-white/92 text-ink-700 border border-ink-200 flex items-center justify-center hover:bg-white"
                 aria-label="Close"
               >
                 <X size={16} />
               </button>
-              <div className="px-5 py-4 border-b border-ink-200 bg-ink-50/70">
-                <h3 className="text-base sm:text-lg font-bold text-ink-900">{diagramPreview.title} — Architecture</h3>
-                {diagramPreview.caption && <p className="text-sm text-ink-500 mt-1">{diagramPreview.caption}</p>}
+              <div className="px-5 sm:px-6 py-3.5 border-b border-ink-200 bg-white">
+                <h3 className="text-base sm:text-lg font-bold text-ink-900 pr-14">{diagramPreview.title} — Architecture</h3>
+                {diagramPreview.caption && <p className="text-sm text-ink-500 mt-1 pr-14">{diagramPreview.caption}</p>}
               </div>
-              <div className="bg-ink-900/5 p-3 sm:p-5">
+              <div className="bg-ink-100/70 p-2 sm:p-3 md:p-4 flex items-center justify-center">
                 <img
                   src={diagramPreview.src}
                   alt={`${diagramPreview.title} architecture diagram`}
-                  className="w-full max-h-[72vh] object-contain rounded-lg"
+                  className="w-full max-h-[82vh] object-contain rounded-lg"
                 />
               </div>
             </motion.div>

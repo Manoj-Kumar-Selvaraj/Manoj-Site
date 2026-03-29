@@ -71,15 +71,33 @@ function ProjectCardSkeleton() {
 function ProjectDiagram({ src, alt, onExpand }) {
   const [loaded, setLoaded] = useState(false)
 
+  useEffect(() => {
+    setLoaded(false)
+    if (!src) return
+
+    const image = new Image()
+    image.src = src
+
+    if (image.complete) {
+      setLoaded(true)
+      return
+    }
+
+    image.onload = () => setLoaded(true)
+    return () => {
+      image.onload = null
+    }
+  }, [src])
+
   return (
     <div className="rounded-xl overflow-hidden border border-ink-200 bg-white relative">
       {!loaded && <div className="absolute inset-0 animate-pulse bg-ink-100/80" />}
       <img
         src={src}
         alt={alt}
-        loading="lazy"
+        loading="eager"
         decoding="async"
-        fetchPriority="low"
+        fetchPriority="high"
         onLoad={() => setLoaded(true)}
         className={`w-full h-auto max-h-[340px] object-contain p-2 transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
