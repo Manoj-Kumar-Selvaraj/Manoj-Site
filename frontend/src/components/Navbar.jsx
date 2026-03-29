@@ -7,8 +7,6 @@ import { getProfile } from '../api'
 const navLinks = [
   { label: 'About',      href: '/#about' },
   { label: 'Experience', href: '/#experience' },
-  { label: 'Certifications', href: '/#certifications' },
-  { label: 'Open Source', href: '/#open-source' },
   { label: 'Projects',   href: '/projects' },
   { label: 'Blog',       href: '/blog' },
   { label: 'Activities', href: '/activities' },
