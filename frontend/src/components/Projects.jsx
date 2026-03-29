@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Github, ExternalLink, ArrowRight, Maximize2, X, Layers, ChevronRight } from 'lucide-react'
+import { Github, ExternalLink, ArrowRight, Maximize2, X, Layers } from 'lucide-react'
 import { getProfile, getProjects } from '../api'
 import { SectionHeaderSkeleton, Skeleton } from './ui/Skeleton'
 
@@ -37,15 +37,6 @@ const ACCENT_COLORS = [
   'from-teal-600 to-teal-500',
 ]
 
-const ACCENT_TEXT = [
-  'text-cobalt-600',
-  'text-amber-600',
-  'text-violet-600',
-  'text-emerald-600',
-  'text-rose-600',
-  'text-teal-600',
-]
-
 /* ── Paragraph renderer for long_description ─────────────────────── */
 function renderParagraphs(text) {
   return String(text || '')
@@ -79,7 +70,6 @@ function ProjectCardSkeleton() {
 /* ── Single project card ─────────────────────────────────────────── */
 function ProjectCard({ project, index, onDiagramPreview }) {
   const accentGradient = ACCENT_COLORS[index % ACCENT_COLORS.length]
-  const accentText = ACCENT_TEXT[index % ACCENT_TEXT.length]
   const paragraphs = renderParagraphs(project.long_description)
 
   return (
@@ -88,7 +78,7 @@ function ProjectCard({ project, index, onDiagramPreview }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ delay: index * 0.06, duration: 0.5 }}
-      className="card-hover rounded-2xl overflow-hidden"
+      className="card-hover rounded-2xl overflow-hidden h-full bg-gradient-to-br from-white to-ink-50/40"
     >
       {/* Accent gradient bar */}
       <div className={`h-1 bg-gradient-to-r ${accentGradient}`} />
@@ -102,6 +92,9 @@ function ProjectCard({ project, index, onDiagramPreview }) {
           </div>
 
           <div className="flex-1 min-w-0">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-400 mb-1.5">
+              <Layers size={12} /> Impact Snapshot
+            </div>
             <h3 className="font-black text-ink-900 text-lg leading-snug">{project.title}</h3>
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
               <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLE[project.status] || STATUS_STYLE.completed}`}>
@@ -229,9 +222,9 @@ export default function Projects({ limit, showAll = false }) {
 
   if (loading) return (
     <section id="projects" className="py-24 bg-canvas">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeaderSkeleton />
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           {Array.from({ length: limit || 3 }).map((_, i) => <ProjectCardSkeleton key={i} />)}
         </div>
       </div>
@@ -248,7 +241,7 @@ export default function Projects({ limit, showAll = false }) {
 
   return (
     <section id="projects" className="py-24 bg-canvas">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -266,15 +259,19 @@ export default function Projects({ limit, showAll = false }) {
             <p className="text-lg">{emptyText}</p>
           </div>
         ) : (
-          <div className="space-y-5">
-            {list.map((project, i) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                index={i}
-                onDiagramPreview={setDiagramPreview}
-              />
-            ))}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            {list.map((project, i) => {
+              const featuredSpan = i === 0 && list.length > 1 ? 'xl:col-span-2' : ''
+              return (
+                <div key={project.id} className={featuredSpan}>
+                  <ProjectCard
+                    project={project}
+                    index={i}
+                    onDiagramPreview={setDiagramPreview}
+                  />
+                </div>
+              )
+            })}
           </div>
         )}
 
