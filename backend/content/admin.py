@@ -63,6 +63,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'fields': (
                 'hero_stats_label',
                 'experience_section_badge', 'experience_section_title', 'experience_section_intro',
+                'current_focus_section_badge', 'current_focus_section_title', 'current_focus_section_intro', 'current_focus_cta_label',
                 'projects_section_badge', 'projects_section_title', 'projects_section_intro', 'projects_empty_text', 'projects_view_all_label',
                 'blog_section_badge', 'blog_section_title', 'blog_section_intro', 'blog_view_all_label',
                 'certifications_section_badge', 'certifications_section_title',

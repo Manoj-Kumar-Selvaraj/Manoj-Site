@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Target, ArrowRight } from 'lucide-react'
-import { getCurrentFocusItems } from '../api'
+import { getCurrentFocusItems, getProfile } from '../api'
+import { SectionHeaderSkeleton, CardSkeleton } from './ui/Skeleton'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -12,24 +13,49 @@ const fadeUp = (delay = 0) => ({
 
 export default function CurrentFocus() {
   const [items, setItems] = useState([])
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getCurrentFocusItems()
-      .then((res) => setItems(Array.isArray(res.data) ? res.data.slice(0, 4) : []))
-      .catch(() => {})
+    Promise.all([getCurrentFocusItems(), getProfile()])
+      .then(([itemsRes, profileRes]) => {
+        const data = itemsRes.data.results || itemsRes.data
+        setItems(Array.isArray(data) ? data.slice(0, 4) : [])
+        setProfile(profileRes.data)
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false))
   }, [])
 
+  if (loading) {
+    return (
+      <section id="current-focus" className="py-20 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeaderSkeleton />
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((item) => (
+              <CardSkeleton key={item} lines={2} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   if (!items.length) return null
+
+  const sectionBadge = String(profile?.current_focus_section_badge || 'Current Focus').trim() || 'Current Focus'
+  const sectionTitle = String(profile?.current_focus_section_title || 'What I am actively improving right now.').trim() || 'What I am actively improving right now.'
+  const sectionIntro = String(profile?.current_focus_section_intro || 'The engineering areas, systems, and capabilities I am investing in at the moment.').trim()
+  const ctaLabel = String(profile?.current_focus_cta_label || 'Discuss these initiatives').trim() || 'Discuss these initiatives'
 
   return (
     <section id="current-focus" className="py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div {...fadeUp(0)} className="mb-8">
-          <span className="section-badge mb-3">Current Focus</span>
-          <h2 className="section-title mt-2">
-            What I am actively improving<br />
-            <span className="text-cobalt-600">right now.</span>
-          </h2>
+          <span className="section-badge mb-3">{sectionBadge}</span>
+          <h2 className="section-title mt-2">{sectionTitle}</h2>
+          {sectionIntro && <p className="mt-3 text-ink-500 max-w-2xl">{sectionIntro}</p>}
         </motion.div>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -54,7 +80,7 @@ export default function CurrentFocus() {
 
         <motion.div {...fadeUp(0.22)} className="mt-6">
           <a href="/#contact" className="inline-flex items-center gap-2 text-sm font-semibold text-cobalt-700 hover:text-cobalt-600">
-            Discuss these initiatives
+            {ctaLabel}
             <ArrowRight size={14} />
           </a>
         </motion.div>

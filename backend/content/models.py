@@ -50,6 +50,22 @@ class Profile(models.Model):
         blank=True,
         default='Platform engineering and large-scale migrations.',
     )
+    current_focus_section_badge = models.CharField(max_length=80, blank=True, default='Current Focus')
+    current_focus_section_title = models.CharField(
+        max_length=200,
+        blank=True,
+        default='What I am actively improving right now.',
+    )
+    current_focus_section_intro = models.CharField(
+        max_length=300,
+        blank=True,
+        default='The engineering areas, systems, and capabilities I am investing in at the moment.',
+    )
+    current_focus_cta_label = models.CharField(
+        max_length=100,
+        blank=True,
+        default='Discuss these initiatives',
+    )
     projects_section_badge = models.CharField(max_length=80, blank=True, default='Portfolio')
     projects_section_title = models.CharField(max_length=200, blank=True, default='Projects & Initiatives')
     projects_section_intro = models.CharField(
