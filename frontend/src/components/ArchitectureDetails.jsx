@@ -28,6 +28,38 @@ function Paragraphs({ text, className = '' }) {
   )
 }
 
+function DiagramImage({ src, alt, className = '', onClick, showExpand = false }) {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <div className={`relative rounded-xl border border-ink-200 bg-white overflow-hidden ${className}`}>
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-ink-100/80" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-auto object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+      {showExpand && onClick && (
+        <button
+          type="button"
+          onClick={onClick}
+          className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                     bg-white/95 text-ink-700 border border-ink-200 shadow-sm text-xs font-semibold
+                     hover:bg-white"
+        >
+          <Maximize2 size={12} /> Expand
+        </button>
+      )}
+    </div>
+  )
+}
+
 /* ── Single Architecture Entry card ──────────────────────────────── */
 function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
   const diagramUrl = String(entry.diagram_image_url || entry.diagram_image || '').trim()
@@ -38,65 +70,60 @@ function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
       {...fadeUp(0.06 + index * 0.04)}
       className="card-hover rounded-2xl overflow-hidden"
     >
-      <div className="p-5 sm:p-7 space-y-4">
-        {/* Title + context badge */}
-        <div>
-          <h3 className="text-lg font-black text-ink-900">{entry.title}</h3>
-          {entry.context && (
-            <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
-              {entry.context}
-            </span>
-          )}
-        </div>
-
-        {/* Purpose */}
-        <Paragraphs text={entry.purpose} />
-
-        {/* Architecture detail */}
-        <Paragraphs text={entry.architecture} />
-
-        {/* Diagram */}
-        {diagramUrl ? (
-          <div className="rounded-xl border border-ink-200 bg-ink-50/50 overflow-hidden relative group/img">
-            <img
-              src={diagramUrl}
-              alt={`${entry.title} architecture diagram`}
-              className="w-full max-h-80 object-contain p-2"
-            />
-            <button
-              type="button"
-              onClick={() => onDiagramPreview({
-                src: diagramUrl,
-                title: entry.title,
-                caption: entry.diagram_text || '',
-              })}
-              className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                         bg-white/95 text-ink-700 border border-ink-200 shadow-sm text-xs font-semibold
-                         opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-white"
-            >
-              <Maximize2 size={12} /> Expand
-            </button>
-            {entry.diagram_text && (
-              <p className="px-4 py-2 text-xs text-ink-500 italic border-t border-ink-100 bg-white/60">{entry.diagram_text}</p>
+      <div className="p-5 sm:p-7 lg:grid lg:grid-cols-12 lg:gap-6">
+        <div className="lg:col-span-7 space-y-4">
+          {/* Title + context badge */}
+          <div>
+            <h3 className="text-lg font-black text-ink-900">{entry.title}</h3>
+            {entry.context && (
+              <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
+                {entry.context}
+              </span>
             )}
           </div>
-        ) : !hasText ? (
-          <div className="h-40 rounded-xl border border-dashed border-ink-300 flex items-center justify-center text-ink-400 text-sm">
-            Add an architecture diagram or description in admin
-          </div>
-        ) : null}
 
-        {/* Tools list */}
-        {entry.tools_list?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {entry.tools_list.map(t => (
-              <span key={t} className="tag">{t}</span>
-            ))}
-          </div>
-        )}
+          {/* Purpose */}
+          <Paragraphs text={entry.purpose} />
 
-        {/* Engineering details — collapsible */}
-        <EngineeringDetails entry={entry} />
+          {/* Architecture detail */}
+          <Paragraphs text={entry.architecture} />
+
+          {/* Tools list */}
+          {entry.tools_list?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {entry.tools_list.map(t => (
+                <span key={t} className="tag">{t}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Engineering details — collapsible */}
+          <EngineeringDetails entry={entry} />
+        </div>
+
+        <div className="lg:col-span-5 mt-4 lg:mt-0">
+          {diagramUrl ? (
+            <>
+              <DiagramImage
+                src={diagramUrl}
+                alt={`${entry.title} architecture diagram`}
+                showExpand
+                onClick={() => onDiagramPreview({
+                  src: diagramUrl,
+                  title: entry.title,
+                  caption: entry.diagram_text || '',
+                })}
+              />
+              {entry.diagram_text && (
+                <p className="px-2 pt-2 text-xs text-ink-500 italic">{entry.diagram_text}</p>
+              )}
+            </>
+          ) : !hasText ? (
+            <div className="h-40 rounded-xl border border-dashed border-ink-300 flex items-center justify-center text-ink-400 text-sm">
+              Add an architecture diagram or description in admin
+            </div>
+          ) : null}
+        </div>
       </div>
     </motion.article>
   )
@@ -175,7 +202,7 @@ export default function ArchitectureDetails() {
   if (loading) {
     return (
       <section id="architecture" className="py-20 bg-surface">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeaderSkeleton />
           <div className="space-y-5">
             {[1, 2, 3].map(i => <CardSkeleton key={i} lines={4} />)}
@@ -193,7 +220,7 @@ export default function ArchitectureDetails() {
 
   return (
     <section id="architecture" className="py-20 bg-surface">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div {...fadeUp(0)} className="mb-10">
           <span className="section-badge mb-3">Architecture</span>
           <h2 className="section-title mt-2">Platform Architecture &amp; Tooling</h2>
