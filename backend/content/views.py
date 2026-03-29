@@ -82,13 +82,14 @@ class SkillViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Project.objects.all()
+    queryset = Project.objects.all().order_by('order', 'id')
     serializer_class = ProjectSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['featured', 'status']
     search_fields = ['title', 'description']
     lookup_field = 'slug'
+    pagination_class = None
 
 
 class ArchitectureEntryViewSet(viewsets.ReadOnlyModelViewSet):
