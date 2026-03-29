@@ -45,6 +45,70 @@ function renderParagraphs(text) {
     .filter(Boolean)
 }
 
+function splitLines(text) {
+  return String(text || '')
+    .split(/\r?\n+/)
+    .map(line => line.replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean)
+}
+
+function parseChallengePairs(text) {
+  const lines = splitLines(text)
+  const pairs = []
+  let current = null
+
+  for (const line of lines) {
+    if (/^challenge\s*:/i.test(line)) {
+      if (current) pairs.push(current)
+      current = { challenge: line.replace(/^challenge\s*:/i, '').trim(), solution: '' }
+      continue
+    }
+    if (/^solution\s*:/i.test(line)) {
+      if (!current) current = { challenge: '', solution: '' }
+      current.solution = line.replace(/^solution\s*:/i, '').trim()
+      continue
+    }
+    if (!current) {
+      current = { challenge: line, solution: '' }
+    } else if (!current.solution) {
+      current.solution = line
+    } else {
+      current.solution = `${current.solution} ${line}`.trim()
+    }
+  }
+
+  if (current) pairs.push(current)
+  return pairs.filter(pair => pair.challenge || pair.solution)
+}
+
+function SectionHeading({ children }) {
+  return <p className="text-xs tracking-wide text-ink-500 font-bold mb-2">{children}</p>
+}
+
+function BulletList({ items, className = '' }) {
+  if (!items.length) return null
+  return (
+    <ul className={`space-y-1.5 text-sm text-ink-600 leading-relaxed ${className}`}>
+      {items.map((item, idx) => (
+        <li key={idx} className="flex items-start gap-2.5">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cobalt-500 flex-shrink-0" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function CompactSection({ title, children }) {
+  if (!children) return null
+  return (
+    <div className="rounded-xl bg-ink-50/70 border border-ink-100 p-4">
+      <SectionHeading>{title}</SectionHeading>
+      {children}
+    </div>
+  )
+}
+
 /* ── Skeleton for stacked project card ───────────────────────────── */
 function ProjectCardSkeleton() {
   return (
@@ -120,6 +184,18 @@ function ProjectCard({ project, index, onDiagramPreview }) {
   const paragraphs = renderParagraphs(project.long_description)
   const diagramSrc = project.architecture_diagram || project.image
   const hasDiagram = Boolean(diagramSrc)
+  const impactMetrics = splitLines(project.impact_metrics)
+  const roleOwnership = splitLines(project.role_ownership)
+  const architectureComponents = splitLines(project.architecture_components)
+  const architectureFlow = splitLines(project.architecture_data_flow)
+  const workflowSteps = splitLines(project.workflow_steps)
+  const challengePairs = parseChallengePairs(project.challenges_solutions)
+  const performanceOptimizations = splitLines(project.performance_optimizations)
+  const fallbackArchitecture = renderParagraphs(project.architecture_notes)
+  const source = String(project.architecture_source || '').trim()
+  const target = String(project.architecture_target || '').trim()
+  const beforeState = String(project.before_state || '').trim()
+  const afterState = String(project.after_state || '').trim()
 
   return (
     <motion.article
@@ -180,10 +256,111 @@ function ProjectCard({ project, index, onDiagramPreview }) {
             </div>
           )}
 
-          {project.architecture_notes && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CompactSection
+              title="Impact Metrics"
+              children={<BulletList items={impactMetrics} />}
+            />
+            <CompactSection
+              title="Role & Ownership"
+              children={<BulletList items={roleOwnership} />}
+            />
+          </div>
+
+          {(source || target || architectureComponents.length > 0 || architectureFlow.length > 0 || fallbackArchitecture.length > 0) && (
+            <div className="rounded-xl bg-ink-50/70 border border-ink-100 p-4 space-y-3">
+              <SectionHeading>Architecture</SectionHeading>
+              {(source || target) && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {source && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Source</p>
+                      <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{source}</p>
+                    </div>
+                  )}
+                  {target && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Target</p>
+                      <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{target}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {architectureComponents.length > 0 && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Components</p>
+                  <BulletList items={architectureComponents} />
+                </div>
+              )}
+              {architectureFlow.length > 0 && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Data Flow</p>
+                  <BulletList items={architectureFlow} />
+                </div>
+              )}
+              {architectureComponents.length === 0 && architectureFlow.length === 0 && fallbackArchitecture.length > 0 && (
+                <div className="space-y-2">
+                  {fallbackArchitecture.map((para, idx) => (
+                    <p key={idx} className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{para}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {workflowSteps.length > 0 && (
+            <CompactSection
+              title="Workflow"
+              children={
+                <ol className="space-y-1.5 text-sm text-ink-600 leading-relaxed list-decimal pl-5">
+                  {workflowSteps.map((step, idx) => <li key={idx}>{step}</li>)}
+                </ol>
+              }
+            />
+          )}
+
+          {challengePairs.length > 0 && (
+            <CompactSection
+              title="Challenges & Solutions"
+              children={
+                <div className="space-y-3">
+                  {challengePairs.map((pair, idx) => (
+                    <div key={idx} className="grid gap-2 sm:grid-cols-2">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Challenge</p>
+                        <p className="text-sm text-ink-600 leading-relaxed">{pair.challenge || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Solution</p>
+                        <p className="text-sm text-ink-600 leading-relaxed">{pair.solution || '-'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              }
+            />
+          )}
+
+          {performanceOptimizations.length > 0 && (
+            <CompactSection
+              title="Performance Optimizations"
+              children={<BulletList items={performanceOptimizations} />}
+            />
+          )}
+
+          {(beforeState || afterState) && (
             <div className="rounded-xl bg-ink-50/70 border border-ink-100 p-4">
-              <p className="text-xs tracking-wide text-ink-500 font-bold mb-2">Architecture Notes</p>
-              <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{project.architecture_notes}</p>
+              <SectionHeading>Before vs After</SectionHeading>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">Before</p>
+                  <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{beforeState || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">After</p>
+                  <p className="text-sm text-ink-600 leading-relaxed whitespace-pre-line">{afterState || '-'}</p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -324,7 +501,7 @@ export default function Projects({ limit, showAll = false }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-2 sm:p-3"
             onClick={() => setDiagramPreview(null)}
           >
             <motion.div
@@ -332,31 +509,31 @@ export default function Projects({ limit, showAll = false }) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-5xl rounded-2xl overflow-hidden bg-white shadow-2xl border border-white/30"
+              className="relative w-full max-w-[92vw] rounded-2xl overflow-hidden bg-black/20 shadow-2xl border border-white/10"
               onClick={e => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={() => setDiagramPreview(null)}
-                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-white/90 text-ink-700 border border-ink-200
+                className="absolute top-3 right-3 z-20 w-10 h-10 rounded-xl bg-white/88 text-ink-800 border border-white/40
                            flex items-center justify-center hover:bg-white"
                 aria-label="Close diagram preview"
               >
                 <X size={16} />
               </button>
 
-              <div className="px-5 py-4 border-b border-ink-200 bg-ink-50/70">
-                <h3 className="text-base sm:text-lg font-bold text-ink-900">{diagramPreview.title} — Architecture</h3>
+              <div className="absolute left-0 right-0 top-0 z-10 bg-gradient-to-b from-black/55 to-transparent px-4 sm:px-5 py-4 pr-16 pointer-events-none">
+                <h3 className="text-base sm:text-lg font-bold text-white drop-shadow-sm">{diagramPreview.title} — Architecture</h3>
                 {diagramPreview.caption && (
-                  <p className="text-sm text-ink-500 mt-1">{diagramPreview.caption}</p>
+                  <p className="text-sm text-white/80 mt-1 drop-shadow-sm">{diagramPreview.caption}</p>
                 )}
               </div>
 
-              <div className="bg-ink-900/5 p-3 sm:p-5">
+              <div className="flex items-center justify-center min-h-[80vh]">
                 <img
                   src={diagramPreview.src}
                   alt={`${diagramPreview.title} architecture diagram`}
-                  className="w-full max-h-[72vh] object-contain rounded-lg"
+                  className="w-auto max-w-full max-h-[88vh] object-contain"
                 />
               </div>
             </motion.div>

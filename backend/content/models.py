@@ -338,8 +338,52 @@ PROJECT_STATUS = [
 class Project(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True, max_length=120)
-    description = models.TextField()
-    long_description = models.TextField(blank=True)
+    description = models.TextField(help_text='Short impact summary shown at the top of the project card. Keep it to 2-3 lines.')
+    long_description = models.TextField(blank=True, help_text='Optional supporting narrative. Use short paragraphs only when needed.')
+    impact_metrics = models.TextField(
+        blank=True,
+        help_text='One metric per line, e.g. Migrated 1,000+ workspaces or Reduced effort by 50%.',
+    )
+    role_ownership = models.TextField(
+        blank=True,
+        help_text='One responsibility per line, e.g. Designed migration workflow, built automation, owned validation.',
+    )
+    architecture_source = models.TextField(
+        blank=True,
+        help_text='Source system or starting state. Short paragraph or one line.',
+    )
+    architecture_target = models.TextField(
+        blank=True,
+        help_text='Target system or destination architecture. Short paragraph or one line.',
+    )
+    architecture_components = models.TextField(
+        blank=True,
+        help_text='Main components/services, one per line.',
+    )
+    architecture_data_flow = models.TextField(
+        blank=True,
+        help_text='Step-by-step data/control flow, one step per line.',
+    )
+    workflow_steps = models.TextField(
+        blank=True,
+        help_text='Execution workflow, one step per line.',
+    )
+    challenges_solutions = models.TextField(
+        blank=True,
+        help_text='Use paired lines: Challenge: ... and Solution: ... Repeat for each pair.',
+    )
+    performance_optimizations = models.TextField(
+        blank=True,
+        help_text='One optimization per line.',
+    )
+    before_state = models.TextField(
+        blank=True,
+        help_text='Short description of the before state.',
+    )
+    after_state = models.TextField(
+        blank=True,
+        help_text='Short description of the after state.',
+    )
     tech_stack = models.JSONField(default=list, help_text='List of tech strings e.g. ["Python", "Docker", "AWS"]')
     github_url = models.URLField(blank=True)
     live_url = models.URLField(blank=True)
