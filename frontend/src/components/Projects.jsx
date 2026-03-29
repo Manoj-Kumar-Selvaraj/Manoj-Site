@@ -81,6 +81,13 @@ function parseChallengePairs(text) {
   return pairs.filter(pair => pair.challenge || pair.solution)
 }
 
+function extractChallengesOnly(text) {
+  const pairs = parseChallengePairs(text)
+  return pairs
+    .map((pair) => String(pair.challenge || '').trim())
+    .filter(Boolean)
+}
+
 function SectionHeading({ children }) {
   return <p className="text-xs tracking-wide text-ink-500 font-bold mb-2">{children}</p>
 }
@@ -132,7 +139,7 @@ function ProjectCardSkeleton() {
   )
 }
 
-function ProjectDiagram({ src, alt, onExpand }) {
+function ProjectDiagram({ src, alt, onExpand, onLoadComplete }) {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -144,14 +151,18 @@ function ProjectDiagram({ src, alt, onExpand }) {
 
     if (image.complete) {
       setLoaded(true)
+      onLoadComplete?.()
       return
     }
 
-    image.onload = () => setLoaded(true)
+    image.onload = () => {
+      setLoaded(true)
+      onLoadComplete?.()
+    }
     return () => {
       image.onload = null
     }
-  }, [src])
+  }, [src, onLoadComplete])
 
   return (
     <div className="rounded-xl overflow-hidden border border-ink-200 bg-white relative">
@@ -162,7 +173,10 @@ function ProjectDiagram({ src, alt, onExpand }) {
         loading="eager"
         decoding="async"
         fetchPriority="high"
-        onLoad={() => setLoaded(true)}
+        onLoad={() => {
+          setLoaded(true)
+          onLoadComplete?.()
+        }}
         className={`w-full h-auto max-h-[340px] object-contain p-2 transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
       <button
@@ -179,7 +193,7 @@ function ProjectDiagram({ src, alt, onExpand }) {
 }
 
 /* ── Single project card ─────────────────────────────────────────── */
-function ProjectCard({ project, index, onDiagramPreview }) {
+function ProjectCard({ project, index, onDiagramPreview, onDiagramLoaded }) {
   const accentGradient = ACCENT_COLORS[index % ACCENT_COLORS.length]
   const paragraphs = renderParagraphs(project.long_description)
   const diagramSrc = project.architecture_diagram || project.image
@@ -190,6 +204,7 @@ function ProjectCard({ project, index, onDiagramPreview }) {
   const architectureFlow = splitLines(project.architecture_data_flow)
   const workflowSteps = splitLines(project.workflow_steps)
   const challengePairs = parseChallengePairs(project.challenges_solutions)
+  const challengeItems = extractChallengesOnly(project.challenges_solutions)
   const performanceOptimizations = splitLines(project.performance_optimizations)
   const fallbackArchitecture = renderParagraphs(project.architecture_notes)
   const source = String(project.architecture_source || '').trim()
@@ -256,16 +271,22 @@ function ProjectCard({ project, index, onDiagramPreview }) {
             </div>
           )}
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <CompactSection
-              title="Impact Metrics"
-              children={<BulletList items={impactMetrics} />}
-            />
-            <CompactSection
-              title="Role & Ownership"
-              children={<BulletList items={roleOwnership} />}
-            />
-          </div>
+          {(impactMetrics.length > 0 || roleOwnership.length > 0) && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {impactMetrics.length > 0 && (
+                <CompactSection
+                  title="Impact Metrics"
+                  children={<BulletList items={impactMetrics} />}
+                />
+              )}
+              {roleOwnership.length > 0 && (
+                <CompactSection
+                  title="Role & Ownership"
+                  children={<BulletList items={roleOwnership} />}
+                />
+              )}
+            </div>
+          )}
 
           {(source || target || architectureComponents.length > 0 || architectureFlow.length > 0 || fallbackArchitecture.length > 0) && (
             <div className="rounded-xl bg-ink-50/70 border border-ink-100 p-4 space-y-3">
@@ -319,7 +340,14 @@ function ProjectCard({ project, index, onDiagramPreview }) {
             />
           )}
 
-          {challengePairs.length > 0 && (
+          {challengeItems.length > 0 && (
+            <CompactSection
+              title="Challenges"
+              children={<BulletList items={challengeItems} />}
+            />
+          )}
+
+          {challengePairs.some((pair) => pair.solution) && (
             <CompactSection
               title="Challenges & Solutions"
               children={
@@ -398,6 +426,7 @@ function ProjectCard({ project, index, onDiagramPreview }) {
                 title: project.title,
                 caption: project.architecture_caption || '',
               })}
+              onLoadComplete={() => onDiagramLoaded?.(diagramSrc)}
             />
             {project.architecture_caption && (
               <p className="px-2 pt-2 text-xs text-ink-500 italic">{project.architecture_caption}</p>
@@ -416,6 +445,13 @@ export default function Projects({ limit, showAll = false }) {
   const [loading, setLoading] = useState(true)
   const [diagramPreview, setDiagramPreview] = useState(null)
   const [diagramPreviewLoaded, setDiagramPreviewLoaded] = useState(false)
+  const [loadedDiagramUrls, setLoadedDiagramUrls] = useState([])
+
+  const rememberLoadedDiagram = (src) => {
+    const url = String(src || '').trim()
+    if (!url) return
+    setLoadedDiagramUrls((current) => (current.includes(url) ? current : [...current, url]))
+  }
 
   useEffect(() => {
     const params = limit ? { featured: true } : {}
@@ -430,8 +466,9 @@ export default function Projects({ limit, showAll = false }) {
   }, [limit])
 
   useEffect(() => {
-    setDiagramPreviewLoaded(false)
-  }, [diagramPreview?.src])
+    const src = String(diagramPreview?.src || '').trim()
+    setDiagramPreviewLoaded(Boolean(src) && loadedDiagramUrls.includes(src))
+  }, [diagramPreview?.src, loadedDiagramUrls])
 
   if (loading) return (
     <section id="projects" className="py-24 bg-canvas">
@@ -479,6 +516,7 @@ export default function Projects({ limit, showAll = false }) {
                 project={project}
                 index={i}
                 onDiagramPreview={setDiagramPreview}
+                onDiagramLoaded={rememberLoadedDiagram}
               />
             ))}
           </div>
@@ -506,7 +544,7 @@ export default function Projects({ limit, showAll = false }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-2 sm:p-3"
+            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-1"
             onClick={() => setDiagramPreview(null)}
           >
             <motion.div
@@ -514,7 +552,7 @@ export default function Projects({ limit, showAll = false }) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-[92vw] rounded-2xl overflow-hidden bg-black/20 shadow-2xl border border-white/10"
+              className="relative w-full max-w-[96vw] overflow-hidden bg-transparent shadow-none border-0"
               onClick={e => e.stopPropagation()}
             >
               <button
@@ -548,8 +586,11 @@ export default function Projects({ limit, showAll = false }) {
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
-                  onLoad={() => setDiagramPreviewLoaded(true)}
-                  className={`w-auto max-w-full max-h-[88vh] object-contain transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => {
+                    setDiagramPreviewLoaded(true)
+                    rememberLoadedDiagram(diagramPreview.src)
+                  }}
+                  className={`w-auto max-w-full max-h-[92vh] object-contain rounded-lg border border-white/20 shadow-2xl transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
               </div>
             </motion.div>
