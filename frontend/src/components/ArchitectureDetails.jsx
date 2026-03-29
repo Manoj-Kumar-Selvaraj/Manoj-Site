@@ -141,16 +141,25 @@ function EngineeringDetails({ entry }) {
 
   const [open, setOpen] = useState(false)
 
+  const toPointers = (text) => {
+    const raw = String(text || '').trim()
+    if (!raw) return []
+    return raw
+      .split(/\r?\n+/)
+      .map(line => line.replace(/^[-*•]\s*/, '').trim())
+      .filter(Boolean)
+  }
+
   if (!sections.length) return null
 
   return (
-    <div className="border-t border-ink-100 pt-3">
+    <div className="border-t border-ink-100 pt-4">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-cobalt-700 hover:text-cobalt-600 uppercase tracking-wide"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-cobalt-700 hover:text-cobalt-600"
       >
-        Engineering details
+        Engineering Details
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
           <ChevronDown size={14} />
         </motion.span>
@@ -165,11 +174,22 @@ function EngineeringDetails({ entry }) {
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="pt-3 space-y-4">
+            <div className="pt-4 space-y-4 rounded-xl bg-ink-50/70 border border-ink-100 p-4 mt-2">
               {sections.map(s => (
                 <div key={s.label}>
-                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">{s.label}</p>
-                  <Paragraphs text={s.text} />
+                  <p className="text-xs tracking-wide text-ink-500 font-bold mb-2">{s.label}</p>
+                  {toPointers(s.text).length > 1 ? (
+                    <ul className="space-y-1.5 text-sm sm:text-base text-ink-700 leading-relaxed">
+                      {toPointers(s.text).map((point, idx) => (
+                        <li key={`${s.label}-${idx}`} className="flex items-start gap-2.5">
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cobalt-500 flex-shrink-0" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <Paragraphs text={s.text} />
+                  )}
                 </div>
               ))}
             </div>
