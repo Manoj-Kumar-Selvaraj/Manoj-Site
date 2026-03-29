@@ -28,7 +28,7 @@ function Paragraphs({ text, className = '' }) {
   )
 }
 
-function DiagramImage({ src, alt, className = '', onClick, showExpand = false }) {
+function DiagramImage({ src, alt, className = '', onClick, showExpand = false, onLoadComplete }) {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -40,14 +40,18 @@ function DiagramImage({ src, alt, className = '', onClick, showExpand = false })
 
     if (image.complete) {
       setLoaded(true)
+      onLoadComplete?.()
       return
     }
 
-    image.onload = () => setLoaded(true)
+    image.onload = () => {
+      setLoaded(true)
+      onLoadComplete?.()
+    }
     return () => {
       image.onload = null
     }
-  }, [src])
+  }, [src, onLoadComplete])
 
   return (
     <div className={`relative rounded-xl border border-ink-200 bg-white overflow-hidden ${className}`}>
@@ -60,7 +64,10 @@ function DiagramImage({ src, alt, className = '', onClick, showExpand = false })
         loading="eager"
         decoding="async"
         fetchPriority="high"
-        onLoad={() => setLoaded(true)}
+        onLoad={() => {
+          setLoaded(true)
+          onLoadComplete?.()
+        }}
         className={`w-full h-auto object-contain transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
       {showExpand && onClick && (
@@ -79,7 +86,7 @@ function DiagramImage({ src, alt, className = '', onClick, showExpand = false })
 }
 
 /* ── Single Architecture Entry card ──────────────────────────────── */
-function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
+function ArchitectureEntryCard({ entry, index, onDiagramPreview, onDiagramLoaded }) {
   const diagramUrl = String(entry.diagram_image_url || entry.diagram_image || '').trim()
   const hasText = String(entry.purpose || '').trim() || String(entry.architecture || '').trim()
 
@@ -131,6 +138,7 @@ function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
                   title: entry.title,
                   caption: entry.diagram_text || '',
                 })}
+                onLoadComplete={() => onDiagramLoaded?.(diagramUrl)}
               />
               {entry.diagram_text && (
                 <p className="px-2 pt-2 text-xs text-ink-500 italic">{entry.diagram_text}</p>
@@ -150,11 +158,11 @@ function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
 /* ── Collapsible engineering add-ons ─────────────────────────────── */
 function EngineeringDetails({ entry }) {
   const sections = [
-    { label: 'Key Outcomes', text: entry.key_outcomes },
-    { label: 'Challenges & Solutions', text: entry.challenges_solutions },
-    { label: 'Performance Optimizations', text: entry.performance_optimizations },
-    { label: 'Integration Points', text: entry.integration_points },
-    { label: 'Deployment Strategy', text: entry.deployment_strategy },
+    { label: 'Outcomes', text: entry.key_outcomes },
+    { label: 'Challenges and Solutions', text: entry.challenges_solutions },
+    { label: 'Performance Improvements', text: entry.performance_optimizations },
+    { label: 'Integrations', text: entry.integration_points },
+    { label: 'Deployment Workflow', text: entry.deployment_strategy },
   ].filter(s => String(s.text || '').trim())
 
   const [open, setOpen] = useState(false)
@@ -227,6 +235,13 @@ export default function ArchitectureDetails() {
   const [showAllCards, setShowAllCards] = useState(false)
   const [diagramPreview, setDiagramPreview] = useState(null)
   const [diagramPreviewLoaded, setDiagramPreviewLoaded] = useState(false)
+  const [loadedDiagramUrls, setLoadedDiagramUrls] = useState([])
+
+  const rememberLoadedDiagram = (src) => {
+    const url = String(src || '').trim()
+    if (!url) return
+    setLoadedDiagramUrls((current) => (current.includes(url) ? current : [...current, url]))
+  }
 
   useEffect(() => {
     Promise.all([getToolArchitectures(), getArchitectureEntries()])
@@ -239,8 +254,9 @@ export default function ArchitectureDetails() {
   }, [])
 
   useEffect(() => {
-    setDiagramPreviewLoaded(false)
-  }, [diagramPreview?.src])
+    const src = String(diagramPreview?.src || '').trim()
+    setDiagramPreviewLoaded(Boolean(src) && loadedDiagramUrls.includes(src))
+  }, [diagramPreview?.src, loadedDiagramUrls])
 
   if (loading) {
     return (
@@ -278,6 +294,7 @@ export default function ArchitectureDetails() {
                 entry={entry}
                 index={i}
                 onDiagramPreview={setDiagramPreview}
+                onDiagramLoaded={rememberLoadedDiagram}
               />
             ))}
           </div>
@@ -331,7 +348,7 @@ export default function ArchitectureDetails() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-2 sm:p-3"
+            className="fixed inset-0 z-[70] bg-ink-950/82 backdrop-blur-md flex items-center justify-center p-1"
             onClick={() => setDiagramPreview(null)}
           >
             <motion.div
@@ -339,7 +356,7 @@ export default function ArchitectureDetails() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-[92vw] rounded-2xl overflow-hidden bg-black/20 shadow-2xl border border-white/10"
+              className="relative w-full max-w-[96vw] overflow-hidden bg-transparent shadow-none border-0"
               onClick={e => e.stopPropagation()}
             >
               <button
@@ -368,8 +385,11 @@ export default function ArchitectureDetails() {
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
-                  onLoad={() => setDiagramPreviewLoaded(true)}
-                  className={`w-auto max-w-full max-h-[88vh] object-contain transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => {
+                    setDiagramPreviewLoaded(true)
+                    rememberLoadedDiagram(diagramPreview.src)
+                  }}
+                  className={`w-auto max-w-full max-h-[92vh] object-contain rounded-lg border border-white/20 shadow-2xl transition-opacity duration-300 ${diagramPreviewLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
               </div>
             </motion.div>
