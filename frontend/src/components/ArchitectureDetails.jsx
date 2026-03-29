@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Maximize2, X, ChevronDown } from 'lucide-react'
 import { getArchitectureEntries, getToolArchitectures } from '../api'
 import ToolArchitectureCard from './ToolArchitectureCard'
 import { SectionHeaderSkeleton, CardSkeleton } from './ui/Skeleton'
@@ -11,158 +12,289 @@ const fadeUp = (delay = 0) => ({
   transition: { delay, duration: 0.55, ease: 'easeOut' },
 })
 
+/* ── Render multi-paragraph text as <p> blocks ───────────────────── */
+function Paragraphs({ text, className = '' }) {
+  const paras = String(text || '')
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(Boolean)
+  if (!paras.length) return null
+  return (
+    <div className={`space-y-3 ${className}`}>
+      {paras.map((p, i) => (
+        <p key={i} className="text-sm sm:text-base text-ink-600 leading-relaxed whitespace-pre-line">{p}</p>
+      ))}
+    </div>
+  )
+}
+
+/* ── Single Architecture Entry card ──────────────────────────────── */
+function ArchitectureEntryCard({ entry, index, onDiagramPreview }) {
+  const diagramUrl = String(entry.diagram_image_url || entry.diagram_image || '').trim()
+  const hasText = String(entry.purpose || '').trim() || String(entry.architecture || '').trim()
+
+  return (
+    <motion.article
+      {...fadeUp(0.06 + index * 0.04)}
+      className="card-hover rounded-2xl overflow-hidden"
+    >
+      <div className="p-5 sm:p-7 space-y-4">
+        {/* Title + context badge */}
+        <div>
+          <h3 className="text-lg font-black text-ink-900">{entry.title}</h3>
+          {entry.context && (
+            <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
+              {entry.context}
+            </span>
+          )}
+        </div>
+
+        {/* Purpose */}
+        <Paragraphs text={entry.purpose} />
+
+        {/* Architecture detail */}
+        <Paragraphs text={entry.architecture} />
+
+        {/* Diagram */}
+        {diagramUrl ? (
+          <div className="rounded-xl border border-ink-200 bg-ink-50/50 overflow-hidden relative group/img">
+            <img
+              src={diagramUrl}
+              alt={`${entry.title} architecture diagram`}
+              className="w-full max-h-80 object-contain p-2"
+            />
+            <button
+              type="button"
+              onClick={() => onDiagramPreview({
+                src: diagramUrl,
+                title: entry.title,
+                caption: entry.diagram_text || '',
+              })}
+              className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                         bg-white/95 text-ink-700 border border-ink-200 shadow-sm text-xs font-semibold
+                         opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-white"
+            >
+              <Maximize2 size={12} /> Expand
+            </button>
+            {entry.diagram_text && (
+              <p className="px-4 py-2 text-xs text-ink-500 italic border-t border-ink-100 bg-white/60">{entry.diagram_text}</p>
+            )}
+          </div>
+        ) : !hasText ? (
+          <div className="h-40 rounded-xl border border-dashed border-ink-300 flex items-center justify-center text-ink-400 text-sm">
+            Add an architecture diagram or description in admin
+          </div>
+        ) : null}
+
+        {/* Tools list */}
+        {entry.tools_list?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {entry.tools_list.map(t => (
+              <span key={t} className="tag">{t}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Engineering details — collapsible */}
+        <EngineeringDetails entry={entry} />
+      </div>
+    </motion.article>
+  )
+}
+
+/* ── Collapsible engineering add-ons ─────────────────────────────── */
+function EngineeringDetails({ entry }) {
+  const sections = [
+    { label: 'Key Outcomes', text: entry.key_outcomes },
+    { label: 'Challenges & Solutions', text: entry.challenges_solutions },
+    { label: 'Performance Optimizations', text: entry.performance_optimizations },
+    { label: 'Integration Points', text: entry.integration_points },
+    { label: 'Deployment Strategy', text: entry.deployment_strategy },
+  ].filter(s => String(s.text || '').trim())
+
+  const [open, setOpen] = useState(false)
+
+  if (!sections.length) return null
+
+  return (
+    <div className="border-t border-ink-100 pt-3">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-cobalt-700 hover:text-cobalt-600 uppercase tracking-wide"
+      >
+        Engineering details
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={14} />
+        </motion.span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3 space-y-4">
+              {sections.map(s => (
+                <div key={s.label}>
+                  <p className="text-[11px] uppercase tracking-wide text-ink-400 font-bold mb-1">{s.label}</p>
+                  <Paragraphs text={s.text} />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* ── Main section ────────────────────────────────────────────────── */
 export default function ArchitectureDetails() {
   const defaultVisibleCards = 3
   const [tools, setTools] = useState([])
-  const [legacyEntries, setLegacyEntries] = useState([])
+  const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAllCards, setShowAllCards] = useState(false)
+  const [diagramPreview, setDiagramPreview] = useState(null)
 
   useEffect(() => {
     Promise.all([getToolArchitectures(), getArchitectureEntries()])
       .then(([toolRes, archRes]) => {
-        const toolPayload = Array.isArray(toolRes?.data)
-          ? toolRes.data
-          : Array.isArray(toolRes?.data?.results)
-            ? toolRes.data.results
-            : []
-
-        const legacyPayload = Array.isArray(archRes?.data)
-          ? archRes.data
-          : Array.isArray(archRes?.data?.results)
-            ? archRes.data.results
-            : []
-
-        setTools(toolPayload)
-        setLegacyEntries(legacyPayload)
+        setTools(Array.isArray(toolRes?.data) ? toolRes.data : toolRes?.data?.results || [])
+        setEntries(Array.isArray(archRes?.data) ? archRes.data : archRes?.data?.results || [])
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const systemDiagramUrl = String(
-    legacyEntries.find((entry) => String(entry?.diagram_image_url || entry?.diagram_image || '').trim())?.diagram_image_url
-      || legacyEntries.find((entry) => String(entry?.diagram_image_url || entry?.diagram_image || '').trim())?.diagram_image
-      || ''
-  ).trim()
-
-  const fallbackCards = tools.length === 0
-    ? legacyEntries.map((entry) => ({
-      id: entry.id,
-      name: entry.title,
-      role: [entry.purpose, entry.context].filter(Boolean).join('\n'),
-      setup: (Array.isArray(entry.tools_list) ? entry.tools_list.join('\n') : entry.tools) || '',
-      usage: entry.architecture || '',
-      communication: entry.integration_points || entry.diagram_text || '',
-      tradeoffs: [entry.challenges_solutions, entry.performance_optimizations, entry.deployment_strategy]
-        .filter(Boolean)
-        .join('\n'),
-    }))
-    : []
-
-  const cardsToRender = tools.length > 0 ? tools : fallbackCards
-  const visibleCards = showAllCards ? cardsToRender : cardsToRender.slice(0, defaultVisibleCards)
-  const hiddenCardCount = Math.max(cardsToRender.length - defaultVisibleCards, 0)
-
   if (loading) {
     return (
       <section id="architecture" className="py-20 bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeaderSkeleton />
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <CardSkeleton key={i} lines={4} />
-            ))}
+          <div className="space-y-5">
+            {[1, 2, 3].map(i => <CardSkeleton key={i} lines={4} />)}
           </div>
         </div>
       </section>
     )
   }
 
+  if (!entries.length && !tools.length) return null
+
+  const toolCards = tools.length > 0 ? tools : []
+  const visibleCards = showAllCards ? toolCards : toolCards.slice(0, defaultVisibleCards)
+  const hiddenCardCount = Math.max(toolCards.length - defaultVisibleCards, 0)
+
   return (
     <section id="architecture" className="py-20 bg-surface">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div {...fadeUp(0)} className="mb-8 max-w-3xl">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div {...fadeUp(0)} className="mb-10">
           <span className="section-badge mb-3">Architecture</span>
-          <h2 className="section-title mt-2">Platform Architecture &amp; Tooling in Practice</h2>
+          <h2 className="section-title mt-2">Platform Architecture &amp; Tooling</h2>
         </motion.div>
 
-        <motion.div
-          {...fadeUp(0.04)}
-          className="card rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 ease-out hover:-translate-y-0.5 px-5 py-4 md:px-6 md:py-5 mb-4"
-        >
-          <div className="space-y-4 max-w-3xl">
-            <h3 className="text-base sm:text-lg font-semibold text-ink-900">System Overview</h3>
-            <p className="text-sm sm:text-base text-ink-700 leading-relaxed">
-              Placeholder overview describing how platform components are structured and how tooling supports
-              delivery, observability, and runtime operations.
-            </p>
-            {systemDiagramUrl ? (
-              <div className="rounded-xl border border-ink-200 bg-white p-2">
-                <img
-                  src={systemDiagramUrl}
-                  alt="Architecture diagram"
-                  className="w-full max-h-[340px] h-auto object-contain rounded-lg"
-                />
-              </div>
-            ) : (
-              <div className="h-40 rounded-xl border border-dashed border-ink-300 flex items-center justify-center text-ink-400 text-sm">
-                Architecture diagram placeholder
+        {/* ── Architecture entries (unified cards with text + diagrams) ── */}
+        {entries.length > 0 && (
+          <div className="space-y-5 mb-6">
+            {entries.map((entry, i) => (
+              <ArchitectureEntryCard
+                key={entry.id}
+                entry={entry}
+                index={i}
+                onDiagramPreview={setDiagramPreview}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* ── Tool architecture cards ──────────────────────────────────── */}
+        {toolCards.length > 0 && (
+          <>
+            {entries.length > 0 && (
+              <motion.div {...fadeUp(0.04)} className="mt-8 mb-5">
+                <h3 className="text-base font-bold text-ink-800">Tooling Breakdown</h3>
+              </motion.div>
+            )}
+            <div className="flex flex-col gap-4">
+              {visibleCards.map((tool, index) => (
+                <motion.div key={tool.id || `${tool.name}-${index}`} {...fadeUp(0.08 + index * 0.03)}>
+                  <ToolArchitectureCard
+                    title={tool.name}
+                    role={tool.role}
+                    setup={tool.setup}
+                    usage={tool.usage}
+                    communication={tool.communication}
+                    tradeoffs={tool.tradeoffs}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {hiddenCardCount > 0 && !showAllCards && (
+              <div className="mt-5">
+                <button type="button" onClick={() => setShowAllCards(true)} className="btn-outline">
+                  Show {hiddenCardCount} more tools
+                </button>
               </div>
             )}
-          </div>
-        </motion.div>
-
-        <div className="flex flex-col gap-4">
-          {visibleCards.map((tool, index) => (
-            <motion.div key={tool.id || `${tool.name}-${index}`} {...fadeUp(0.08 + index * 0.03)}>
-              <ToolArchitectureCard
-                title={tool.name}
-                role={tool.role}
-                setup={tool.setup}
-                usage={tool.usage}
-                communication={tool.communication}
-                tradeoffs={tool.tradeoffs}
-              />
-            </motion.div>
-          ))}
-
-          {cardsToRender.length === 0 && (
-            <div className="card rounded-2xl shadow-xl px-5 py-4 md:px-6 md:py-5">
-              <div className="max-w-3xl space-y-2">
-                <h3 className="text-base sm:text-lg font-semibold text-ink-900">Architecture entries required</h3>
-                <p className="text-sm sm:text-base text-ink-600 leading-relaxed">
-                  Add Tool Architecture or Architecture Entry records in admin to populate this section.
-                </p>
+            {showAllCards && toolCards.length > defaultVisibleCards && (
+              <div className="mt-5">
+                <button type="button" onClick={() => setShowAllCards(false)} className="btn-outline">
+                  Show less
+                </button>
               </div>
-            </div>
-          )}
-        </div>
-
-        {hiddenCardCount > 0 && !showAllCards && (
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={() => setShowAllCards(true)}
-              className="btn-outline"
-            >
-              Show {hiddenCardCount} more tools
-            </button>
-          </div>
-        )}
-
-        {showAllCards && cardsToRender.length > defaultVisibleCards && (
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={() => setShowAllCards(false)}
-              className="btn-outline"
-            >
-              Show less
-            </button>
-          </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* ── Diagram lightbox ───────────────────────────────────────── */}
+      <AnimatePresence>
+        {diagramPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setDiagramPreview(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="relative w-full max-w-5xl rounded-2xl overflow-hidden bg-white shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setDiagramPreview(null)}
+                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-white/90 text-ink-700 border border-ink-200 flex items-center justify-center hover:bg-white"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+              <div className="px-5 py-4 border-b border-ink-200 bg-ink-50/70">
+                <h3 className="text-base sm:text-lg font-bold text-ink-900">{diagramPreview.title} — Architecture</h3>
+                {diagramPreview.caption && <p className="text-sm text-ink-500 mt-1">{diagramPreview.caption}</p>}
+              </div>
+              <div className="bg-ink-900/5 p-3 sm:p-5">
+                <img
+                  src={diagramPreview.src}
+                  alt={`${diagramPreview.title} architecture diagram`}
+                  className="w-full max-h-[72vh] object-contain rounded-lg"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
