@@ -183,11 +183,28 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description']
     prepopulated_fields = {'slug': ('title',)}
     fieldsets = (
-        ('Basic Info', {
+        ('Summary', {
             'fields': ('title', 'slug', 'description', 'long_description', 'image')
         }),
-        ('Architecture Details', {
-            'fields': ('architecture_diagram', 'architecture_caption', 'architecture_notes')
+        ('Impact & Ownership', {
+            'fields': ('impact_metrics', 'role_ownership')
+        }),
+        ('Architecture', {
+            'fields': (
+                'architecture_source',
+                'architecture_target',
+                'architecture_components',
+                'architecture_data_flow',
+                'architecture_diagram',
+                'architecture_caption',
+                'architecture_notes',
+            )
+        }),
+        ('Execution', {
+            'fields': ('workflow_steps', 'challenges_solutions', 'performance_optimizations')
+        }),
+        ('Before vs After', {
+            'fields': ('before_state', 'after_state')
         }),
         ('Links', {
             'fields': ('github_url', 'live_url')
