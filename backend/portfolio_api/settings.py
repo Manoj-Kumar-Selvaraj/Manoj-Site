@@ -71,6 +71,12 @@ def _db_sslmode(default: str = 'prefer') -> str:
     return raw if raw in allowed else default
 
 
+_cf_domain = _normalize_host(os.environ.get('CLOUDFRONT_DOMAIN', ''))
+_static_cdn_domain = _normalize_host(os.environ.get('STATIC_CDN_DOMAIN', '')) or _cf_domain
+_media_cdn_domain = _normalize_host(os.environ.get('MEDIA_CDN_DOMAIN', ''))
+_media_url_prefix = str(os.environ.get('MEDIA_URL_PREFIX', '') or '').strip().strip('/')
+
+
 ALLOWED_HOSTS = _split_hosts(os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 INSTALLED_APPS = [
@@ -158,7 +164,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = f'https://{_static_cdn_domain}/static/' if (not DEBUG and _static_cdn_domain) else '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # CompressedStaticFilesStorage: serves gzip/brotli-compressed files without
 # the strict manifest validation that would fail on third-party packages
@@ -296,8 +302,17 @@ if not DEBUG:
     AWS_SECRET_ACCESS_KEY   = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
     AWS_S3_FILE_OVERWRITE   = False
     AWS_DEFAULT_ACL         = None
-    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': os.environ.get('AWS_S3_CACHE_CONTROL', 'public, max-age=31536000, immutable')
+    }
+
+    if _media_cdn_domain:
+        _media_prefix = f'/{_media_url_prefix}' if _media_url_prefix else ''
+        MEDIA_URL = f'https://{_media_cdn_domain}{_media_prefix}/'
+    elif _cf_domain and str(os.environ.get('USE_PRIMARY_CDN_FOR_MEDIA', 'False')).lower() in {'1', 'true', 'yes'}:
+        MEDIA_URL = f'https://{_cf_domain}/'
+    else:
+        MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
 
 # ── Production Security Headers ───────────────────────────────────────────────
 if not DEBUG:
@@ -327,7 +342,6 @@ CSRF_TRUSTED_ORIGINS = [
 ] + ['http://localhost:5173', 'http://127.0.0.1:5173']
 
 # ── CORS / ALLOWED_HOSTS / CSRF: production CloudFront domain ────────────────
-_cf_domain = _normalize_host(os.environ.get('CLOUDFRONT_DOMAIN', ''))
 for _domain in _host_variants(_cf_domain):
     _origin = f'https://{_domain}'
     if _domain not in ALLOWED_HOSTS:
