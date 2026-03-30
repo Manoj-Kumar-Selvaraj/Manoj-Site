@@ -201,6 +201,7 @@ jobs:
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_TIMEOUT: ${{ secrets.EMAIL_TIMEOUT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
           EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
@@ -214,7 +215,7 @@ jobs:
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  180s
-          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,EMAIL_USE_SSL,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
+          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_TIMEOUT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,EMAIL_USE_SSL,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
@@ -390,6 +391,7 @@ jobs:
                 'DB_SSLMODE': normalize_db_sslmode(os.getenv('DB_SSLMODE', 'prefer')),
                 'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
                 'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
+                'EMAIL_TIMEOUT': os.getenv('EMAIL_TIMEOUT', ''),
                 'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
                 'EMAIL_HOST_PASSWORD': os.getenv('EMAIL_HOST_PASSWORD', ''),
                 'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', ''),
