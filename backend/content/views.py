@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+import logging
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -19,6 +20,9 @@ from .serializers import (
     ActivitySerializer, CertificationSerializer, OpenSourceContributionSerializer, ContactMessageSerializer
 )
 from .throttles import ContactSubmitRateThrottle
+
+
+logger = logging.getLogger(__name__)
 
 
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
@@ -202,10 +206,10 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
                     message=body,
                     from_email=from_email,
                     recipient_list=[to_email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
             except Exception:
-                pass
+                logger.exception('Failed to send contact notification email.')
 
         return Response(
             {'message': 'Your message has been sent. I will get back to you soon!'},

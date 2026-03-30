@@ -204,6 +204,7 @@ jobs:
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
           EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+          EMAIL_USE_SSL: ${{ secrets.EMAIL_USE_SSL }}
           DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
           CONTACT_NOTIFICATION_EMAIL: ${{ secrets.CONTACT_NOTIFICATION_EMAIL }}
           CONTACT_SUBMIT_RATE: ${{ secrets.CONTACT_SUBMIT_RATE }}
@@ -213,7 +214,7 @@ jobs:
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  180s
-          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
+          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,EMAIL_USE_SSL,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
@@ -392,6 +393,7 @@ jobs:
                 'EMAIL_HOST_USER': os.getenv('EMAIL_HOST_USER', ''),
                 'EMAIL_HOST_PASSWORD': os.getenv('EMAIL_HOST_PASSWORD', ''),
                 'EMAIL_USE_TLS': os.getenv('EMAIL_USE_TLS', ''),
+                'EMAIL_USE_SSL': os.getenv('EMAIL_USE_SSL', ''),
                 'DEFAULT_FROM_EMAIL': os.getenv('DEFAULT_FROM_EMAIL', ''),
                 'CONTACT_NOTIFICATION_EMAIL': os.getenv('CONTACT_NOTIFICATION_EMAIL', ''),
                 'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', '3/hour') or '3/hour',
