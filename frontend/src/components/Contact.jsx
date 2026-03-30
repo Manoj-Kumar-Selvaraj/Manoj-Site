@@ -52,13 +52,30 @@ export default function Contact() {
     } catch (err) {
       const statusCode = err?.response?.status || null
       const responseData = err?.response?.data || null
+      const networkFailure = !err?.response
+
+      // Always emit actionable diagnostics to browser console for live troubleshooting.
+      console.error('[Contact] submit failed', {
+        endpoint: '/api/contact/',
+        status: statusCode,
+        message: err?.message || null,
+        code: err?.code || null,
+        responseData,
+      })
+
       if (err?.response?.status === 429) {
         setErrorMessage('Too many messages in a short time. Please try again later.')
       } else if (err?.response?.status === 400) {
         const raw = JSON.stringify(err?.response?.data || {}).toLowerCase()
         if (raw.includes('please wait a moment before sending')) {
           setErrorMessage('Please wait a moment before sending your message.')
+        } else {
+          setErrorMessage('Validation failed. Please check the form and try again.')
         }
+      } else if (networkFailure) {
+        setErrorMessage('Network/API error. Please check API availability and try again.')
+      } else if (statusCode) {
+        setErrorMessage(`Request failed with status ${statusCode}. Please try again.`)
       }
       if (debugMode) {
         setDebugInfo({
@@ -220,6 +237,15 @@ export default function Contact() {
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                   <AlertCircle size={16} className="flex-shrink-0" />
                   {errorMessage}
+                </div>
+              )}
+
+              {status === 'error' && debugInfo && !debugMode && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-xs font-semibold text-amber-700">Debug hint</p>
+                  <p className="text-xs text-amber-800 mt-1">
+                    HTTP: {String(debugInfo.httpStatus ?? '-')} | Check browser console for [Contact] submit failed details.
+                  </p>
                 </div>
               )}
 
