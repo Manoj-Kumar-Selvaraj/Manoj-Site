@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 import logging
+import threading
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -187,7 +188,8 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
         to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
         from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
-        email_sent = False
+        email_sent = None
+        email_queued = False
         delivery_note = ''
 
         if to_email:
@@ -200,26 +202,30 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
                 f"Message:\n{message_obj.message}\n"
             )
 
-            # Do not fail the API call if SMTP is temporarily unavailable;
-            # the message remains stored in admin for manual follow-up.
-            try:
-                send_mail(
-                    subject=subject,
-                    message=body,
-                    from_email=from_email,
-                    recipient_list=[to_email],
-                    fail_silently=False,
-                )
-                email_sent = True
-            except Exception:
-                logger.exception('Failed to send contact notification email.')
-                delivery_note = 'Notification email failed; message was still saved in admin.'
+            def _send_notification_async():
+                try:
+                    send_mail(
+                        subject=subject,
+                        message=body,
+                        from_email=from_email,
+                        recipient_list=[to_email],
+                        fail_silently=False,
+                    )
+                except Exception:
+                    logger.exception('Failed to send contact notification email.')
+
+            # Keep API response fast even if SMTP is slow/unreachable.
+            threading.Thread(target=_send_notification_async, daemon=True).start()
+            email_queued = True
+            delivery_note = 'Notification email queued for delivery.'
         else:
+            email_sent = False
             delivery_note = 'CONTACT_NOTIFICATION_EMAIL is not configured; message was saved in admin only.'
 
         response_payload = {
             'message': 'Your message has been sent. I will get back to you soon!',
             'email_sent': email_sent,
+            'email_queued': email_queued,
         }
         if delivery_note:
             response_payload['delivery_note'] = delivery_note

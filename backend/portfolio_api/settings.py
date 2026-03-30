@@ -369,6 +369,7 @@ EMAIL_BACKEND = os.environ.get(
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = _env_int('EMAIL_PORT', 587)
+EMAIL_TIMEOUT = _env_int('EMAIL_TIMEOUT', 8)
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', True)
