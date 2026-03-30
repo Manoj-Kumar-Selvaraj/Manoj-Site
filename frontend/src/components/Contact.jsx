@@ -8,7 +8,9 @@ export default function Contact() {
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [errorMessage, setErrorMessage] = useState('Something went wrong. Please try again.')
   const [profile, setProfile] = useState(null)
+  const [debugInfo, setDebugInfo] = useState(null)
   const formLoadedAtRef = useRef(Date.now())
+  const debugMode = typeof window !== 'undefined' && window.location.search.includes('contactDebug=1')
 
   useEffect(() => {
     getProfile().then(r => setProfile(r.data)).catch(() => {})
@@ -25,17 +27,31 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const submittedAt = Date.now()
+    const payload = {
+      ...form,
+      form_loaded_at: formLoadedAtRef.current,
+    }
     setStatus('loading')
     setErrorMessage('Something went wrong. Please try again.')
+    setDebugInfo(null)
     try {
-      await sendContact({
-        ...form,
-        form_loaded_at: formLoadedAtRef.current,
-      })
+      const response = await sendContact(payload)
       setStatus('success')
+      if (debugMode) {
+        setDebugInfo({
+          ok: true,
+          endpoint: '/api/contact/',
+          httpStatus: response?.status || null,
+          elapsedMs: Date.now() - submittedAt,
+          responseData: response?.data || null,
+        })
+      }
       setForm({ name: '', email: '', subject: '', message: '', website: '' })
       formLoadedAtRef.current = Date.now()
     } catch (err) {
+      const statusCode = err?.response?.status || null
+      const responseData = err?.response?.data || null
       if (err?.response?.status === 429) {
         setErrorMessage('Too many messages in a short time. Please try again later.')
       } else if (err?.response?.status === 400) {
@@ -43,6 +59,16 @@ export default function Contact() {
         if (raw.includes('please wait a moment before sending')) {
           setErrorMessage('Please wait a moment before sending your message.')
         }
+      }
+      if (debugMode) {
+        setDebugInfo({
+          ok: false,
+          endpoint: '/api/contact/',
+          httpStatus: statusCode,
+          elapsedMs: Date.now() - submittedAt,
+          responseData,
+          errorMessage: err?.message || 'Request failed',
+        })
       }
       setStatus('error')
     }
@@ -185,13 +211,37 @@ export default function Contact() {
               {status === 'success' && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">
                   <CheckCircle size={16} className="flex-shrink-0" />
-                  Message sent! I'll get back to you soon.
+                  {debugInfo?.responseData?.email_sent === false
+                    ? 'Message saved, but notification email was not sent. Check debug details below.'
+                    : "Message sent! I'll get back to you soon."}
                 </div>
               )}
               {status === 'error' && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                   <AlertCircle size={16} className="flex-shrink-0" />
                   {errorMessage}
+                </div>
+              )}
+
+              {debugMode && debugInfo && (
+                <div className="rounded-xl border border-ink-200 bg-ink-50 p-4">
+                  <p className="text-xs font-bold tracking-wide text-ink-500 uppercase mb-2">Contact Debug</p>
+                  <div className="space-y-1 text-xs text-ink-700 break-all">
+                    <p><span className="font-semibold">Endpoint:</span> {debugInfo.endpoint}</p>
+                    <p><span className="font-semibold">HTTP Status:</span> {String(debugInfo.httpStatus ?? '-')}</p>
+                    <p><span className="font-semibold">Elapsed:</span> {String(debugInfo.elapsedMs ?? '-')} ms</p>
+                    <p><span className="font-semibold">Request Result:</span> {debugInfo.ok ? 'success' : 'error'}</p>
+                    {debugInfo.errorMessage && (
+                      <p><span className="font-semibold">Transport Error:</span> {debugInfo.errorMessage}</p>
+                    )}
+                    {debugInfo?.responseData?.delivery_note && (
+                      <p><span className="font-semibold">Delivery Note:</span> {debugInfo.responseData.delivery_note}</p>
+                    )}
+                    <p className="font-semibold mt-2">API Response</p>
+                    <pre className="whitespace-pre-wrap text-[11px] leading-relaxed rounded-lg bg-white border border-ink-200 p-2 overflow-x-auto">
+{JSON.stringify(debugInfo.responseData || {}, null, 2)}
+                    </pre>
+                  </div>
                 </div>
               )}
 

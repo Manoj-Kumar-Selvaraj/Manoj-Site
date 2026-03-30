@@ -187,6 +187,8 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
         to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
         from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
+        email_sent = False
+        delivery_note = ''
 
         if to_email:
             subject = f"[Portfolio Contact] {message_obj.subject}"
@@ -208,10 +210,21 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
                     recipient_list=[to_email],
                     fail_silently=False,
                 )
+                email_sent = True
             except Exception:
                 logger.exception('Failed to send contact notification email.')
+                delivery_note = 'Notification email failed; message was still saved in admin.'
+        else:
+            delivery_note = 'CONTACT_NOTIFICATION_EMAIL is not configured; message was saved in admin only.'
+
+        response_payload = {
+            'message': 'Your message has been sent. I will get back to you soon!',
+            'email_sent': email_sent,
+        }
+        if delivery_note:
+            response_payload['delivery_note'] = delivery_note
 
         return Response(
-            {'message': 'Your message has been sent. I will get back to you soon!'},
+            response_payload,
             status=status.HTTP_201_CREATED
         )

@@ -1,10 +1,13 @@
 import os
 import sys
+import logging
 from pathlib import Path
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -374,6 +377,14 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no
 
 # Recipient for portfolio contact form emails.
 CONTACT_NOTIFICATION_EMAIL = os.environ.get('CONTACT_NOTIFICATION_EMAIL', EMAIL_HOST_USER)
+
+if not DEBUG:
+    if not CONTACT_NOTIFICATION_EMAIL:
+        logger.warning('CONTACT_NOTIFICATION_EMAIL is empty; contact form notifications are disabled.')
+    if EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend' and (
+        not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD
+    ):
+        logger.warning('SMTP backend is enabled but EMAIL_HOST_USER/EMAIL_HOST_PASSWORD are missing.')
 
 # Contact anti-bot timing: require users to spend at least this many
 # milliseconds on the form before submitting.
