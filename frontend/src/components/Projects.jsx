@@ -156,9 +156,8 @@ function ProjectDiagram({ src, alt, onExpand, onLoadComplete }) {
       <img
         src={src}
         alt={alt}
-        loading="eager"
+        loading="lazy"
         decoding="async"
-        fetchPriority="high"
         onLoad={() => {
           setLoaded(true)
           onLoadComplete?.()

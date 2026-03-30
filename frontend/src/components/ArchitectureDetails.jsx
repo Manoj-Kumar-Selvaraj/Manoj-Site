@@ -45,9 +45,8 @@ function DiagramImage({ src, alt, className = '', onClick, showExpand = false, o
       <img
         src={src}
         alt={alt}
-        loading="eager"
+        loading="lazy"
         decoding="async"
-        fetchPriority="high"
         onLoad={() => {
           setLoaded(true)
           onLoadComplete?.()
