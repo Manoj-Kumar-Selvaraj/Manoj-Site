@@ -58,7 +58,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   # EC2 origin — Django API (HTTP on port 80, CloudFront terminates TLS for viewers)
   origin {
-    domain_name = aws_instance.portfolio.public_dns
+    domain_name = aws_eip.portfolio.public_dns
     origin_id   = "EC2BackendOrigin"
 
     custom_origin_config {

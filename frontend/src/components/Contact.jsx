@@ -228,9 +228,17 @@ export default function Contact() {
               {status === 'success' && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">
                   <CheckCircle size={16} className="flex-shrink-0" />
-                  {debugInfo?.responseData?.email_sent === false
-                    ? 'Message saved, but notification email was not sent. Check debug details below.'
-                    : "Message sent! I'll get back to you soon."}
+                  {debugInfo?.responseData?.email_status === 'queued'
+                    ? 'Message saved. Notification email is queued for delivery.'
+                    : debugInfo?.responseData?.email_sent === false
+                      ? 'Message saved, but notification email was not sent.'
+                      : "Message sent! I'll get back to you soon."}
+                </div>
+              )}
+
+              {status === 'success' && debugInfo?.responseData?.delivery_note && (
+                <div className="rounded-xl border border-ink-200 bg-ink-50 p-3">
+                  <p className="text-xs text-ink-700">{debugInfo.responseData.delivery_note}</p>
                 </div>
               )}
               {status === 'error' && (
