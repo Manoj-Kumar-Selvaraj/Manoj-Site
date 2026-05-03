@@ -3,9 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 import logging
-import threading
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import (
@@ -174,6 +173,37 @@ class OpenSourceContributionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
 
 
+def _mask_email(value):
+    raw = str(value or '').strip()
+    if not raw or '@' not in raw:
+        return '<empty>' if not raw else '<invalid-email>'
+
+    local, domain = raw.rsplit('@', 1)
+    if len(local) <= 2:
+        masked_local = f"{local[:1]}***"
+    else:
+        masked_local = f"{local[:2]}***{local[-1:]}"
+    return f"{masked_local}@{domain}"
+
+
+def _contact_email_debug_config(to_email, from_email):
+    password = str(getattr(settings, 'EMAIL_HOST_PASSWORD', '') or '')
+    username = str(getattr(settings, 'EMAIL_HOST_USER', '') or '')
+    return {
+        'email_backend': str(getattr(settings, 'EMAIL_BACKEND', '') or ''),
+        'email_host': str(getattr(settings, 'EMAIL_HOST', '') or ''),
+        'email_port': getattr(settings, 'EMAIL_PORT', None),
+        'email_timeout': getattr(settings, 'EMAIL_TIMEOUT', None),
+        'email_use_tls': bool(getattr(settings, 'EMAIL_USE_TLS', False)),
+        'email_use_ssl': bool(getattr(settings, 'EMAIL_USE_SSL', False)),
+        'email_host_user': _mask_email(username),
+        'email_host_password_set': bool(password),
+        'email_host_password_length': len(password),
+        'default_from_email': _mask_email(from_email),
+        'contact_notification_email': _mask_email(to_email),
+    }
+
+
 class ContactMessageViewSet(viewsets.ModelViewSet):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
@@ -181,7 +211,7 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
     throttle_classes = [ContactSubmitRateThrottle]
     http_method_names = ['post']
 
-    def create(self, request, *args, **kwargs):
+    def _legacy_create_async(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         message_obj = serializer.save()
@@ -247,3 +277,154 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
             response_payload,
             status=status.HTTP_201_CREATED
         )
+
+    def _legacy_create_queued(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message_obj = serializer.save()
+
+        to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
+        from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
+        email_sent = False
+        email_status = 'not_configured'
+        delivery_note = 'CONTACT_NOTIFICATION_EMAIL is not configured; message was saved in admin only.'
+
+        if to_email:
+            subject = f"[Portfolio Contact] {message_obj.subject}"
+            body = (
+                "A new contact form message was submitted.\n\n"
+                f"Name: {message_obj.name}\n"
+                f"Email: {message_obj.email}\n"
+                f"Subject: {message_obj.subject}\n"
+                f"Message:\n{message_obj.message}\n"
+            )
+
+            try:
+                logger.debug(
+                    f"Sending contact email: from={from_email}, to={to_email}, "
+                    f"host={settings.EMAIL_HOST}, port={settings.EMAIL_PORT}, "
+                    f"use_tls={settings.EMAIL_USE_TLS}, use_ssl={settings.EMAIL_USE_SSL}"
+                )
+                email = EmailMessage(
+                    subject=subject,
+                    body=body,
+                    from_email=from_email,
+                    to=[to_email],
+                    reply_to=[message_obj.email],
+                )
+                email.send(fail_silently=False)
+                email_sent = True
+                email_status = 'sent'
+                delivery_note = 'Notification email sent.'
+                logger.info('Contact notification email sent to %s', to_email)
+            except Exception as e:
+                email_status = 'failed'
+                delivery_note = 'Message saved, but notification email failed. Check server logs and SMTP settings.'
+                logger.error(
+                    f"Failed to send contact notification email to {to_email}: "
+                    f"{type(e).__name__}: {str(e)}"
+                )
+                logger.exception('Full traceback for contact email failure')
+
+        response_payload = {
+            'message': 'Your message has been sent. I will get back to you soon!',
+            'email_sent': email_sent,
+            'email_status': email_status,
+            'delivery_note': delivery_note,
+        }
+
+        return Response(response_payload, status=status.HTTP_201_CREATED)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message_obj = serializer.save()
+
+        to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
+        from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
+        email_sent = False
+        email_status = 'not_configured'
+        delivery_note = 'CONTACT_NOTIFICATION_EMAIL is not configured; message was saved in admin only.'
+        debug_config = _contact_email_debug_config(to_email, from_email)
+
+        logger.info(
+            'Contact message saved: id=%s sender=%s subject_length=%s message_length=%s',
+            message_obj.id,
+            _mask_email(message_obj.email),
+            len(str(message_obj.subject or '')),
+            len(str(message_obj.message or '')),
+        )
+        logger.info('Contact email config: %s', debug_config)
+
+        if to_email:
+            subject = f"[Portfolio Contact] {message_obj.subject}"
+            body = (
+                "A new contact form message was submitted.\n\n"
+                f"Name: {message_obj.name}\n"
+                f"Email: {message_obj.email}\n"
+                f"Subject: {message_obj.subject}\n"
+                f"Message:\n{message_obj.message}\n"
+            )
+
+            try:
+                if bool(getattr(settings, 'EMAIL_USE_TLS', False)) and bool(getattr(settings, 'EMAIL_USE_SSL', False)):
+                    logger.warning('Contact email config has both EMAIL_USE_TLS and EMAIL_USE_SSL enabled.')
+                if not str(getattr(settings, 'EMAIL_HOST', '') or '').strip():
+                    logger.warning('Contact email config has empty EMAIL_HOST.')
+                if not str(getattr(settings, 'EMAIL_HOST_USER', '') or '').strip():
+                    logger.warning('Contact email config has empty EMAIL_HOST_USER.')
+                if not str(getattr(settings, 'EMAIL_HOST_PASSWORD', '') or '').strip():
+                    logger.warning('Contact email config has empty EMAIL_HOST_PASSWORD.')
+
+                logger.debug(
+                    'Contact email body preview: id=%s subject=%r body_length=%s',
+                    message_obj.id,
+                    subject,
+                    len(body),
+                )
+                email = EmailMessage(
+                    subject=subject,
+                    body=body,
+                    from_email=from_email,
+                    to=[to_email],
+                    reply_to=[message_obj.email],
+                )
+                email.send(fail_silently=False)
+                email_sent = True
+                email_status = 'sent'
+                delivery_note = 'Notification email sent.'
+                logger.info(
+                    'Contact notification email sent: id=%s to=%s backend=%s host=%s port=%s',
+                    message_obj.id,
+                    _mask_email(to_email),
+                    debug_config['email_backend'],
+                    debug_config['email_host'],
+                    debug_config['email_port'],
+                )
+            except Exception as e:
+                email_status = 'failed'
+                delivery_note = 'Message saved, but notification email failed. Check server logs and SMTP settings.'
+                logger.error(
+                    'Contact notification email failed: id=%s to=%s error_type=%s error=%s config=%s',
+                    message_obj.id,
+                    _mask_email(to_email),
+                    type(e).__name__,
+                    str(e),
+                    debug_config,
+                )
+                logger.exception('Full traceback for contact email failure')
+        else:
+            logger.warning(
+                'Contact notification skipped: CONTACT_NOTIFICATION_EMAIL is empty. id=%s config=%s',
+                message_obj.id,
+                debug_config,
+            )
+
+        response_payload = {
+            'message': 'Your message has been sent. I will get back to you soon!',
+            'email_sent': email_sent,
+            'email_status': email_status,
+            'delivery_note': delivery_note,
+        }
+
+        return Response(response_payload, status=status.HTTP_201_CREATED)

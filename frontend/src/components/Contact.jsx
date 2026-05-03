@@ -38,14 +38,15 @@ export default function Contact() {
     try {
       const response = await sendContact(payload)
       setStatus('success')
+      setDebugInfo({
+        ok: true,
+        endpoint: '/api/contact/',
+        httpStatus: response?.status || null,
+        elapsedMs: Date.now() - submittedAt,
+        responseData: response?.data || null,
+      })
       if (debugMode) {
-        setDebugInfo({
-          ok: true,
-          endpoint: '/api/contact/',
-          httpStatus: response?.status || null,
-          elapsedMs: Date.now() - submittedAt,
-          responseData: response?.data || null,
-        })
+        console.info('[Contact] submit result', response?.data || null)
       }
       setForm({ name: '', email: '', subject: '', message: '', website: '' })
       formLoadedAtRef.current = Date.now()
@@ -230,9 +231,11 @@ export default function Contact() {
                   <CheckCircle size={16} className="flex-shrink-0" />
                   {debugInfo?.responseData?.email_status === 'queued'
                     ? 'Message saved. Notification email is queued for delivery.'
-                    : debugInfo?.responseData?.email_sent === false
+                    : debugInfo?.responseData?.email_status === 'failed'
                       ? 'Message saved, but notification email was not sent.'
-                      : "Message sent! I'll get back to you soon."}
+                      : debugInfo?.responseData?.email_status === 'not_configured'
+                        ? 'Message saved, but notification email is not configured.'
+                        : "Message sent! I'll get back to you soon."}
                 </div>
               )}
 
