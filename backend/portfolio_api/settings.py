@@ -391,26 +391,3 @@ if not DEBUG:
 # milliseconds on the form before submitting.
 CONTACT_MIN_FORM_FILL_MS = _env_int('CONTACT_MIN_FORM_FILL_MS', 2500)
 CONTACT_REQUIRE_FORM_TIMING = os.environ.get('CONTACT_REQUIRE_FORM_TIMING', 'True') == 'True'
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(name)s %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'content.views': {
-            'handlers': ['console'],
-            'level': os.environ.get('CONTACT_LOG_LEVEL', 'INFO'),
-            'propagate': False,
-        },
-    },
-}
