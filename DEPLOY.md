@@ -62,7 +62,7 @@ From `infra/terraform/`:
         - `/api/*` -> EC2 origin (no cache)
         - `/admin/*` -> EC2 origin (no cache)
         - `/static/*` -> EC2 origin (cache enabled)
-4. EC2 Ubuntu instance + EIP.
+4. EC2 Ubuntu instance with an auto-assigned public IP.
 5. IAM OIDC provider and CI/CD role(s).
 6. GitHub repository rulesets.
 
