@@ -61,14 +61,3 @@ resource "aws_instance" "portfolio" {
   }
 }
 
-# ── Elastic IP — stable address that survives stop/start ─────────────────────
-resource "aws_eip" "portfolio" {
-  instance = aws_instance.portfolio.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project}-eip"
-  }
-
-  depends_on = [aws_instance.portfolio]
-}

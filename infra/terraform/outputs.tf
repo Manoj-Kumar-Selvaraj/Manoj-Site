@@ -24,8 +24,13 @@ output "cloudfront_distribution_id" {
 }
 
 output "ec2_public_ip" {
-  description = "EC2 Elastic IP — set as EC2_HOST in GitHub Secrets (SSH target / backend origin)"
-  value       = aws_eip.portfolio.public_ip
+  description = "EC2 public IP — set as EC2_HOST in GitHub Secrets (changes when the instance is replaced or stopped/started)"
+  value       = aws_instance.portfolio.public_ip
+}
+
+output "ec2_public_dns" {
+  description = "EC2 public DNS used by CloudFront as the backend origin"
+  value       = aws_instance.portfolio.public_dns
 }
 
 output "ec2_instance_id" {
@@ -96,7 +101,7 @@ output "github_secrets_summary" {
     │  S3_BUCKET_MEDIA                     │  ${aws_s3_bucket.media.bucket}
     │  CLOUDFRONT_DISTRIBUTION_ID          │  ${aws_cloudfront_distribution.frontend.id}
     │  CLOUDFRONT_DOMAIN                   │  ${local.dns_enabled ? var.domain_name : aws_cloudfront_distribution.frontend.domain_name}
-    │  EC2_HOST                            │  ${aws_eip.portfolio.public_ip}
+    │  EC2_HOST                            │  ${aws_instance.portfolio.public_ip}
     │  DB_HOST                             │  ${aws_db_instance.portfolio.address}
     │  DB_PORT                             │  ${aws_db_instance.portfolio.port}
     │  DB_NAME                             │  ${aws_db_instance.portfolio.db_name}

@@ -188,8 +188,9 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
         to_email = str(getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '') or '').strip()
         from_email = str(getattr(settings, 'DEFAULT_FROM_EMAIL', '') or '').strip() or None
-        email_sent = None
+        email_sent = False
         email_queued = False
+        email_status = 'not_configured'
         delivery_note = ''
 
         if to_email:
@@ -204,6 +205,11 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
 
             def _send_notification_async():
                 try:
+                    logger.debug(
+                        f"Sending contact email: from={from_email}, to={to_email}, "
+                        f"host={settings.EMAIL_HOST}, port={settings.EMAIL_PORT}, "
+                        f"use_tls={settings.EMAIL_USE_TLS}, use_ssl={settings.EMAIL_USE_SSL}"
+                    )
                     send_mail(
                         subject=subject,
                         message=body,
@@ -211,21 +217,28 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
                         recipient_list=[to_email],
                         fail_silently=False,
                     )
-                except Exception:
-                    logger.exception('Failed to send contact notification email.')
+                    logger.info('✓ Contact notification email sent to %s', to_email)
+                except Exception as e:
+                    logger.error(
+                        f"✗ Failed to send contact notification email to {to_email}: "
+                        f"{type(e).__name__}: {str(e)}"
+                    )
+                    logger.exception('Full traceback for contact email failure')
 
             # Keep API response fast even if SMTP is slow/unreachable.
             threading.Thread(target=_send_notification_async, daemon=True).start()
             email_queued = True
-            delivery_note = 'Notification email queued for delivery.'
+            email_status = 'queued'
+            delivery_note = 'Notification email queued for delivery. Check server logs for final SMTP result.'
         else:
-            email_sent = False
+            email_status = 'not_configured'
             delivery_note = 'CONTACT_NOTIFICATION_EMAIL is not configured; message was saved in admin only.'
 
         response_payload = {
             'message': 'Your message has been sent. I will get back to you soon!',
             'email_sent': email_sent,
             'email_queued': email_queued,
+            'email_status': email_status,
         }
         if delivery_note:
             response_payload['delivery_note'] = delivery_note
