@@ -200,6 +200,7 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
+          EMAIL_BACKEND: ${{ secrets.EMAIL_BACKEND }}
           EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_TIMEOUT: ${{ secrets.EMAIL_TIMEOUT }}
@@ -211,12 +212,13 @@ jobs:
           CONTACT_NOTIFICATION_EMAIL: ${{ secrets.CONTACT_NOTIFICATION_EMAIL }}
           CONTACT_SUBMIT_RATE: ${{ secrets.CONTACT_SUBMIT_RATE }}
           CONTACT_MIN_FORM_FILL_MS: ${{ secrets.CONTACT_MIN_FORM_FILL_MS }}
+          CONTACT_LOG_LEVEL: ${{ secrets.CONTACT_LOG_LEVEL }}
         with:
           host:     ${{ secrets.EC2_HOST }}
           username: ubuntu
           key:      ${{ secrets.EC2_SSH_KEY }}
           timeout:  180s
-          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_HOST,EMAIL_PORT,EMAIL_TIMEOUT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,EMAIL_USE_SSL,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS
+          envs:     DEPLOY_REF_NAME,CLOUDFRONT_DOMAIN,DB_ENGINE,DB_NAME,DB_USER,DB_PASSWORD,DB_HOST,DB_PORT,DB_SSLMODE,EMAIL_BACKEND,EMAIL_HOST,EMAIL_PORT,EMAIL_TIMEOUT,EMAIL_HOST_USER,EMAIL_HOST_PASSWORD,EMAIL_USE_TLS,EMAIL_USE_SSL,DEFAULT_FROM_EMAIL,CONTACT_NOTIFICATION_EMAIL,CONTACT_SUBMIT_RATE,CONTACT_MIN_FORM_FILL_MS,CONTACT_LOG_LEVEL
           script: |
             set -euo pipefail
             cd /home/ubuntu/portfolio
@@ -391,6 +393,7 @@ jobs:
                 'DB_HOST': os.getenv('DB_HOST', ''),
                 'DB_PORT': os.getenv('DB_PORT', '5432') or '5432',
                 'DB_SSLMODE': normalize_db_sslmode(os.getenv('DB_SSLMODE', 'prefer')),
+                'EMAIL_BACKEND': os.getenv('EMAIL_BACKEND', ''),
                 'EMAIL_HOST': os.getenv('EMAIL_HOST', ''),
                 'EMAIL_PORT': os.getenv('EMAIL_PORT', ''),
                 'EMAIL_TIMEOUT': os.getenv('EMAIL_TIMEOUT', ''),
@@ -402,6 +405,7 @@ jobs:
                 'CONTACT_NOTIFICATION_EMAIL': os.getenv('CONTACT_NOTIFICATION_EMAIL', ''),
                 'CONTACT_SUBMIT_RATE': os.getenv('CONTACT_SUBMIT_RATE', '3/hour') or '3/hour',
                 'CONTACT_MIN_FORM_FILL_MS': os.getenv('CONTACT_MIN_FORM_FILL_MS', '2500') or '2500',
+                'CONTACT_LOG_LEVEL': os.getenv('CONTACT_LOG_LEVEL', 'INFO') or 'INFO',
             }
 
             for key, value in updates.items():
