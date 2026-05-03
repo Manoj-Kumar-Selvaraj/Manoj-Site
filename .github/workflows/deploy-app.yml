@@ -65,6 +65,7 @@ jobs:
               - 'backend/**'
               - 'infra/nginx.conf'
               - 'infra/portfolio-gunicorn.service'
+              - 'infra/terraform/**'
 
   # ──────────────────────────────────────────────────────────────────────────
   # Build & deploy React to S3 → invalidate CloudFront
@@ -328,9 +329,10 @@ jobs:
             if [[ -n "$CLOUDFRONT_APEX_DOMAIN" && "$CLOUDFRONT_APEX_DOMAIN" != *.cloudfront.net ]]; then
               CLOUDFRONT_WWW_DOMAIN="www.${CLOUDFRONT_APEX_DOMAIN}"
             fi
+            PRIMARY_SITE_DOMAIN="manoj-tech-solutions.site"
             CURRENT_HOSTS=$(grep -E '^ALLOWED_HOSTS=' backend/.env | cut -d= -f2- || echo "localhost,127.0.0.1")
             NEW_HOSTS="${CURRENT_HOSTS}"
-            for H in "$EC2_PUBLIC_DNS" "$EC2_PUBLIC_IP" "$CLOUDFRONT_APEX_DOMAIN" "$CLOUDFRONT_WWW_DOMAIN"; do
+            for H in "$EC2_PUBLIC_DNS" "$EC2_PUBLIC_IP" "$CLOUDFRONT_APEX_DOMAIN" "$CLOUDFRONT_WWW_DOMAIN" "$PRIMARY_SITE_DOMAIN" "www.${PRIMARY_SITE_DOMAIN}"; do
               [ -n "$H" ] && [[ ",$NEW_HOSTS," != *",$H,"* ]] && NEW_HOSTS="${NEW_HOSTS},${H}"
             done
             sed -i "s|^ALLOWED_HOSTS=.*|ALLOWED_HOSTS=${NEW_HOSTS}|" backend/.env
